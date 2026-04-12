@@ -1,28 +1,27 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Job Portal API — Node.js + Express, MySQL (Sequelize) + MongoDB (Mongoose), CQRS pattern",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-validator": "^7.3.2",
-    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.3",
-    "morgan": "^1.10.1",
-    "pg": "^8.20.0",
-    "pg-hstore": "^2.3.4",
+    "mongoose": "^9.4.1",
+    "mysql2": "^3.22.0",
     "sequelize": "^6.37.8",
-    "socket.io": "^4.8.3"
+    "sequelize-cli": "^6.6.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
