@@ -8,6 +8,7 @@ const User = sequelize.define('User', {
   email:        { type: DataTypes.STRING(150), allowNull: false, unique: true },
   passwordHash: { type: DataTypes.STRING(255), allowNull: false, field: 'password_hash' },
   isActive:     { type: DataTypes.BOOLEAN, defaultValue: true, field: 'is_active' },
+  avatarPath:   { type: DataTypes.STRING(500), allowNull: true, field: 'avatar_path' },
 }, {
   tableName: 'Users',
   underscored: false,
