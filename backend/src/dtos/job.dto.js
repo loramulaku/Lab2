@@ -4,21 +4,23 @@
  */
 class JobDTO {
   constructor(job) {
-    this.id             = job.id ?? job.jobId;
-    this.title          = job.title;
-    this.description    = job.description;
-    this.employmentType = job.employmentType;
-    this.workMode       = job.workMode;
-    this.jobMode        = job.jobMode;
-    this.budgetMin      = job.budgetMin;
-    this.budgetMax      = job.budgetMax;
-    this.status         = job.status;
-    this.expiresAt      = job.expiresAt;
-    this.deadline       = job.deadline;
-    this.company        = job.company ?? null;
-    this.skills         = job.skills    ?? [];
-    this.categories     = job.categories ?? [];
-    this.createdAt      = job.createdAt;
+    this.id              = job.id ?? job.jobId;
+    this.recruiterId     = job.recruiterId ?? null;
+    this.title           = job.title;
+    this.description     = job.description;
+    this.employmentType  = job.employmentType;
+    this.experienceLevel = job.experienceLevel ?? null;
+    this.workMode        = job.workMode;
+    this.jobMode         = job.jobMode;
+    this.budgetMin       = job.budgetMin;
+    this.budgetMax       = job.budgetMax;
+    this.status          = job.status;
+    this.expiresAt       = job.expiresAt;
+    this.deadline        = job.deadline;
+    this.company         = job.company ?? null;
+    this.skills          = job.skills ?? [];
+    this.categories      = job.categories ?? [];
+    this.createdAt       = job.createdAt;
   }
 
   static from(job) {

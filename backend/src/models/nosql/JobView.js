@@ -15,8 +15,10 @@ const JobViewSchema = new mongoose.Schema(
     jobMode:        { type: String },
     budgetMin:      { type: Number },
     budgetMax:      { type: Number },
-    status:         { type: String },
-    expiresAt:      { type: Date },
+    recruiterId:     { type: Number },
+    experienceLevel: { type: String, enum: ['junior', 'mid', 'senior'] },
+    status:          { type: String },
+    expiresAt:       { type: Date },
     deadline:       { type: Date },
     createdAt:      { type: Date },
     // ── denormalised ─────────────────────────
