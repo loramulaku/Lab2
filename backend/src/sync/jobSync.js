@@ -62,18 +62,20 @@ async function syncJob(jobId) {
 
   // 5. Upsert MongoDB projection  (_id = MySQL job.id)
   await jobViewRepo.upsert({
-    id:             job.id,                    // mapped to _id by the repo
-    title:          job.title,
-    description:    job.description,
-    employmentType: job.employmentType,
-    workMode:       job.workMode,
-    jobMode:        job.jobMode,
-    budgetMin:      job.budgetMin ? Number(job.budgetMin) : null,
-    budgetMax:      job.budgetMax ? Number(job.budgetMax) : null,
-    status:         job.status,
-    expiresAt:      job.expiresAt,
-    deadline:       job.deadline,
-    createdAt:      job.createdAt,
+    id:              job.id,
+    recruiterId:     job.recruiterId,
+    title:           job.title,
+    description:     job.description,
+    employmentType:  job.employmentType,
+    experienceLevel: job.experienceLevel,
+    workMode:        job.workMode,
+    jobMode:         job.jobMode,
+    budgetMin:       job.budgetMin ? Number(job.budgetMin) : null,
+    budgetMax:       job.budgetMax ? Number(job.budgetMax) : null,
+    status:          job.status,
+    expiresAt:       job.expiresAt,
+    deadline:        job.deadline,
+    createdAt:       job.createdAt,
     company: company
       ? { id: company.id, name: company.name, website: company.website }
       : null,
