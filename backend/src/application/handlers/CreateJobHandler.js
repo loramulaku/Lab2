@@ -18,12 +18,15 @@ class CreateJobHandler {
    * @returns {Promise<object>} the created Sequelize Job instance
    */
   async handle(command) {
-    // 1. WRITE → MySQL (source of truth)
+    const VALID_TYPES = ['full-time', 'freelance'];
+    if (!command.employmentType || !VALID_TYPES.includes(command.employmentType)) {
+      const err = new Error('employmentType is required and must be full-time or freelance');
+      err.status = 400;
+      throw err;
+    }
+
     const job = await jobMysqlRepo.create(command);
-
-    // 2. SYNC → MongoDB read store (fire-and-forget)
     syncJobSafe(job.id);
-
     return job;
   }
 }

@@ -9,17 +9,19 @@ const JobCategory = require('../../models/sql/JobCategory');
 const jobMysqlRepo = {
   async create(data) {
     const job = await Job.create({
-      companyId:      data.companyId,
-      title:          data.title,
-      description:    data.description,
-      employmentType: data.employmentType,
-      workMode:       data.workMode,
-      jobMode:        data.jobMode,
-      budgetMin:      data.budgetMin,
-      budgetMax:      data.budgetMax,
-      expiresAt:      data.expiresAt,
-      deadline:       data.deadline,
-      status:         'open',
+      companyId:       data.companyId,
+      recruiterId:     data.recruiterId,
+      title:           data.title,
+      description:     data.description,
+      employmentType:  data.employmentType,
+      experienceLevel: data.experienceLevel,
+      workMode:        data.workMode,
+      jobMode:         data.jobMode,
+      budgetMin:       data.budgetMin,
+      budgetMax:       data.budgetMax,
+      expiresAt:       data.expiresAt,
+      deadline:        data.deadline,
+      status:          'open',
     });
 
     if (data.skillIds?.length) {
@@ -37,11 +39,8 @@ const jobMysqlRepo = {
   },
 
   async update(jobId, data) {
-    const [, [updated]] = await Job.update(data, {
-      where: { id: jobId },
-      returning: true,
-    });
-    return updated;
+    await Job.update(data, { where: { id: jobId } });
+    return Job.findByPk(jobId);
   },
 
   async delete(jobId) {
