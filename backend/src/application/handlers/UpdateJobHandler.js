@@ -16,7 +16,15 @@ class UpdateJobHandler {
   async handle(command) {
     const { jobId, ...fields } = command;
 
-    // Strip undefined keys so partial updates don't overwrite with null
+    const existing = await jobMysqlRepo.findById(jobId);
+    if (!existing) return null;
+
+    if (existing.status === 'closed') {
+      const err = new Error('Cannot edit a closed job');
+      err.status = 400;
+      throw err;
+    }
+
     const data = Object.fromEntries(
       Object.entries(fields).filter(([, v]) => v !== undefined)
     );
@@ -24,9 +32,7 @@ class UpdateJobHandler {
     const job = await jobMysqlRepo.update(jobId, data);
     if (!job) return null;
 
-    // Re-sync the MongoDB projection — skills/categories may also have changed
     syncJobSafe(jobId);
-
     return job;
   }
 }
