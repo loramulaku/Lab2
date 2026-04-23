@@ -8,13 +8,25 @@
     "dev": "nodemon app.js",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
-    "db:seed": "node src/seeders/adminSeeder.js"
+    "db:seed": "node src/seeders/adminSeeder.js",
+    "sync:retry": "node src/scripts/retrySync.js",
+    "test": "jest --forceExit --runInBand",
+    "test:sync": "jest --forceExit --runInBand --testPathPatterns=tests/sync",
+    "test:handlers": "jest --forceExit --runInBand --testPathPatterns=tests/handlers"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 20000,
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -26,6 +38,7 @@
     "sequelize-cli": "^6.6.5"
   },
   "devDependencies": {
+    "jest": "^30.3.0",
     "nodemon": "^3.1.14"
   }
 }
