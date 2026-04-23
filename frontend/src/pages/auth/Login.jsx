@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 import LeftPanel from './LeftPanel';
 
 const EyeIcon = ({ open }) => open ? (
@@ -18,7 +18,7 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loading, error, clearError } = useAuthStore();
+  const { login, loading, error, clearError } = useAuth();
 
   const [form, setForm]   = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
@@ -34,7 +34,7 @@ export default function Login() {
       const user = await login(form.email, form.password);
       const role = user.roles?.[0];
       if (role === 'admin')          navigate('/admin');
-      else if (role === 'recruiter') navigate('/client');
+      else if (role === 'recruiter') navigate('/recruiter/company');
       else                           navigate('/my-profile');
     } catch {
       // error already set in store
