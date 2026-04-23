@@ -1,171 +1,56 @@
-const { Op }            = require('sequelize');
-const User              = require('../models/sql/User');
-const CandidateProfile  = require('../models/sql/CandidateProfile');
-const CandidateSkill    = require('../models/sql/CandidateSkill');
-const Skill             = require('../models/sql/Skill');
-const Experience        = require('../models/sql/Experience');
-const Education         = require('../models/sql/Education');
-const Application       = require('../models/sql/Application');
-const { syncUserSafe }  = require('../sync/userSync');
+const GetCandidateProfileQuery      = require('../application/candidate/queries/GetCandidateProfile.query');
+const UpdateCandidateProfileCommand = require('../application/candidate/commands/UpdateCandidateProfile.command');
+const AddSkillCommand               = require('../application/candidate/commands/AddSkill.command');
+const DeleteSkillCommand            = require('../application/candidate/commands/DeleteSkill.command');
+const AddExperienceCommand          = require('../application/candidate/commands/AddExperience.command');
+const UpdateExperienceCommand       = require('../application/candidate/commands/UpdateExperience.command');
+const DeleteExperienceCommand       = require('../application/candidate/commands/DeleteExperience.command');
+const AddEducationCommand           = require('../application/candidate/commands/AddEducation.command');
+const UpdateEducationCommand        = require('../application/candidate/commands/UpdateEducation.command');
+const DeleteEducationCommand        = require('../application/candidate/commands/DeleteEducation.command');
 
-const ALLOWED_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+const getCandidateProfileHandler    = require('../application/candidate/handlers/GetCandidateProfileHandler');
+const updateCandidateProfileHandler = require('../application/candidate/handlers/UpdateCandidateProfileHandler');
+const addSkillHandler               = require('../application/candidate/handlers/AddSkillHandler');
+const deleteSkillHandler            = require('../application/candidate/handlers/DeleteSkillHandler');
+const addExperienceHandler          = require('../application/candidate/handlers/AddExperienceHandler');
+const updateExperienceHandler       = require('../application/candidate/handlers/UpdateExperienceHandler');
+const deleteExperienceHandler       = require('../application/candidate/handlers/DeleteExperienceHandler');
+const addEducationHandler           = require('../application/candidate/handlers/AddEducationHandler');
+const updateEducationHandler        = require('../application/candidate/handlers/UpdateEducationHandler');
+const deleteEducationHandler        = require('../application/candidate/handlers/DeleteEducationHandler');
 
-// ── Full profile GET ──────────────────────────────────────────────────────────
-async function getProfile(req, res) {
-  const userId = req.user.id;
+const CandidateProfileDTO = require('../dtos/candidate.dto');
 
-  const user = await User.findByPk(userId);
-  if (!user) return res.status(404).json({ message: 'User not found' });
+const getProfile      = (req, res) => getCandidateProfileHandler.handle(new GetCandidateProfileQuery(req.user.id))
+  .then(r => r ? res.json(CandidateProfileDTO.from(r)) : res.status(404).json({ message: 'Profile not found' }));
 
-  const [profile, candidateSkills, experiences, educations] = await Promise.all([
-    CandidateProfile.findOne({ where: { userId } }),
-    CandidateSkill.findAll({ where: { userId } }),
-    Experience.findAll({ where: { userId }, order: [['start_date', 'DESC']] }),
-    Education.findAll({ where: { userId }, order: [['start_year', 'DESC']] }),
-  ]);
+const updateProfile   = (req, res) => updateCandidateProfileHandler.handle(new UpdateCandidateProfileCommand({ userId: req.user.id, ...req.body }))
+  .then(r => res.json(r));
 
-  // Resolve skill names
-  let skills = [];
-  if (candidateSkills.length) {
-    const skillIds  = candidateSkills.map(cs => cs.skillId);
-    const skillRows = await Skill.findAll({ where: { id: { [Op.in]: skillIds } } });
-    skills = skillRows.map(s => {
-      const cs = candidateSkills.find(c => c.skillId === s.id);
-      return { id: cs.id, skillId: s.id, name: s.name, level: cs.level };
-    });
-  }
+const addSkill        = (req, res) => addSkillHandler.handle(new AddSkillCommand({ userId: req.user.id, ...req.body }))
+  .then(r => res.status(201).json(r));
 
-  // Application count (graceful fallback)
-  let totalApplications = 0;
-  try { totalApplications = await Application.count({ where: { userId } }); } catch {}
+const deleteSkill     = (req, res) => deleteSkillHandler.handle(new DeleteSkillCommand({ userId: req.user.id, skillId: Number(req.params.id) }))
+  .then(r => res.json(r));
 
-  return res.json({
-    id:         user.id,
-    firstName:  user.firstName,
-    lastName:   user.lastName,
-    email:      user.email,
-    avatarPath: user.avatarPath ?? null,
-    createdAt:  user.createdAt,
-    headline:   profile?.headline ?? null,
-    bio:        profile?.bio      ?? null,
-    location:   profile?.location ?? null,
-    skills,
-    experiences,
-    educations,
-    stats: {
-      totalApplications,
-      skillsListed:     skills.length,
-      workExperiences:  experiences.length,
-      educationRecords: educations.length,
-    },
-  });
-}
+const addExperience   = (req, res) => addExperienceHandler.handle(new AddExperienceCommand({ userId: req.user.id, ...req.body }))
+  .then(r => res.status(201).json(r));
 
-// ── Profile update ────────────────────────────────────────────────────────────
-async function updateProfile(req, res) {
-  const userId = req.user.id;
-  const { firstName, lastName, headline, bio, location } = req.body;
+const updateExperience = (req, res) => updateExperienceHandler.handle(new UpdateExperienceCommand({ userId: req.user.id, experienceId: Number(req.params.id), ...req.body }))
+  .then(r => res.json(r));
 
-  await User.update({ firstName, lastName }, { where: { id: userId } });
+const deleteExperience = (req, res) => deleteExperienceHandler.handle(new DeleteExperienceCommand({ userId: req.user.id, experienceId: Number(req.params.id) }))
+  .then(r => res.json(r));
 
-  await CandidateProfile.upsert({ userId, headline, bio, location });
+const addEducation    = (req, res) => addEducationHandler.handle(new AddEducationCommand({ userId: req.user.id, ...req.body }))
+  .then(r => res.status(201).json(r));
 
-  syncUserSafe(userId);
-  return res.json({ message: 'Profile updated' });
-}
+const updateEducation = (req, res) => updateEducationHandler.handle(new UpdateEducationCommand({ userId: req.user.id, educationId: Number(req.params.id), ...req.body }))
+  .then(r => res.json(r));
 
-// ── Skills ────────────────────────────────────────────────────────────────────
-async function addSkill(req, res) {
-  const userId = req.user.id;
-  const { name, level } = req.body;
-  if (!name?.trim()) return res.status(400).json({ message: 'Skill name is required' });
-  const safeLevel = ALLOWED_LEVELS.includes(level) ? level : 'Intermediate';
-
-  const [skill] = await Skill.findOrCreate({ where: { name: name.trim() } });
-  const existing = await CandidateSkill.findOne({ where: { userId, skillId: skill.id } });
-  if (existing) return res.status(409).json({ message: 'Skill already added' });
-
-  const cs = await CandidateSkill.create({ userId, skillId: skill.id, level: safeLevel });
-  syncUserSafe(userId);
-  return res.status(201).json({ id: cs.id, skillId: skill.id, name: skill.name, level: safeLevel });
-}
-
-async function deleteSkill(req, res) {
-  const userId = req.user.id;
-  const id     = Number(req.params.id);
-  const deleted = await CandidateSkill.destroy({ where: { id, userId } });
-  if (!deleted) return res.status(404).json({ message: 'Skill not found' });
-  syncUserSafe(userId);
-  return res.json({ message: 'Skill removed' });
-}
-
-// ── Experiences ───────────────────────────────────────────────────────────────
-async function addExperience(req, res) {
-  const userId = req.user.id;
-  const { title, company, startDate, endDate, description } = req.body;
-  if (!title || !company || !startDate) {
-    return res.status(400).json({ message: 'title, company, startDate are required' });
-  }
-  const exp = await Experience.create({
-    userId, title, company,
-    startDate, endDate: endDate || null, description: description || null,
-  });
-  return res.status(201).json(exp);
-}
-
-async function updateExperience(req, res) {
-  const userId = req.user.id;
-  const id     = Number(req.params.id);
-  const { title, company, startDate, endDate, description } = req.body;
-  const [count] = await Experience.update(
-    { title, company, startDate, endDate: endDate || null, description: description || null },
-    { where: { id, userId } }
-  );
-  if (!count) return res.status(404).json({ message: 'Experience not found' });
-  return res.json(await Experience.findByPk(id));
-}
-
-async function deleteExperience(req, res) {
-  const userId = req.user.id;
-  const id     = Number(req.params.id);
-  const deleted = await Experience.destroy({ where: { id, userId } });
-  if (!deleted) return res.status(404).json({ message: 'Experience not found' });
-  return res.json({ message: 'Deleted' });
-}
-
-// ── Educations ────────────────────────────────────────────────────────────────
-async function addEducation(req, res) {
-  const userId = req.user.id;
-  const { degree, institution, startYear, endYear } = req.body;
-  if (!degree || !institution || !startYear) {
-    return res.status(400).json({ message: 'degree, institution, startYear are required' });
-  }
-  const edu = await Education.create({
-    userId, degree, institution,
-    startYear: Number(startYear), endYear: endYear ? Number(endYear) : null,
-  });
-  return res.status(201).json(edu);
-}
-
-async function updateEducation(req, res) {
-  const userId = req.user.id;
-  const id     = Number(req.params.id);
-  const { degree, institution, startYear, endYear } = req.body;
-  const [count] = await Education.update(
-    { degree, institution, startYear: Number(startYear), endYear: endYear ? Number(endYear) : null },
-    { where: { id, userId } }
-  );
-  if (!count) return res.status(404).json({ message: 'Education not found' });
-  return res.json(await Education.findByPk(id));
-}
-
-async function deleteEducation(req, res) {
-  const userId = req.user.id;
-  const id     = Number(req.params.id);
-  const deleted = await Education.destroy({ where: { id, userId } });
-  if (!deleted) return res.status(404).json({ message: 'Education not found' });
-  return res.json({ message: 'Deleted' });
-}
+const deleteEducation = (req, res) => deleteEducationHandler.handle(new DeleteEducationCommand({ userId: req.user.id, educationId: Number(req.params.id) }))
+  .then(r => res.json(r));
 
 module.exports = {
   getProfile, updateProfile,

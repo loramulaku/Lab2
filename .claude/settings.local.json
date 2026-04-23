@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"\\\\.update\\\\|\\\\.save\\\\|\\\\.create\\\\|\\\\.deleteOne\\\\|\\\\.delete\\\\|\\\\.insertOne\\\\|\\\\.remove\" src/repositories/mongodb/*.js)",
+      "Bash(npx jest *)",
+      "Bash(npm install *)",
+      "Bash(npm list *)",
+      "Bash(npm remove *)"
+    ]
+  }
+}
