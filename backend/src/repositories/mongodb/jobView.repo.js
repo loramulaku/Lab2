@@ -15,7 +15,7 @@ const jobViewRepo = {
     return JobView.findOneAndUpdate(
       { _id: id },
       { $set: rest },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
   },
 

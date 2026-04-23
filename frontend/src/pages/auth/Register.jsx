@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 import LeftPanel from './LeftPanel';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, loading, error, clearError } = useAuthStore();
+  const { register, loading, error, clearError } = useAuth();
 
   const [step, setStep]             = useState(1);
   const [role, setRole]             = useState(null);   // 'candidate' | 'recruiter'

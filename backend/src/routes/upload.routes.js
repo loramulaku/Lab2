@@ -1,14 +1,16 @@
-const express = require('express');
-const router  = express.Router();
-const auth    = require('../middlewares/auth');
-const upload  = require('../middlewares/upload');
-const User    = require('../models/sql/User');
+const express  = require('express');
+const router   = express.Router();
+const auth     = require('../middlewares/auth');
+const upload   = require('../middlewares/upload');
 
-router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
+const UploadAvatarCommand  = require('../application/user/commands/UploadAvatar.command');
+const uploadAvatarHandler  = require('../application/user/handlers/UploadAvatarHandler');
+
+router.post('/avatar', auth, upload.single('avatar'), (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
   const avatarPath = `/uploads/avatars/${req.file.filename}`;
-  await User.update({ avatarPath }, { where: { id: req.user.id } });
-  return res.json({ path: avatarPath });
+  const command    = new UploadAvatarCommand({ userId: req.user.id, avatarPath, roles: req.user.roles ?? [] });
+  return uploadAvatarHandler.handle(command).then(r => res.json(r));
 });
 
 module.exports = router;

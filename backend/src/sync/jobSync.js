@@ -13,13 +13,14 @@
  *           └─ JobView.findOneAndUpdate({ jobId }, $set, { upsert: true })  (MongoDB)
  */
 
-const { Op }   = require('sequelize');
-const Job      = require('../models/sql/Job');
-const Company  = require('../models/sql/Company');
-const JobSkill = require('../models/sql/JobSkill');
-const Skill    = require('../models/sql/Skill');
+const { Op }      = require('sequelize');
+const Job         = require('../models/sql/Job');
+const Company     = require('../models/sql/Company');
+const JobSkill    = require('../models/sql/JobSkill');
+const Skill       = require('../models/sql/Skill');
 const JobCategory = require('../models/sql/JobCategory');
-const Category = require('../models/sql/Category');
+const Category    = require('../models/sql/Category');
+const FailedSync  = require('../models/sql/FailedSync');
 const jobViewRepo = require('../repositories/mongodb/jobView.repo');
 
 /**
@@ -80,18 +81,46 @@ async function syncJob(jobId) {
     skills,
     categories,
   });
+
+  // Sync succeeded — clear any previous failure record
+  await FailedSync.destroy({ where: { entityType: 'job', entityId: jobId } });
 }
 
 /**
  * Fire-and-forget wrapper used inside handlers.
- * Sync failures are logged but never bubble up to the HTTP response.
+ * On failure, logs the error to the FailedSyncs table so it can be retried.
+ * On success, the FailedSyncs record is cleared inside syncJob().
  *
  * @param {number} jobId
  */
 function syncJobSafe(jobId) {
-  syncJob(jobId).catch(err =>
-    console.error(`[jobSync] Failed to sync jobId=${jobId}:`, err.message)
-  );
+  syncJob(jobId).catch(async (err) => {
+    console.error(`[jobSync] Failed to sync jobId=${jobId}:`, err.message);
+    try {
+      const [record, created] = await FailedSync.findOrCreate({
+        where: { entityType: 'job', entityId: jobId },
+        defaults: {
+          entityType:      'job',
+          entityId:        jobId,
+          errorMessage:    err.message,
+          attempts:        1,
+          lastAttemptedAt: new Date(),
+          createdAt:       new Date(),
+        },
+      });
+      if (!created) {
+        // Record already existed — increment attempts
+        await record.update({
+          errorMessage:    err.message,
+          attempts:        record.attempts + 1,
+          lastAttemptedAt: new Date(),
+          resolvedAt:      null,
+        });
+      }
+    } catch (dbErr) {
+      console.error('[jobSync] Could not write to FailedSyncs:', dbErr.message);
+    }
+  });
 }
 
 module.exports = { syncJob, syncJobSafe };

@@ -4,13 +4,14 @@
  */
 class UserDTO {
   constructor(user) {
-    this.id        = user.id ?? user.userId;
-    this.firstName = user.firstName;
-    this.lastName  = user.lastName;
-    this.email     = user.email;
-    this.isActive  = user.isActive;
-    this.roles     = user.roles ?? [];
-    this.createdAt = user.createdAt;
+    this.id         = user.id ?? user.userId;
+    this.firstName  = user.firstName;
+    this.lastName   = user.lastName;
+    this.email      = user.email;
+    this.isActive   = user.isActive;
+    this.avatarPath = user.avatarPath ?? null;
+    this.roles      = user.roles ?? [];
+    this.createdAt  = user.createdAt;
   }
 
   static from(user) {
