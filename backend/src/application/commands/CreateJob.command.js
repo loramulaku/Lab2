@@ -18,6 +18,7 @@ class CreateJobCommand {
    * @param {string} [data.deadline]
    * @param {number[]} [data.skillIds]
    * @param {number[]} [data.categoryIds]
+   * @param {object}  [data.subscription] - Sequelize Subscription instance from checkSubscription middleware
    */
   constructor(data) {
     this.companyId       = data.companyId;
@@ -34,6 +35,7 @@ class CreateJobCommand {
     this.deadline        = data.deadline;
     this.skillIds        = data.skillIds ?? [];
     this.categoryIds     = data.categoryIds ?? [];
+    this.subscription    = data.subscription ?? null;
   }
 }
 
