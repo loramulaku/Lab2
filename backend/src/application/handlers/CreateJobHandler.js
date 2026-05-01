@@ -1,3 +1,4 @@
+const { sequelize }  = require('../../config/mysql');
 const jobMysqlRepo   = require('../../repositories/mysql/job.repo');
 const { syncJobSafe } = require('../../sync/jobSync');
 
@@ -5,12 +6,12 @@ const { syncJobSafe } = require('../../sync/jobSync');
  * CreateJobHandler
  *
  * WRITE path:
- *   1. Persists the new job (+ skill/category links) to MySQL  ← source of truth
- *   2. Triggers a fire-and-forget sync to the MongoDB read store
- *
- * The sync is intentionally non-blocking: if it fails, the job is still
- * created successfully in MySQL.  A background process or retry queue can
- * re-sync later if needed.
+ *   1. Opens a Sequelize transaction
+ *   2. Persists the new job (+ skill/category links) to MySQL  ← source of truth
+ *   3. Increments subscription.jobsPostedCount atomically in the same transaction
+ *      so a failed increment rolls back the job insert and vice-versa
+ *   4. Triggers a fire-and-forget sync to the MongoDB read store (outside the
+ *      transaction — sync failures never roll back a successfully created job)
  */
 class CreateJobHandler {
   /**
@@ -25,7 +26,17 @@ class CreateJobHandler {
       throw err;
     }
 
-    const job = await jobMysqlRepo.create(command);
+    const job = await sequelize.transaction(async (t) => {
+      const created = await jobMysqlRepo.create(command, { transaction: t });
+
+      if (command.subscription) {
+        command.subscription.jobsPostedCount += 1;
+        await command.subscription.save({ transaction: t });
+      }
+
+      return created;
+    });
+
     syncJobSafe(job.id);
     return job;
   }
