@@ -7,7 +7,7 @@ const JobCategory = require('../../models/sql/JobCategory');
  * All mutations go through here — never read from this repo in query handlers.
  */
 const jobMysqlRepo = {
-  async create(data) {
+  async create(data, { transaction } = {}) {
     const job = await Job.create({
       companyId:       data.companyId,
       recruiterId:     data.recruiterId,
@@ -22,16 +22,18 @@ const jobMysqlRepo = {
       expiresAt:       data.expiresAt,
       deadline:        data.deadline,
       status:          'open',
-    });
+    }, { transaction });
 
     if (data.skillIds?.length) {
       await JobSkill.bulkCreate(
-        data.skillIds.map(skillId => ({ jobId: job.id, skillId }))
+        data.skillIds.map(skillId => ({ jobId: job.id, skillId })),
+        { transaction }
       );
     }
     if (data.categoryIds?.length) {
       await JobCategory.bulkCreate(
-        data.categoryIds.map(categoryId => ({ jobId: job.id, categoryId }))
+        data.categoryIds.map(categoryId => ({ jobId: job.id, categoryId })),
+        { transaction }
       );
     }
 

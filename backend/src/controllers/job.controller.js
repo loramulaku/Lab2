@@ -27,8 +27,9 @@ const jobController = {
   async create(req, res) {
     const command = new CreateJobCommand({
       ...req.body,
-      companyId:   req.user.companyId,
-      recruiterId: req.user.id,
+      companyId:    req.companyId,
+      recruiterId:  req.user.id,
+      subscription: req.subscription,
     });
     const job = await createJobHandler.handle(command);
     return res.status(201).json(JobDTO.from(job));

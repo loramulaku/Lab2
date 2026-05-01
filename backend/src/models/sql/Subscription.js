@@ -8,6 +8,7 @@ const Subscription = sequelize.define('Subscription', {
   stripeSubscriptionId: { type: DataTypes.STRING(255), field: 'stripe_subscription_id' },
   status:               { type: DataTypes.STRING(50) },
   currentPeriodEnd:     { type: DataTypes.DATE, field: 'current_period_end' },
+  jobsPostedCount:      { type: DataTypes.INTEGER, field: 'jobs_posted_count', defaultValue: 0 },
 }, {
   tableName: 'Subscriptions',
   timestamps: false,
