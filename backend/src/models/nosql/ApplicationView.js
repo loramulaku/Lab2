@@ -11,7 +11,9 @@ const ApplicationViewSchema = new mongoose.Schema(
     jobId:                { type: Number },
     userId:               { type: Number },
     stageId:              { type: Number },
+    currentStage:         { type: String },
     status:               { type: String },
+    coverLetter:          { type: String },
     appliedAt:            { type: Date },
     // ── denormalised from Jobs → Companies ───
     jobTitle:             { type: String },
