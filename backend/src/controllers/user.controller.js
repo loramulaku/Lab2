@@ -27,8 +27,10 @@ const userController = {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
+    const roles = await userRepo.getUserRoles(user.id);
+
     const token = jwt.sign(
-      { id: user.id, email: user.email, roles: [] },
+      { id: user.id, email: user.email, roles },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
