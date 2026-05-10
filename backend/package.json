@@ -7,7 +7,10 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "db:migrate": "sequelize-cli db:migrate",
-    "db:migrate:undo": "sequelize-cli db:migrate:undo"
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "seed:roles": "node src/seeders/seed-admin-role.js",
+    "seed:admin-user": "node src/seeders/seed-admin-user.js",
+    "setup": "npm run db:migrate && npm run seed:roles && npm run seed:admin-user"
   },
   "keywords": [],
   "author": "",
