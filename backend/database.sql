@@ -1,15 +1,15 @@
 -- ============================================================
 --  Job Portal — full schema
---  Run once against an empty database: jobportal_db
+--  Run once against an empty database: jobconnect_db
 --  All ALTER TABLE additions from later migrations are already
 --  folded into the CREATE TABLE statements below.
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS jobportal_db
+CREATE DATABASE IF NOT EXISTS jobconnect_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE jobportal_db;
+USE jobconnect_db;
 
 -- ── 1. Independent tables (no foreign-key deps) ──────────────
 
