@@ -1,8 +1,8 @@
-const Plan = require('../models/sql/Plan');
+const planViewRepo = require('../repositories/mongodb/planView.repo');
 
 const planController = {
   async getAll(_req, res) {
-    const plans = await Plan.findAll();
+    const plans = await planViewRepo.findAll();
     return res.json(plans);
   },
 };

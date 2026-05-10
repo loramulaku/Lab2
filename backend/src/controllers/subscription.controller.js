@@ -3,6 +3,7 @@ const Subscription           = require('../models/sql/Subscription');
 const Plan                   = require('../models/sql/Plan');
 const SubscribeToPlanCommand = require('../application/commands/SubscribeToPlan.command');
 const subscribeToPlanHandler = require('../application/handlers/SubscribeToPlanHandler');
+const subscriptionViewRepo   = require('../repositories/mongodb/subscriptionView.repo');
 
 const subscriptionController = {
   async subscribe(req, res) {
@@ -20,6 +21,7 @@ const subscriptionController = {
     const command = new SubscribeToPlanCommand({
       companyId: recruiter.companyId,
       planId:    Number(planId),
+      userId:    req.user.id,
     });
 
     const { subscription, payment } = await subscribeToPlanHandler.handle(command);
@@ -49,13 +51,8 @@ const subscriptionController = {
 
     // Prefer the active subscription; fall back to the most recently created one
     const subscription =
-      (await Subscription.findOne({
-        where: { companyId: recruiter.companyId, status: 'active' },
-      })) ??
-      (await Subscription.findOne({
-        where: { companyId: recruiter.companyId },
-        order: [['id', 'DESC']],
-      }));
+      (await subscriptionViewRepo.findActiveByCompany(recruiter.companyId)) ??
+      (await subscriptionViewRepo.findByCompany(recruiter.companyId))[0];
 
     if (!subscription) {
       return res.status(404).json({ message: 'No subscription found' });
@@ -68,10 +65,10 @@ const subscriptionController = {
     const jobsRemaining = jobLimit !== null ? Math.max(0, jobLimit - jobsUsed) : null;
 
     return res.json({
-      id:               subscription.id,
+      id:               subscription._id,
       status:           subscription.status,
       expiresAt:        subscription.currentPeriodEnd,
-      planName:         plan?.name ?? null,
+      planName:         subscription.planName,
       jobLimit,
       jobsUsed,
       jobsRemaining,
