@@ -1,6 +1,8 @@
 const Job      = require('../../models/sql/Job');
 const JobSkill = require('../../models/sql/JobSkill');
 const JobCategory = require('../../models/sql/JobCategory');
+const Company = require('../../models/sql/Company');
+const { sequelize } = require('../../config/mysql');
 
 /**
  * MySQL WRITE repository for Jobs.
@@ -49,6 +51,31 @@ const jobMysqlRepo = {
 
   async findById(jobId) {
     return Job.findByPk(jobId);
+  },
+
+  async findAll({ limit = 10, offset = 0, search = '', status = '', sortBy = 'created_at', sortOrder = 'DESC' }) {
+    const where = {};
+    
+    if (search) {
+      where[sequelize.Sequelize.Op.or] = [
+        { title: { [sequelize.Sequelize.Op.like]: `%${search}%` } },
+        { description: { [sequelize.Sequelize.Op.like]: `%${search}%` } },
+      ];
+    }
+    
+    if (status) {
+      where.status = status;
+    }
+
+    const { count, rows } = await Job.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [[sortBy, sortOrder]],
+      include: [{ model: Company, attributes: ['id', 'name'] }],
+    });
+
+    return { jobs: rows, total: count };
   },
 };
 
