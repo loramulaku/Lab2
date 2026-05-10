@@ -3,9 +3,11 @@ const express        = require('express');
 const cors           = require('cors');
 const { connectMySQL }   = require('./src/config/mysql');
 const { connectMongoDB } = require('./src/config/mongodb');
+require('./src/models/sql/associations');
 
 const jobRoutes  = require('./src/routes/job.routes');
 const userRoutes = require('./src/routes/user.routes');
+const adminRoutes = require('./src/routes/admin.routes');
 // Additional module routes will be registered here as each module is built.
 
 const app  = express();
@@ -18,6 +20,7 @@ app.use(express.json());
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/users', userRoutes);
 app.use('/api/jobs',  jobRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
