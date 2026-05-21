@@ -41,7 +41,8 @@ const jobMysqlRepo = {
   },
 
   async update(jobId, data) {
-    await Job.update(data, { where: { id: jobId } });
+    const [count] = await Job.update(data, { where: { id: jobId } });
+    if (!count) return null;
     return Job.findByPk(jobId);
   },
 
