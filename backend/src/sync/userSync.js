@@ -13,19 +13,18 @@
  *           └─ UserProfile.findOneAndUpdate({ userId }, $set, { upsert: true })  (MongoDB)
  */
 
-const { Op }            = require('sequelize');
-const User              = require('../models/sql/User');
-const Role              = require('../models/sql/Role');
-const UserRole          = require('../models/sql/UserRole');
-const CandidateProfile  = require('../models/sql/CandidateProfile');
-const RecruiterProfile  = require('../models/sql/RecruiterProfile');
-const Company           = require('../models/sql/Company');
-const CandidateSkill    = require('../models/sql/CandidateSkill');
-const Skill             = require('../models/sql/Skill');
-const userProfileRepo   = require('../repositories/mongodb/userProfile.repo');
+const { Op }          = require('sequelize');
+const User            = require('../models/sql/User');
+const Role            = require('../models/sql/Role');
+const UserRole        = require('../models/sql/UserRole');
+const FailedSync      = require('../models/sql/FailedSync');
+const userProfileRepo = require('../repositories/mongodb/userProfile.repo');
 
 /**
- * Build and upsert the MongoDB read projection for one user.
+ * Build and upsert the MongoDB UserProfileView for one user.
+ * Stores core identity + roles + avatarPath.
+ * Candidate-specific data lives in CandidateProfileView (see candidateSync).
+ * Recruiter-specific data lives in RecruiterProfileView (see recruiterSync).
  *
  * @param {number} userId
  * @returns {Promise<void>}
@@ -38,7 +37,7 @@ async function syncUser(userId) {
     return;
   }
 
-  // 2. Roles  → flat name array
+  // 2. Roles → flat name array
   const userRoles = await UserRole.findAll({ where: { userId } });
   let roles = [];
   if (userRoles.length) {
@@ -47,59 +46,56 @@ async function syncUser(userId) {
     roles = roleRows.map(r => r.name);
   }
 
-  // 3. Candidate profile + skills (if exists)
-  const candidateProfile = await CandidateProfile.findOne({ where: { userId } });
-  let skills = [];
-  if (candidateProfile) {
-    const candidateSkills = await CandidateSkill.findAll({ where: { userId } });
-    if (candidateSkills.length) {
-      const skillIds  = candidateSkills.map(cs => cs.skillId);
-      const skillRows = await Skill.findAll({ where: { id: { [Op.in]: skillIds } } });
-      // Build { name, level } objects
-      skills = skillRows.map(s => {
-        const cs = candidateSkills.find(cs => cs.skillId === s.id);
-        return { name: s.name, level: cs?.level ?? null };
-      });
-    }
-  }
-
-  // 4. Recruiter profile + company snapshot (if exists)
-  const recruiterProfile = await RecruiterProfile.findOne({ where: { userId } });
-  let companySnapshot = null;
-  if (recruiterProfile?.companyId) {
-    const company = await Company.findByPk(recruiterProfile.companyId);
-    if (company) {
-      companySnapshot = { id: company.id, name: company.name, website: company.website };
-    }
-  }
-
-  // 5. Upsert MongoDB projection  (_id = MySQL user.id)
+  // 3. Upsert MongoDB projection  (_id = MySQL user.id)
   await userProfileRepo.upsert({
-    id:        user.id,                        // mapped to _id by the repo
-    firstName: user.firstName,
-    lastName:  user.lastName,
-    email:     user.email,
-    isActive:  user.isActive,
+    id:         user.id,
+    firstName:  user.firstName,
+    lastName:   user.lastName,
+    email:      user.email,
+    isActive:   user.isActive,
+    avatarPath: user.avatarPath ?? null,
     roles,
-    // Candidate fields
-    headline:  candidateProfile?.headline ?? null,
-    bio:       candidateProfile?.bio      ?? null,
-    location:  candidateProfile?.location ?? null,
-    skills,
-    // Recruiter fields
-    company:   companySnapshot,
   });
+
+  // Sync succeeded — clear any previous failure record
+  await FailedSync.destroy({ where: { entityType: 'user', entityId: userId } });
 }
 
 /**
  * Fire-and-forget wrapper used inside handlers/controllers.
+ * On failure, logs the error to the FailedSyncs table so it can be retried.
+ * On success, the FailedSyncs record is cleared inside syncUser().
  *
  * @param {number} userId
  */
 function syncUserSafe(userId) {
-  syncUser(userId).catch(err =>
-    console.error(`[userSync] Failed to sync userId=${userId}:`, err.message)
-  );
+  syncUser(userId).catch(async (err) => {
+    console.error(`[userSync] Failed to sync userId=${userId}:`, err.message);
+    try {
+      const [record, created] = await FailedSync.findOrCreate({
+        where: { entityType: 'user', entityId: userId },
+        defaults: {
+          entityType:      'user',
+          entityId:        userId,
+          errorMessage:    err.message,
+          attempts:        1,
+          lastAttemptedAt: new Date(),
+          createdAt:       new Date(),
+        },
+      });
+      if (!created) {
+        // Record already existed — increment attempts
+        await record.update({
+          errorMessage:    err.message,
+          attempts:        record.attempts + 1,
+          lastAttemptedAt: new Date(),
+          resolvedAt:      null,
+        });
+      }
+    } catch (dbErr) {
+      console.error('[userSync] Could not write to FailedSyncs:', dbErr.message);
+    }
+  });
 }
 
 module.exports = { syncUser, syncUserSafe };
