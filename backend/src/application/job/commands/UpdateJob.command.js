@@ -1,12 +1,4 @@
-/**
- * UpdateJob Command
- * Carries the intent + validated data needed to update an existing job.
- */
 class UpdateJobCommand {
-  /**
-   * @param {number} jobId
-   * @param {object} data
-   */
   constructor(jobId, data) {
     this.jobId           = jobId;
     this.title           = data.title;
@@ -23,5 +15,4 @@ class UpdateJobCommand {
     this.categoryIds     = data.categoryIds;
   }
 }
-
 module.exports = UpdateJobCommand;
