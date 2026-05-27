@@ -1,7 +1,21 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '../../context/AuthContext';
+import BrandLogo from '../../components/BrandLogo';
 import LeftPanel from './LeftPanel';
+
+const registerSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirm: z.string()
+}).refine((data) => data.password === data.confirm, {
+  message: "Passwords don't match",
+  path: ["confirm"],
+});
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const CheckIcon = ({ className = 'w-4 h-4' }) => (
@@ -53,38 +67,49 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, loading, error, clearError } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { register: registerAuth, loading, error, clearError } = useAuth();
 
   const [step, setStep]             = useState(1);
   const [role, setRole]             = useState(null);   // 'candidate' | 'recruiter'
   const [showPw, setShowPw]         = useState(false);
   const [showCfm, setShowCfm]       = useState(false);
-  const [confirmErr, setConfirmErr] = useState('');
-  const [form, setForm]             = useState({ fullName: '', email: '', password: '', confirm: '' });
+
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'recruiter' || roleParam === 'candidate') {
+      setRole(roleParam);
+      setStep(2);
+    }
+  }, [searchParams]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+      password: '',
+      confirm: '',
+    },
+  });
 
   const roleLabel = role === 'recruiter' ? 'Recruiter / Employer' : 'Job Seeker / Freelancer';
 
-  const handleChange = (e) => {
-    clearError();
-    setConfirmErr('');
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
   const pickRole = (r) => { setRole(r); setStep(2); };
 
-  const goBack = () => { setStep(1); clearError(); setConfirmErr(''); };
+  const goBack = () => { setStep(1); clearError(); };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (form.password !== form.confirm) {
-      setConfirmErr('Passwords do not match');
-      return;
-    }
-    const parts     = form.fullName.trim().split(/\s+/);
+  const onSubmit = async (data) => {
+    const parts     = data.fullName.trim().split(/\s+/);
     const firstName = parts[0] || '';
     const lastName  = parts.slice(1).join(' ') || '';
     try {
-      await register({ firstName, lastName, email: form.email, password: form.password, role });
+      await registerAuth({ firstName, lastName, email: data.email, password: data.password, role });
       navigate('/login');
     } catch {
       // error already set in store
@@ -97,7 +122,8 @@ export default function Register() {
 
       {/* Right panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
+        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10 animate-slide-up">
+          <BrandLogo variant="auth" className="mb-6 lg:hidden" />
           <Stepper step={step} />
 
           {/* ── Step 1 — Choose Role ── */}
@@ -166,54 +192,57 @@ export default function Register() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input
-                    name="fullName" type="text" placeholder="Your full name"
-                    value={form.fullName} onChange={handleChange} required
-                    className={INPUT}
+                    type="text" placeholder="Your full name"
+                    {...register('fullName')}
+                    className={`${INPUT} ${errors.fullName ? 'border-red-400 focus:ring-red-300' : ''}`}
                   />
+                  {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                   <input
-                    name="email" type="email" placeholder="you@example.com"
-                    value={form.email} onChange={handleChange} required autoComplete="email"
-                    className={INPUT}
+                    type="email" placeholder="you@example.com" autoComplete="email"
+                    {...register('email')}
+                    className={`${INPUT} ${errors.email ? 'border-red-400 focus:ring-red-300' : ''}`}
                   />
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                   <div className="relative">
                     <input
-                      name="password" type={showPw ? 'text' : 'password'} placeholder="Min. 6 characters"
-                      value={form.password} onChange={handleChange} required minLength={6} autoComplete="new-password"
-                      className={INPUT}
+                      type={showPw ? 'text' : 'password'} placeholder="Min. 6 characters" autoComplete="new-password"
+                      {...register('password')}
+                      className={`${INPUT} ${errors.password ? 'border-red-400 focus:ring-red-300' : ''}`}
                     />
                     <button type="button" onClick={() => setShowPw(p => !p)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       <EyeIcon open={showPw} />
                     </button>
                   </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
                   <div className="relative">
                     <input
-                      name="confirm" type={showCfm ? 'text' : 'password'} placeholder="Repeat password"
-                      value={form.confirm} onChange={handleChange} required autoComplete="new-password"
-                      className={`${INPUT} ${confirmErr ? 'border-red-400 focus:ring-red-300' : ''}`}
+                      type={showCfm ? 'text' : 'password'} placeholder="Repeat password" autoComplete="new-password"
+                      {...register('confirm')}
+                      className={`${INPUT} ${errors.confirm ? 'border-red-400 focus:ring-red-300' : ''}`}
                     />
                     <button type="button" onClick={() => setShowCfm(p => !p)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       <EyeIcon open={showCfm} />
                     </button>
                   </div>
-                  {confirmErr && <p className="text-xs text-red-500 mt-1">{confirmErr}</p>}
+                  {errors.confirm && <p className="text-xs text-red-500 mt-1">{errors.confirm.message}</p>}
                 </div>
 
                 <button

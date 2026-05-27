@@ -7,7 +7,7 @@ export default function FormInput({ label, error, className = '', ...props }) {
         </label>
       )}
       <input
-        className={`w-full border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none ${className}`}
+        className={`input-field ${className}`}
         {...props}
       />
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}

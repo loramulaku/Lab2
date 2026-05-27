@@ -1,7 +1,17 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '../../context/AuthContext';
+import { getPostLoginRedirect } from '../../constants/appNavigation';
+import BrandLogo from '../../components/BrandLogo';
 import LeftPanel from './LeftPanel';
+
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
 
 const EyeIcon = ({ open }) => open ? (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18,24 +28,28 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading, error, clearError } = useAuth();
 
-  const [form, setForm]   = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
 
-  const handleChange = (e) => {
-    clearError();
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const user = await login(form.email, form.password);
-      const role = user.roles?.[0];
-      if (role === 'admin')          navigate('/admin');
-      else if (role === 'recruiter') navigate('/recruiter/company');
-      else                           navigate('/my-profile');
+      const user = await login(data.email, data.password);
+      const destination = getPostLoginRedirect(user.roles ?? [], location.state?.from);
+      navigate(destination, { replace: true });
     } catch {
       // error already set in store
     }
@@ -47,16 +61,8 @@ export default function Login() {
 
       {/* Right panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="bg-blue-600 rounded-xl p-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
-              </svg>
-            </div>
-            <span className="text-gray-900 font-bold text-xl">HireFlow</span>
-          </div>
+        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10 animate-slide-up">
+          <BrandLogo variant="auth" className="mb-8" />
 
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
           <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
@@ -67,29 +73,31 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
-                name="email" type="email" placeholder="you@example.com"
-                value={form.email} onChange={handleChange} required autoComplete="email"
-                className={INPUT}
+                type="email" placeholder="you@example.com" autoComplete="email"
+                {...register('email')}
+                className={`${INPUT} ${errors.email ? 'border-red-400 focus:ring-red-300' : ''}`}
               />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
                 <input
-                  name="password" type={showPw ? 'text' : 'password'} placeholder="Your password"
-                  value={form.password} onChange={handleChange} required autoComplete="current-password"
-                  className={INPUT}
+                  type={showPw ? 'text' : 'password'} placeholder="Your password" autoComplete="current-password"
+                  {...register('password')}
+                  className={`${INPUT} ${errors.password ? 'border-red-400 focus:ring-red-300' : ''}`}
                 />
                 <button type="button" onClick={() => setShowPw(p => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   <EyeIcon open={showPw} />
                 </button>
               </div>
+              {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
             </div>
 
             <button
