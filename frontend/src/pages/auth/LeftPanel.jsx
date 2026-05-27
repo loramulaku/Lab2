@@ -1,3 +1,5 @@
+import BrandLogo from '../../components/BrandLogo';
+
 const FEATURES = [
   'Free account forever',
   'AI-powered job matching',
@@ -9,15 +11,7 @@ const FEATURES = [
 export default function LeftPanel() {
   return (
     <div className="hidden lg:flex w-1/2 flex-col justify-between p-12">
-      {/* Logo */}
-      <div className="flex items-center gap-3">
-        <div className="bg-blue-700 rounded-xl p-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
-          </svg>
-        </div>
-        <span className="text-white font-bold text-xl">HireFlow</span>
-      </div>
+      <BrandLogo variant="light" />
 
       {/* Heading + features */}
       <div className="space-y-8">
@@ -32,7 +26,7 @@ export default function LeftPanel() {
         </div>
 
         <ul className="space-y-3">
-          {FEATURES.map(feature => (
+          {FEATURES.map((feature) => (
             <li key={feature} className="flex items-center gap-3">
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/50 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">

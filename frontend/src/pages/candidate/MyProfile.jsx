@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import candidateService from '../../services/candidateService';
-import Header from '../../components/Header';
+import SiteLayout from '../../components/SiteLayout';
 import FormInput        from '../../components/FormInput';
 import FormTextarea     from '../../components/FormTextarea';
 import FormSelect       from '../../components/FormSelect';
@@ -11,6 +11,8 @@ import StatCard         from '../../components/StatCard';
 import SkillBadge       from '../../components/SkillBadge';
 import TabNav           from '../../components/TabNav';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import PageHeader from '../../components/PageHeader';
+import { PageError, PageLoading } from '../../components/PageFeedback';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
@@ -32,8 +34,8 @@ const MailIcon      = () => <svg xmlns="http://www.w3.org/2000/svg" className="w
 const SaveIcon      = () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>;
 const CancelIcon    = () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>;
 
-const BTN_PRIMARY = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-none';
-const BTN_OUTLINE = 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-none';
+const BTN_PRIMARY = 'btn-primary';
+const BTN_OUTLINE = 'btn-secondary';
 
 // ── Profile Header ────────────────────────────────────────────────────────────
 function ProfileHeader({ profile, onSave, onAvatarUpload }) {
@@ -63,7 +65,7 @@ function ProfileHeader({ profile, onSave, onAvatarUpload }) {
   const memberSince = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-CA') : '';
 
   return (
-    <div className="bg-white border border-gray-200 p-6 mb-4">
+    <div className="surface p-6 mb-4">
       {!editing ? (
         <>
           <div className="flex items-start gap-5">
@@ -72,7 +74,7 @@ function ProfileHeader({ profile, onSave, onAvatarUpload }) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">{fullName || 'Your Name'}</h1>
-                  {profile.headline && <p className="text-blue-600 font-medium mt-0.5">{profile.headline}</p>}
+                  {profile.headline && <p className="text-brand-600 font-medium mt-0.5">{profile.headline}</p>}
                   <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                     {profile.location && <span className="flex items-center gap-1"><LocationIcon />{profile.location}</span>}
                     {profile.email    && <span className="flex items-center gap-1"><MailIcon />{profile.email}</span>}
@@ -80,8 +82,8 @@ function ProfileHeader({ profile, onSave, onAvatarUpload }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="border border-gray-300 text-gray-600 text-xs font-medium px-3 py-1">Candidate</span>
-                  <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition rounded-none">
+                  <span className="border border-gray-300 text-gray-600 text-xs font-medium px-3 py-1 rounded-lg">Candidate</span>
+                  <button onClick={() => setEditing(true)} className="btn-secondary text-sm px-3 py-1.5">
                     <PencilIcon /> Edit
                   </button>
                 </div>
@@ -170,12 +172,12 @@ function SkillsTab({ skills, onAdd, onDelete }) {
       />
 
       {adding && (
-        <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100">
+        <div className="flex items-center gap-2 mb-4 p-3 bg-brand-50 border border-brand-100 rounded-lg">
           <input
             value={name}
             onChange={e => { setName(e.target.value); setError(''); }}
             placeholder="Skill name (e.g. React) *"
-            className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none"
+            className="input-field flex-1 min-w-0"
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
             autoFocus
           />
@@ -185,10 +187,10 @@ function SkillsTab({ skills, onAdd, onDelete }) {
             options={LEVELS}
             className="w-40"
           />
-          <button onClick={handleAdd} className="w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition rounded-none">
+          <button onClick={handleAdd} className="w-9 h-9 btn-primary p-0">
             <SaveIcon />
           </button>
-          <button onClick={() => { setAdding(false); setName(''); setError(''); }} className="w-9 h-9 border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition rounded-none">
+          <button onClick={() => { setAdding(false); setName(''); setError(''); }} className="w-9 h-9 btn-secondary p-0">
             <CancelIcon />
           </button>
           {error && <span className="text-xs text-red-500 whitespace-nowrap">{error}</span>}
@@ -279,17 +281,17 @@ function ExperienceTab({ experiences, onAdd, onUpdate, onDelete }) {
           ? <EmptyState message="No experience added yet." onAdd={openAdd} addLabel="+ Add Experience" />
           : experiences.map(exp => (
             <div key={exp.id} className="flex gap-4 p-4 border border-gray-100 group hover:border-gray-200 transition">
-              <div className="w-9 h-9 bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
+              <div className="w-9 h-9 bg-brand-50 flex items-center justify-center text-brand-500 flex-shrink-0 rounded-lg">
                 <BriefcaseIcon />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900">{exp.title}</p>
-                <p className="text-blue-600 text-sm">{exp.company}</p>
+                <p className="text-brand-600 text-sm">{exp.company}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{fmtDate(exp.startDate)} — {fmtDate(exp.endDate)}</p>
                 {exp.description && <p className="text-sm text-gray-600 mt-1">{exp.description}</p>}
               </div>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
-                <button onClick={() => openEdit(exp)} className="text-gray-400 hover:text-blue-600"><PencilIcon /></button>
+                <button onClick={() => openEdit(exp)} className="text-gray-400 hover:text-brand-600"><PencilIcon /></button>
                 <button onClick={() => setDeleteTarget(exp.id)} className="text-gray-400 hover:text-red-500"><TrashIcon /></button>
               </div>
             </div>
@@ -374,7 +376,7 @@ function EducationTab({ educations, onAdd, onUpdate, onDelete }) {
                 <p className="text-xs text-gray-400 mt-0.5">{edu.startYear} — {edu.endYear ?? 'Present'}</p>
               </div>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
-                <button onClick={() => openEdit(edu)} className="text-gray-400 hover:text-blue-600"><PencilIcon /></button>
+                <button onClick={() => openEdit(edu)} className="text-gray-400 hover:text-brand-600"><PencilIcon /></button>
                 <button onClick={() => setDeleteTarget(edu.id)} className="text-gray-400 hover:text-red-500"><TrashIcon /></button>
               </div>
             </div>
@@ -420,16 +422,28 @@ export default function MyProfile() {
   const handleEduUpdate = async (id,p) => { const e = await candidateService.updateEducation(id,p); setData(d => ({ ...d, educations: d.educations.map(x => x.id === id ? e : x) })); };
   const handleEduDelete = async (id)   => { await candidateService.deleteEducation(id);              setData(d => ({ ...d, educations: d.educations.filter(x => x.id !== id), stats: { ...d.stats, educationRecords: d.stats.educationRecords - 1 } })); };
 
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">{error}</div>;
-  if (!data)  return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading…</div>;
+  if (error) {
+    return (
+      <SiteLayout>
+        <PageError message={error} />
+      </SiteLayout>
+    );
+  }
+  if (!data) {
+    return (
+      <SiteLayout>
+        <PageLoading rows={5} />
+      </SiteLayout>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="max-w-3xl mx-auto pt-24 pb-8 px-4">
+    <SiteLayout>
+      <div className="max-w-3xl mx-auto">
+        <PageHeader title="My profile" subtitle="Keep your candidate profile complete and up to date." className="mb-5" />
         <ProfileHeader profile={data} onSave={handleSaveProfile} onAvatarUpload={handleAvatarUpload} />
 
-        <div className="bg-white border border-gray-200">
+        <div className="surface">
           <TabNav tabs={TABS} active={tab} onChange={setTab} />
           <div className="p-6">
             {tab === 'Profile'    && <ProfileTab stats={data.stats} skills={data.skills} />}
@@ -439,6 +453,6 @@ export default function MyProfile() {
           </div>
         </div>
       </div>
-    </div>
+    </SiteLayout>
   );
 }
