@@ -1,3 +1,4 @@
+import { logError } from '../../utils/safeLog';
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import DataTable from '../../components/admin/DataTable';
@@ -30,7 +31,7 @@ const Jobs = () => {
       setJobs(data.jobs);
       setPagination(data.pagination);
     } catch (err) {
-      console.error('Failed to load jobs:', err);
+      logError('Failed to load jobs', err);
     } finally {
       setLoading(false);
     }
@@ -55,7 +56,7 @@ const Jobs = () => {
       loadJobs();
     } catch (err) {
       alert('Failed to delete job');
-      console.error(err);
+      logError('Job action failed', err);
     }
   };
 

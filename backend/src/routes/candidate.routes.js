@@ -1,10 +1,12 @@
 const express = require('express');
 const router  = express.Router();
-const auth    = require('../middlewares/auth');
+const auth      = require('../middlewares/auth');
+const authorize = require('../middlewares/authorize');
 const c       = require('../controllers/candidate.controller');
 
-// All routes require authentication
+// All routes require authentication + candidate role
 router.use(auth);
+router.use(authorize('candidate'));
 
 router.get('/profile',              c.getProfile);
 router.put('/profile',              c.updateProfile);

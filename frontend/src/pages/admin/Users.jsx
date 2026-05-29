@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import DataTable from '../../components/admin/DataTable';
+import { logError } from '../../utils/safeLog';
 import Pagination from '../../components/admin/Pagination';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
@@ -32,7 +33,7 @@ const Users = () => {
       setUsers(data.users);
       setPagination(data.pagination);
     } catch (err) {
-      console.error('Failed to load users:', err);
+      logError('Failed to load users', err);
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ const Users = () => {
       const data = await adminApi.getRoles();
       setRoles(data);
     } catch (err) {
-      console.error('Failed to load roles:', err);
+      logError('Failed to load roles', err);
     }
   };
 
@@ -72,7 +73,7 @@ const Users = () => {
       loadUsers();
     } catch (err) {
       alert('Failed to delete user');
-      console.error(err);
+      logError('User action failed', err);
     }
   };
 
@@ -83,7 +84,7 @@ const Users = () => {
       loadUsers();
     } catch (err) {
       alert('Failed to update user');
-      console.error(err);
+      logError('User action failed', err);
     }
   };
 

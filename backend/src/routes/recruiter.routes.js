@@ -3,7 +3,8 @@ const path    = require('path');
 const fs      = require('fs');
 const multer  = require('multer');
 const router  = express.Router();
-const auth    = require('../middlewares/auth');
+const auth      = require('../middlewares/auth');
+const authorize = require('../middlewares/authorize');
 const c       = require('../controllers/recruiter.controller');
 
 // Logo upload — separate multer config (uploads to /public/uploads/logos/)
@@ -26,6 +27,7 @@ const logoUpload = multer({
 });
 
 router.use(auth);
+router.use(authorize('recruiter'));
 
 router.get('/profile',       c.getProfile);
 router.post('/setup',        c.setup);

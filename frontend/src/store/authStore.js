@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import authService from '../services/authService';
+import { tokenRef } from '../services/api';
 
 const useAuthStore = create((set) => ({
   user: null,
-  token: localStorage.getItem('token') ?? null,
   loading: false,
   error: null,
 
@@ -11,8 +11,8 @@ const useAuthStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const { token, user } = await authService.login(email, password);
-      localStorage.setItem('token', token);
-      set({ token, user, loading: false });
+      tokenRef.current = token;
+      set({ user, loading: false });
       return user;
     } catch (err) {
       const message = err.response?.data?.message ?? 'Login failed';
@@ -45,8 +45,8 @@ const useAuthStore = create((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, token: null, error: null });
+    tokenRef.current = null;
+    set({ user: null, error: null });
   },
 
   clearError: () => set({ error: null }),

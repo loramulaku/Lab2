@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { tokenRef } from '../services/api';
 import authService from '../services/authService';
+import { isTokenValid, resolvePrimaryRole } from '../utils/auth';
 
 const AuthContext = createContext(null);
 
@@ -10,83 +11,32 @@ export function useAuth() {
   return ctx;
 }
 
-/** Returns true if a JWT string exists and hasn't expired (10 s buffer). */
-function isTokenValid(t) {
-  if (!t) return false;
-  try {
-    const { exp } = JSON.parse(atob(t.split('.')[1]));
-    return exp * 1000 > Date.now() + 10_000;
-  } catch {
-    return false;
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('token') ?? null);
-  const [user, setUser]   = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
-  // Keeps token in sync across React state, localStorage, and the Axios ref.
+  const silentRefreshRef = useRef(null);
+  const proactiveTimerRef = useRef(null);
+  const silentRefreshInFlight = useRef(null);
+
+  // Access token lives in memory only (tokenRef) — never localStorage or React state.
   const setAccessToken = useCallback((t) => {
     tokenRef.current = t ?? null;
-    setToken(t ?? null);
-    if (t) localStorage.setItem('token', t);
-    else   localStorage.removeItem('token');
   }, []);
 
-  // On first render, sync tokenRef from localStorage (state already initialised above).
-  // If the stored token is expired, remove it so subsequent requests don't use it.
-  useEffect(() => {
-    const stored = localStorage.getItem('token');
-    if (isTokenValid(stored)) tokenRef.current = stored;
-    else if (stored)          localStorage.removeItem('token');
+  const clearSession = useCallback(() => {
+    tokenRef.current = null;
+    setUser(null);
+    if (proactiveTimerRef.current) clearTimeout(proactiveTimerRef.current);
   }, []);
 
-  // Sync state when the Axios interceptor refreshes a token after a 401.
+  // Remove legacy persisted auth data (visible in DevTools → Application).
   useEffect(() => {
-    const onRefreshed = (e) => setAccessToken(e.detail);
-    const onExpired   = ()  => {
-      localStorage.removeItem('token');
-      tokenRef.current = null;
-      setToken(null);
-      setUser(null);
-    };
-    window.addEventListener('auth:tokenRefreshed', onRefreshed);
-    window.addEventListener('auth:sessionExpired',  onExpired);
-    return () => {
-      window.removeEventListener('auth:tokenRefreshed', onRefreshed);
-      window.removeEventListener('auth:sessionExpired',  onExpired);
-    };
-  }, [setAccessToken]);
-
-  // Token watchdog — two triggers:
-  //  • storage event: fires when another context (DevTools, other tab) modifies
-  //    localStorage. Deleting the token triggers an immediate silent refresh.
-  //  • visibilitychange: when the tab becomes visible again, re-validates the
-  //    token so one that expired in the background is replaced before any request.
-  const silentRefreshRef = useRef(null);
-
-  useEffect(() => {
-    const handleStorage = (e) => {
-      if (e.key !== 'token') return;
-      if (!e.newValue || !isTokenValid(e.newValue)) silentRefreshRef.current?.();
-      else setAccessToken(e.newValue);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && !isTokenValid(localStorage.getItem('token')))
-        silentRefreshRef.current?.();
-    };
-    window.addEventListener('storage', handleStorage);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [setAccessToken]);
-
-  // Proactive refresh — fires 1 minute before the access token expires.
-  const proactiveTimerRef = useRef(null);
+    for (const key of ['token', 'user', 'accessToken', 'role']) {
+      localStorage.removeItem(key);
+    }
+  }, []);
 
   const scheduleProactiveRefresh = useCallback((accessToken) => {
     if (proactiveTimerRef.current) clearTimeout(proactiveTimerRef.current);
@@ -98,37 +48,58 @@ export function AuthProvider({ children }) {
     } catch { /* malformed token — skip */ }
   }, []);
 
+  const syncProfile = useCallback(async () => {
+    if (!tokenRef.current) return;
+    try {
+      setUser(await authService.getMe());
+    } catch { /* session may have expired */ }
+  }, []);
+
+  // Sync when the Axios interceptor silently refreshes after a 401.
+  useEffect(() => {
+    const onRefreshed = () => {
+      scheduleProactiveRefresh(tokenRef.current);
+      syncProfile();
+    };
+    const onExpired = () => clearSession();
+
+    window.addEventListener('auth:tokenRefreshed', onRefreshed);
+    window.addEventListener('auth:sessionExpired', onExpired);
+    return () => {
+      window.removeEventListener('auth:tokenRefreshed', onRefreshed);
+      window.removeEventListener('auth:sessionExpired', onExpired);
+    };
+  }, [clearSession, scheduleProactiveRefresh, syncProfile]);
+
   useEffect(() => () => { if (proactiveTimerRef.current) clearTimeout(proactiveTimerRef.current); }, []);
 
-  // Deduplication — React StrictMode fires useEffect twice in dev, sending two
-  // simultaneous /refresh requests. The first rotates the token (old DB row
-  // deleted), so the second gets a 401. Sharing the in-flight promise means the
-  // second call waits for the first instead of making its own network request.
-  const silentRefreshInFlight = useRef(null);
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && !isTokenValid(tokenRef.current)) {
+        silentRefreshRef.current?.();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   const silentRefresh = useCallback(async () => {
     if (silentRefreshInFlight.current) return silentRefreshInFlight.current;
 
     const run = async () => {
-      // Fast path: valid token already in localStorage.
-      const stored = localStorage.getItem('token');
-      if (isTokenValid(stored)) {
-        tokenRef.current = stored;
-        setToken(stored);
-        scheduleProactiveRefresh(stored);
+      if (isTokenValid(tokenRef.current)) {
+        scheduleProactiveRefresh(tokenRef.current);
         try { setUser(await authService.getMe()); } catch { /* profile loads from the page */ }
         return;
       }
-      if (stored) localStorage.removeItem('token');
 
-      // Slow path: use the httpOnly refresh cookie to get a new access token.
+      tokenRef.current = null;
+
       let accessToken;
       try {
         ({ token: accessToken } = await authService.refresh());
       } catch {
-        setAccessToken(null);
-        setUser(null);
-        if (proactiveTimerRef.current) clearTimeout(proactiveTimerRef.current);
+        clearSession();
         return;
       }
 
@@ -139,11 +110,10 @@ export function AuthProvider({ children }) {
 
     const promise = run();
     silentRefreshInFlight.current = promise;
-    try   { await promise; }
+    try { await promise; }
     finally { silentRefreshInFlight.current = null; }
-  }, [setAccessToken, scheduleProactiveRefresh]);
+  }, [setAccessToken, scheduleProactiveRefresh, clearSession]);
 
-  // Keep silentRefreshRef pointing at the latest closure (used by timer + watchdog).
   useEffect(() => { silentRefreshRef.current = silentRefresh; }, [silentRefresh]);
 
   const login = useCallback(async (email, password) => {
@@ -179,19 +149,27 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    if (proactiveTimerRef.current) clearTimeout(proactiveTimerRef.current);
     try { await authService.logout(); } catch { /* best-effort */ }
-    setAccessToken(null);
-    setUser(null);
-  }, [setAccessToken]);
+    clearSession();
+  }, [clearSession]);
 
   const clearError = useCallback(() => setError(null), []);
 
+  const primaryRole = resolvePrimaryRole(user?.roles ?? []);
+
   return (
     <AuthContext.Provider value={{
-      token, user, loading, error,
-      login, register, logout, silentRefresh, clearError,
-      setAccessToken, setUser,
+      user,
+      primaryRole,
+      isAuthenticated: !!user,
+      loading,
+      error,
+      login,
+      register,
+      logout,
+      silentRefresh,
+      clearError,
+      setUser,
     }}>
       {children}
     </AuthContext.Provider>

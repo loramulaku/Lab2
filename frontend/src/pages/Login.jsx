@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { tokenRef } from '../services/api';
+import { resolveRoleHome } from '../utils/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,19 +19,11 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:3001/api/users/login', {
         email,
-        password
-      });
+        password,
+      }, { withCredentials: true });
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Check if user has admin role
-      const tokenPayload = JSON.parse(atob(response.data.token.split('.')[1]));
-      if (tokenPayload.roles && tokenPayload.roles.includes('admin')) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      tokenRef.current = response.data.token;
+      navigate(resolveRoleHome(response.data.user?.roles ?? []));
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {

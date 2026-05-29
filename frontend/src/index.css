@@ -192,3 +192,21 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 }
+
+/* ── CMS visual editor (Shopify-style click-to-edit in preview iframe) ── */
+.cms-editable {
+  cursor: pointer;
+  outline: 2px dashed transparent;
+  outline-offset: 3px;
+  border-radius: 6px;
+  transition: outline-color 0.15s, background-color 0.15s;
+}
+.cms-editable:hover {
+  outline-color: rgb(37 99 235 / 0.55);
+  background-color: rgb(37 99 235 / 0.08);
+}
+.cms-editable.cms-focused {
+  outline-color: rgb(37 99 235);
+  background-color: rgb(37 99 235 / 0.14);
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 0.12);
+}

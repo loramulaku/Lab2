@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const adminCtrl = require('../controllers/admin.controller');
-const auth = require('../middlewares/auth');
+const adminCtrl       = require('../controllers/admin.controller');
+const siteContentCtrl = require('../controllers/siteContent.controller');
+const auth    = require('../middlewares/auth');
 const isAdmin = require('../middlewares/isAdmin');
 
 router.use(auth);
@@ -27,5 +28,10 @@ router.put('/companies/:id', adminCtrl.updateCompany);
 router.delete('/companies/:id', adminCtrl.deleteCompany);
 
 router.get('/applications', adminCtrl.getApplications);
+
+// ── Site Content (CMS) — admin only ─────────────────────────────────────────
+router.get('/site-content',         siteContentCtrl.listAdmin);
+router.put('/site-content/:key',    siteContentCtrl.upsert);
+router.delete('/site-content/:key', siteContentCtrl.remove);
 
 module.exports = router;

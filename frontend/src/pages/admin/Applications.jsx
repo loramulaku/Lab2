@@ -1,3 +1,4 @@
+import { logError } from '../../utils/safeLog';
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import DataTable from '../../components/admin/DataTable';
@@ -24,7 +25,7 @@ const Applications = () => {
       setApplications(data.applications);
       setPagination(data.pagination);
     } catch (err) {
-      console.error('Failed to load applications:', err);
+      logError('Failed to load applications', err);
     } finally {
       setLoading(false);
     }

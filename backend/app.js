@@ -13,6 +13,7 @@ const userRoutes = require('./src/routes/user.routes');
 const candidateRoutes = require('./src/routes/candidate.routes');
 const recruiterRoutes = require('./src/routes/recruiter.routes');
 const uploadRoutes    = require('./src/routes/upload.routes');
+const siteContentRoutes = require('./src/routes/siteContent.routes');
 // Additional module routes will be registered here as each module is built.
 
 const app  = express();
@@ -31,6 +32,7 @@ app.use('/api/jobs',  jobRoutes);
 app.use('/api/candidate', candidateRoutes);
 app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/upload',    uploadRoutes);
+app.use('/api/site-content', siteContentRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

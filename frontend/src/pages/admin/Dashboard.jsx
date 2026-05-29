@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import StatCard from '../../components/admin/StatCard';
+import { logError } from '../../utils/safeLog';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -19,7 +20,7 @@ const Dashboard = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load statistics');
-      console.error(err);
+      logError('Failed to load dashboard stats', err);
     } finally {
       setLoading(false);
     }

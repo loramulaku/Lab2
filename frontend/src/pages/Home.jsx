@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   SparklesIcon,
@@ -41,7 +41,7 @@ const VALUE_PROPS = [
   {
     icon: SparklesIcon,
     title: 'Matched roles',
-    description: 'See jobs that fit your skills and experience — not endless unrelated listings.',
+    description: 'See jobs that fit your skills and experience ΓÇö not endless unrelated listings.',
   },
   {
     icon: PaperAirplaneIcon,
@@ -104,7 +104,7 @@ export default function Home() {
 
   return (
     <SiteLayout bare showFooter>
-      {/* Hero — search is the primary action */}
+      {/* Hero ΓÇö search is the primary action */}
       <section className="page-container py-14 lg:py-20">
         <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
@@ -113,7 +113,7 @@ export default function Home() {
               <span className="block text-brand-600 mt-1">Hire people who do.</span>
             </h1>
             <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-              Search open roles, apply with your profile, and track every application —
+              Search open roles, apply with your profile, and track every application ΓÇö
               or post jobs and run your pipeline in one place.
             </p>
           </FadeIn>
@@ -143,7 +143,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live platform snapshot — honest numbers from the API */}
+      {/* Live platform snapshot ΓÇö honest numbers from the API */}
       <section className="border-y border-gray-200 bg-gray-50 py-10">
         <div className="page-container">
           {jobsLoading ? (
@@ -185,7 +185,7 @@ export default function Home() {
         <FadeIn>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Why HireFlow</h2>
           <p className="text-gray-600 mb-10 max-w-xl">
-            Hiring software should feel obvious — for people looking for work and teams doing the hiring.
+            Hiring software should feel obvious ΓÇö for people looking for work and teams doing the hiring.
           </p>
         </FadeIn>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -203,7 +203,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured jobs — same cards as browse page */}
+      {/* Featured jobs ΓÇö same cards as browse page */}
       <section className="bg-slate-50 border-y border-gray-200 py-16">
         <div className="page-container">
           <div className="flex items-center justify-between mb-8">
@@ -212,7 +212,7 @@ export default function Home() {
               <p className="text-sm text-gray-500 mt-1">Same listings you&apos;ll see when you search</p>
             </div>
             <Link to="/jobs" className="text-sm font-medium text-brand-600 hover:text-brand-700">
-              View all →
+              View all ΓåÆ
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -241,7 +241,7 @@ export default function Home() {
       <section id="how-it-works" className="page-container py-16 lg:py-20">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">How it works</h2>
         <p className="text-gray-600 mb-10 max-w-xl">
-          Two sides of the same platform — candidates search and apply, recruiters post and review.
+          Two sides of the same platform ΓÇö candidates search and apply, recruiters post and review.
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <FadeIn>

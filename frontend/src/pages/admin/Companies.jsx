@@ -1,3 +1,4 @@
+import { logError } from '../../utils/safeLog';
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import DataTable from '../../components/admin/DataTable';
@@ -28,7 +29,7 @@ const Companies = () => {
       setCompanies(data.companies);
       setPagination(data.pagination);
     } catch (err) {
-      console.error('Failed to load companies:', err);
+      logError('Failed to load companies', err);
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ const Companies = () => {
       loadCompanies();
     } catch (err) {
       alert('Failed to delete company');
-      console.error(err);
+      logError('Company action failed', err);
     }
   };
 

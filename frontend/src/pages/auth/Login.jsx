@@ -6,6 +6,9 @@ import { z } from 'zod';
 import { useAuth } from '../../context/AuthContext';
 import { getPostLoginRedirect } from '../../constants/appNavigation';
 import BrandLogo from '../../components/BrandLogo';
+import CmsBlock from '../../components/cms/CmsBlock';
+import useSiteContent from '../../hooks/useSiteContent';
+import useCmsPreviewMode from '../../hooks/useCmsPreviewMode';
 import LeftPanel from './LeftPanel';
 
 const loginSchema = z.object({
@@ -29,7 +32,9 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loading, error, clearError } = useAuth();
+  const { login, loading, error } = useAuth();
+  const { t } = useSiteContent();
+  const isPreview = useCmsPreviewMode();
 
   const [showPw, setShowPw] = useState(false);
 
@@ -39,19 +44,17 @@ export default function Login() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   const onSubmit = async (data) => {
+    if (isPreview) return;
     try {
       const user = await login(data.email, data.password);
       const destination = getPostLoginRedirect(user.roles ?? [], location.state?.from);
       navigate(destination, { replace: true });
     } catch {
-      // error already set in store
+      // error already set in AuthContext
     }
   };
 
@@ -59,13 +62,12 @@ export default function Login() {
     <div className="min-h-screen flex bg-[#2B3FE7]">
       <LeftPanel />
 
-      {/* Right panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10 animate-slide-up">
           <BrandLogo variant="auth" className="mb-8" />
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-          <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
+          <CmsBlock cmsKey="login.title" fallback="Welcome back" as="h2" className="text-2xl font-bold text-gray-900 mb-1" />
+          <CmsBlock cmsKey="login.subtitle" fallback="Sign in to your account" as="p" className="text-sm text-gray-500 mb-6" />
 
           {error && (
             <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-600">
@@ -75,9 +77,11 @@ export default function Login() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <CmsBlock cmsKey="login.email.label" fallback="Email Address" as="label" className="block text-sm font-medium text-gray-700 mb-1" />
               <input
-                type="email" placeholder="you@example.com" autoComplete="email"
+                type="email"
+                placeholder={t('login.email.placeholder', 'you@example.com')}
+                autoComplete="email"
                 {...register('email')}
                 className={`${INPUT} ${errors.email ? 'border-red-400 focus:ring-red-300' : ''}`}
               />
@@ -85,14 +89,16 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <CmsBlock cmsKey="login.password.label" fallback="Password" as="label" className="block text-sm font-medium text-gray-700 mb-1" />
               <div className="relative">
                 <input
-                  type={showPw ? 'text' : 'password'} placeholder="Your password" autoComplete="current-password"
+                  type={showPw ? 'text' : 'password'}
+                  placeholder={t('login.password.placeholder', 'Your password')}
+                  autoComplete="current-password"
                   {...register('password')}
                   className={`${INPUT} ${errors.password ? 'border-red-400 focus:ring-red-300' : ''}`}
                 />
-                <button type="button" onClick={() => setShowPw(p => !p)}
+                <button type="button" onClick={() => setShowPw((p) => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   <EyeIcon open={showPw} />
                 </button>
@@ -101,16 +107,21 @@ export default function Login() {
             </div>
 
             <button
-              type="submit" disabled={loading}
+              type="submit"
+              disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-4 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading
+                ? t('login.submit.loading', 'Signing in…')
+                : t('login.submit', 'Sign In')}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="text-blue-600 font-medium hover:underline">Create one</Link>
+            <CmsBlock cmsKey="login.footer.prompt" fallback="Don't have an account?" as="span" />{' '}
+            <Link to="/register" className="text-blue-600 font-medium hover:underline">
+              <CmsBlock cmsKey="login.footer.link" fallback="Create one" as="span" />
+            </Link>
           </p>
         </div>
       </div>

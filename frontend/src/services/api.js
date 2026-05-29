@@ -45,8 +45,8 @@ api.interceptors.response.use(
         const { data } = await refreshPromise;
         tokenRef.current = data.token;
 
-        // Notify AuthContext of the new token via a custom event
-        window.dispatchEvent(new CustomEvent('auth:tokenRefreshed', { detail: data.token }));
+        // Notify AuthContext — token stays in tokenRef only, never in event detail.
+        window.dispatchEvent(new CustomEvent('auth:tokenRefreshed'));
 
         // Retry original request with the new token
         original.headers.Authorization = `Bearer ${data.token}`;

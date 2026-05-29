@@ -13,6 +13,7 @@ const registerUserHandler   = require('../application/user/handlers/RegisterUser
 const getUserProfileHandler = require('../application/user/handlers/GetUserProfileHandler');
 
 const UserDTO = require('../dtos/user.dto');
+const { buildAccessPayload } = require('../utils/roles');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -69,7 +70,7 @@ const userController = {
     if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
     const roles       = await getRoles(user.id);
-    const accessToken = signAccess({ id: user.id, email: user.email, roles });
+    const accessToken = signAccess(buildAccessPayload({ id: user.id, email: user.email, roles }));
     const refreshRaw  = await createRefreshToken(user.id);
 
     setRefreshCookie(res, refreshRaw);
@@ -96,7 +97,12 @@ const userController = {
       await stored.destroy();
       const newRefresh  = await createRefreshToken(stored.userId);
       const roles       = await getRoles(stored.userId);
-      const accessToken = signAccess({ id: stored.userId, roles });
+      const user        = await userRepo.findById(stored.userId);
+      const accessToken = signAccess(buildAccessPayload({
+        id: stored.userId,
+        email: user?.email,
+        roles,
+      }));
 
       setRefreshCookie(res, newRefresh);
       return res.json({ token: accessToken });
