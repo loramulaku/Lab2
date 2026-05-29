@@ -2,6 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme Editor preview mode (iframe only) ───────────────────────────────── */
+
+html.theme-editor-preview .auth-left-panel {
+  display: flex !important;
+  width: 50% !important;
+  min-height: 100vh;
+}
+
+html.theme-editor-preview .auth-form-panel {
+  width: 50% !important;
+  background-color: transparent !important;
+}
+
+html.theme-editor-preview .auth-page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+html.theme-editor-preview [data-theme-section] {
+  cursor: pointer;
+  position: relative;
+  transition: outline 0.12s ease, box-shadow 0.12s ease;
+}
+
+html.theme-editor-preview [data-theme-section].theme-preview-hover:not(.theme-preview-selected) {
+  outline: 2px dashed #60a5fa !important;
+  outline-offset: -2px;
+}
+
+html.theme-editor-preview [data-theme-section].theme-preview-selected {
+  outline: 3px solid #2563eb !important;
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 9999px rgba(37, 99, 235, 0.06);
+}
+
+#theme-preview-label {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  background: #2563eb;
+  color: #fff;
+  font: 600 11px/1 system-ui, sans-serif;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.15s ease-out;

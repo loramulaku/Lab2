@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePageSection, useTheme } from '../../context/ThemeContext';
 import LeftPanel from './LeftPanel';
 
 const EyeIcon = ({ open }) => open ? (
@@ -14,13 +15,12 @@ const EyeIcon = ({ open }) => open ? (
   </svg>
 );
 
-const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
-
-export default function Login() {
+function LoginFormPanel({ sectionId = 'login-form' }) {
   const navigate = useNavigate();
   const { login, loading, error, clearError } = useAuth();
+  const s = usePageSection('login', 'login-form');
 
-  const [form, setForm]   = useState({ email: '', password: '' });
+  const [form, setForm]     = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
 
   const handleChange = (e) => {
@@ -41,71 +41,96 @@ export default function Login() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex bg-[#2B3FE7]">
-      <LeftPanel />
+  const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 bg-gray-50 focus:outline-none focus:ring-2';
 
-      {/* Right panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="bg-blue-600 rounded-xl p-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
-              </svg>
-            </div>
-            <span className="text-gray-900 font-bold text-xl">HireFlow</span>
+  return (
+    <div
+      data-theme-section={sectionId}
+      data-theme-label="Sign In Form"
+      className="auth-form-panel w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-[#2B3FE7] lg:bg-transparent"
+    >
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="rounded-xl p-2" style={{ backgroundColor: s.btnBgColor ?? '#2563eb' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
+            </svg>
+          </div>
+          <span className="text-gray-900 font-bold text-xl">HireFlow</span>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">{s.heading ?? 'Welcome back'}</h2>
+        <p className="text-sm text-gray-500 mb-6">{s.subheading ?? 'Sign in to your account'}</p>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input
+              name="email" type="email" placeholder="you@example.com"
+              value={form.email} onChange={handleChange} required autoComplete="email"
+              className={INPUT}
+            />
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-          <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
-
-          {error && (
-            <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
               <input
-                name="email" type="email" placeholder="you@example.com"
-                value={form.email} onChange={handleChange} required autoComplete="email"
+                name="password" type={showPw ? 'text' : 'password'} placeholder="Your password"
+                value={form.password} onChange={handleChange} required autoComplete="current-password"
                 className={INPUT}
               />
+              <button type="button" onClick={() => setShowPw(p => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <EyeIcon open={showPw} />
+              </button>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <div className="relative">
-                <input
-                  name="password" type={showPw ? 'text' : 'password'} placeholder="Your password"
-                  value={form.password} onChange={handleChange} required autoComplete="current-password"
-                  className={INPUT}
-                />
-                <button type="button" onClick={() => setShowPw(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <EyeIcon open={showPw} />
-                </button>
-              </div>
-            </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full font-semibold rounded-xl py-4 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ backgroundColor: s.btnBgColor ?? '#2563eb', color: s.btnTextColor ?? '#ffffff' }}
+          >
+            {loading ? 'Signing in…' : (s.btnText ?? 'Sign In')}
+          </button>
+        </form>
 
-            <button
-              type="submit" disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-4 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-gray-500">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="text-blue-600 font-medium hover:underline">Create one</Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="font-medium hover:underline" style={{ color: s.linkColor ?? '#2563eb' }}>
+            Create one
+          </Link>
+        </p>
       </div>
+    </div>
+  );
+}
+
+export default function Login() {
+  const { config } = useTheme();
+  const sections   = [...(config?.pages?.login?.sections ?? [])]
+    .filter(s => s.visible !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  return (
+    <div className="auth-page-shell min-h-screen flex">
+      {sections.map((section) => {
+        if (section.type === 'login-left') {
+          return <LeftPanel key={section.id} sectionId={section.id} />;
+        }
+        if (section.type === 'login-form') {
+          return <LoginFormPanel key={section.id} sectionId={section.id} />;
+        }
+        return null;
+      })}
     </div>
   );
 }

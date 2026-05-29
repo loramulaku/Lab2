@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import ThemePreviewBridge from './components/admin/ThemePreviewBridge';
 import AdminLayout from './components/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Jobs from './pages/admin/Jobs';
 import Companies from './pages/admin/Companies';
 import Applications from './pages/admin/Applications';
+import ThemeEditor from './pages/admin/ThemeEditor';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -20,9 +23,9 @@ import CompanySetup from './pages/recruiter/CompanySetup';
  * running (bootstrapping = true) shows nothing to avoid a flash of /login.
  */
 function ProtectedRoute({ children, roles }) {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   if (roles && user) {
     const hasRole = roles.some(r => user.roles?.includes(r));
@@ -82,12 +85,40 @@ function AppShell() {
         </ProtectedRoute>
       } />
 
-      {/* Admin placeholder */}
-      <Route path="/admin/*" element={
+      {/* Admin - Dashboard */}
+      <Route path="/admin" element={
         <ProtectedRoute roles={['admin']}>
-          <div className="p-8 text-gray-600">Admin dashboard (coming soon)</div>
+          <AdminLayout><Dashboard /></AdminLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Users /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/jobs" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Jobs /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/companies" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Companies /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/applications" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Applications /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/theme" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><ThemeEditor /></AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Public home */}
+      <Route path="/" element={<Home />} />
 
       {/* Default */}
       <Route path="*" element={<Navigate to="/login" replace />} />
@@ -101,7 +132,11 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppShell />
+        <ThemeProvider>
+          {/* Activates click-to-select and highlight when running inside the ThemeEditor iframe */}
+          <ThemePreviewBridge />
+          <AppShell />
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   );
