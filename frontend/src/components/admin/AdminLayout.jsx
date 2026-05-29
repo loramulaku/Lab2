@@ -11,6 +11,7 @@ const AdminLayout = ({ children }) => {
     { name: 'Jobs', href: '/admin/jobs', icon: '💼' },
     { name: 'Companies', href: '/admin/companies', icon: '🏢' },
     { name: 'Applications', href: '/admin/applications', icon: '📋' },
+    { name: 'Theme Editor', href: '/admin/theme', icon: '🎨' },
   ];
 
   const isActive = (href) => {
