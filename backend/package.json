@@ -12,7 +12,7 @@
     "sync:retry": "node src/scripts/retrySync.js",
     "test": "jest --forceExit --runInBand",
     "test:sync": "jest --forceExit --runInBand --testPathPatterns=tests/sync",
-    "test:handlers": "jest --forceExit --runInBand --testPathPatterns=tests/handlers"
+    "test:handlers": "jest --forceExit --runInBand --testPathPatterns=tests/handlers",
     "seed:roles": "node src/seeders/seed-admin-role.js",
     "seed:admin-user": "node src/seeders/seed-admin-user.js",
     "setup": "npm run db:migrate && npm run seed:roles && npm run seed:admin-user"
