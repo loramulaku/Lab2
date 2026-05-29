@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminCtrl = require('../controllers/admin.controller');
+const themeCtrl = require('../controllers/theme.controller');
 const auth = require('../middlewares/auth');
 const isAdmin = require('../middlewares/isAdmin');
 
@@ -27,5 +28,9 @@ router.put('/companies/:id', adminCtrl.updateCompany);
 router.delete('/companies/:id', adminCtrl.deleteCompany);
 
 router.get('/applications', adminCtrl.getApplications);
+
+router.post('/theme', themeCtrl.update);
+router.put('/theme/:id', themeCtrl.update);
+router.post('/theme/:id/activate', themeCtrl.setActive);
 
 module.exports = router;
