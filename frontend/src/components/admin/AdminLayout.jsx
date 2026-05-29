@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import BrandLogo from '../BrandLogo';
 
 const NAV = [
   { name: 'Dashboard',    href: '/admin',              icon: '📊' },
@@ -26,8 +25,8 @@ const AdminLayout = ({ children }) => {
     navigate('/login', { replace: true });
   };
 
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Administrator';
-  const initials = (user?.firstName?.[0] ?? 'A') + (user?.lastName?.[0] ?? 'D');
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Super Admin';
+  const initials = (user?.firstName?.[0] ?? 'S') + (user?.lastName?.[0] ?? 'A');
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -37,11 +36,11 @@ const AdminLayout = ({ children }) => {
         }`}
       >
         <div className="flex items-center justify-between h-16 px-6 bg-gray-800">
-          <BrandLogo variant="footer" to="/admin" />
+          <span className="text-xl font-bold text-white">HireFlow Admin</span>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white transition-colors"
+            className="lg:hidden text-gray-400 hover:text-white"
             aria-label="Close sidebar"
           >
             ✕
@@ -54,7 +53,7 @@ const AdminLayout = ({ children }) => {
               key={item.name}
               to={item.href}
               end={item.href === '/admin'}
-              className={`flex items-center px-4 py-3 mb-2 rounded-lg transition-all duration-150 ${
+              className={`flex items-center px-4 py-3 mb-2 rounded-lg transition-colors ${
                 isActive(item.href)
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -69,10 +68,10 @@ const AdminLayout = ({ children }) => {
         <div className="absolute bottom-0 w-full p-4 border-t border-gray-800">
           <Link
             to="/"
-            className="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors duration-150"
+            className="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors"
           >
             <span className="mr-3">←</span>
-            <span>Back to site</span>
+            <span>Back to Site</span>
           </Link>
         </div>
       </aside>
@@ -98,13 +97,13 @@ const AdminLayout = ({ children }) => {
                 </div>
                 <div className="leading-tight">
                   <p className="text-sm font-medium text-gray-800">{fullName}</p>
-                  <p className="text-xs text-gray-500">Administrator</p>
+                  <p className="text-xs text-gray-500">Super Administrator</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="text-sm text-red-600 hover:text-red-700 transition-colors duration-150"
+                className="text-sm font-medium text-red-600 hover:text-red-700"
               >
                 Logout
               </button>
@@ -112,9 +111,7 @@ const AdminLayout = ({ children }) => {
           </div>
         </header>
 
-        <main key={location.pathname} className="p-8 animate-page-enter">
-          {children}
-        </main>
+        <main className="p-8">{children}</main>
       </div>
     </div>
   );

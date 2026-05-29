@@ -1,4 +1,3 @@
-import BrandLogo from '../../components/BrandLogo';
 import CmsBlock from '../../components/cms/CmsBlock';
 import useSiteContent from '../../hooks/useSiteContent';
 
@@ -16,7 +15,14 @@ export default function LeftPanel() {
 
   return (
     <div className="hidden lg:flex w-1/2 flex-col justify-between p-12">
-      <BrandLogo variant="light" />
+      <div className="flex items-center gap-3">
+        <div className="bg-blue-700 rounded-xl p-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
+          </svg>
+        </div>
+        <CmsBlock cmsKey="site.brand.name" fallback="HireFlow" as="span" className="text-white font-bold text-xl" />
+      </div>
 
       <div className="space-y-8">
         <div className="space-y-4">
