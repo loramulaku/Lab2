@@ -12,7 +12,7 @@ const getJobsHandler          = require('../application/job/handlers/GetJobsHand
 const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdHandler');
 const JobDTO                  = require('../dtos/job.dto');
 
-const getAll  = (req, res) =>
+const getAll = (req, res) =>
   getJobsHandler.handle(new GetJobsQuery(req.query))
     .then(r => res.json({ ...r, data: JobDTO.fromList(r.data) }));
 
@@ -20,7 +20,7 @@ const getById = (req, res) =>
   getJobByIdHandler.handle(new GetJobByIdQuery(Number(req.params.id)))
     .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
 
-const create  = (req, res) =>
+const create = (req, res) =>
   createJobHandler.handle(new CreateJobCommand({
     ...req.body,
     companyId: req.user.companyId,
@@ -28,15 +28,15 @@ const create  = (req, res) =>
   }))
     .then(r => res.status(201).json(JobDTO.from(r)));
 
-const update  = (req, res) =>
+const update = (req, res) =>
   updateJobHandler.handle(new UpdateJobCommand(Number(req.params.id), req.body))
     .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
 
-const updateStatus  = (req, res) =>
+const updateStatus = (req, res) =>
   updateJobStatusHandler.handle(new UpdateJobStatusCommand(Number(req.params.id), req.body.status))
     .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
 
-const remove  = (req, res) =>
+const remove = (req, res) =>
   deleteJobHandler.handle(new DeleteJobCommand(Number(req.params.id)))
     .then(r => r ? res.json(r) : res.status(404).json({ message: 'Job not found' }));
 
