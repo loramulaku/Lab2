@@ -14,14 +14,14 @@ const Subscription = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [plansData, subData] = await Promise.all([
+        const [plansResult, subResult] = await Promise.allSettled([
           subscriptionService.getPlans(),
           subscriptionService.getMySubscription(),
         ]);
-        setPlans(plansData);
-        setCurrentSub(subData);
-      } catch (err) {
-        console.error('Failed to load subscription data:', err);
+        if (plansResult.status === 'fulfilled') setPlans(plansResult.value);
+        else console.error('Failed to load plans:', plansResult.reason);
+        if (subResult.status === 'fulfilled') setCurrentSub(subResult.value);
+        else console.error('Failed to load subscription:', subResult.reason);
       } finally {
         setLoading(false);
       }

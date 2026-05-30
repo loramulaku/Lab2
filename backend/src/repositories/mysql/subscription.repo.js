@@ -8,6 +8,7 @@ module.exports = {
   ...base,
 
   async findActiveByCompanyId(companyId) {
+    if (!companyId || !Number.isFinite(Number(companyId))) return null;
     return Subscription.findOne({
       where: { companyId, status: 'active' },
       include: [{ model: Plan, as: 'Plan' }],
