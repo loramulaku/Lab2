@@ -1,0 +1,232 @@
+import { useState, useEffect } from 'react';
+import { adminApi } from '../../services/adminApi';
+import DataTable from '../../components/admin/DataTable';
+import Modal from '../../components/admin/Modal';
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+
+const Plans = () => {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [deletingPlan, setDeletingPlan] = useState(null);
+  const [formData, setFormData] = useState({ name: '', price: '', jobLimit: '' });
+  const [formError, setFormError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    loadPlans();
+  }, []);
+
+  const loadPlans = async () => {
+    try {
+      setLoading(true);
+      const data = await adminApi.getPlans();
+      setPlans(data);
+    } catch (err) {
+      console.error('Failed to load plans:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openCreate = () => {
+    setEditingPlan(null);
+    setFormData({ name: '', price: '', jobLimit: '' });
+    setFormError('');
+    setShowForm(true);
+  };
+
+  const openEdit = (plan) => {
+    setEditingPlan(plan);
+    setFormData({
+      name:     plan.name,
+      price:    String(plan.price),
+      jobLimit: plan.jobLimit != null ? String(plan.jobLimit) : '',
+    });
+    setFormError('');
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    if (!formData.name || !formData.price) {
+      setFormError('Name and price are required');
+      return;
+    }
+    const payload = {
+      name:     formData.name,
+      price:    parseFloat(formData.price),
+      jobLimit: formData.jobLimit !== '' ? parseInt(formData.jobLimit, 10) : null,
+    };
+    try {
+      setSubmitting(true);
+      if (editingPlan) {
+        await adminApi.updatePlan(editingPlan.id, payload);
+      } else {
+        await adminApi.createPlan(payload);
+      }
+      setShowForm(false);
+      loadPlans();
+    } catch (err) {
+      setFormError(err?.response?.data?.message || 'Failed to save plan');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await adminApi.deletePlan(deletingPlan.id);
+      setDeletingPlan(null);
+      loadPlans();
+    } catch (err) {
+      alert('Failed to deactivate plan');
+    }
+  };
+
+  const columns = [
+    { key: 'id',   label: 'ID' },
+    { key: 'name', label: 'Name' },
+    {
+      key: 'price',
+      label: 'Price/mo',
+      render: (row) => `$${Number(row.price).toFixed(2)}`,
+    },
+    {
+      key: 'jobLimit',
+      label: 'Job Limit',
+      render: (row) => (row.jobLimit == null ? 'Unlimited' : row.jobLimit),
+    },
+    {
+      key: 'isActive',
+      label: 'Status',
+      render: (row) => (
+        <span className={`px-2 py-1 text-xs font-medium rounded ${row.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+          {row.isActive ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => openEdit(row)}
+            className="px-3 py-1 text-xs bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Edit
+          </button>
+          {row.isActive && (
+            <button
+              onClick={() => setDeletingPlan(row)}
+              className="px-3 py-1 text-xs bg-red-600 text-white hover:bg-red-700"
+            >
+              Deactivate
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Subscription Plans</h2>
+        <button
+          onClick={openCreate}
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+        >
+          + Add Plan
+        </button>
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={plans}
+        loading={loading}
+      />
+
+      <Modal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingPlan ? 'Edit Plan' : 'Create New Plan'}
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Basic, Pro"
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Price per Month (USD)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              placeholder="e.g. 19.99"
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Job Limit <span className="text-gray-400 font-normal">(leave empty for unlimited)</span>
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={formData.jobLimit}
+              onChange={(e) => setFormData({ ...formData, jobLimit: e.target.value })}
+              placeholder="e.g. 5"
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {formError && (
+            <p className="text-sm text-red-600">{formError}</p>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              {submitting ? 'Saving...' : editingPlan ? 'Update Plan' : 'Create Plan'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {deletingPlan && (
+        <ConfirmDeleteModal
+          message={`Deactivate the "${deletingPlan.name}" plan? Existing subscribers keep access until their period ends.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingPlan(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Plans;
