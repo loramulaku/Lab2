@@ -123,4 +123,32 @@ export const adminApi = {
     });
     return response.data;
   },
+
+  getPlans: async () => {
+    const response = await axios.get(`${API_URL}/plans`, {
+      headers: getAuthHeader(),
+    });
+    return response.data;
+  },
+
+  createPlan: async (data) => {
+    const response = await axios.post(`${API_URL}/plans`, data, {
+      headers: getAuthHeader(),
+    });
+    return response.data;
+  },
+
+  updatePlan: async (id, data) => {
+    const response = await axios.put(`${API_URL}/plans/${id}`, data, {
+      headers: getAuthHeader(),
+    });
+    return response.data;
+  },
+
+  deletePlan: async (id) => {
+    const response = await axios.delete(`${API_URL}/plans/${id}`, {
+      headers: getAuthHeader(),
+    });
+    return response.data;
+  },
 };
