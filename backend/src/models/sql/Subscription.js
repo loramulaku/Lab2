@@ -7,7 +7,8 @@ const Subscription = sequelize.define('Subscription', {
   planId:               { type: DataTypes.INTEGER, field: 'plan_id' },
   stripeSubscriptionId: { type: DataTypes.STRING(255), field: 'stripe_subscription_id' },
   status:               { type: DataTypes.STRING(50) },
-  currentPeriodEnd:     { type: DataTypes.DATE, field: 'current_period_end' },
+  currentPeriodEnd:     { type: DataTypes.DATE,    field: 'current_period_end' },
+  cancelAtPeriodEnd:    { type: DataTypes.BOOLEAN, field: 'cancel_at_period_end', defaultValue: false },
 }, {
   tableName: 'Subscriptions',
   timestamps: false,
