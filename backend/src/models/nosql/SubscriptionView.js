@@ -11,12 +11,14 @@ const SubscriptionViewSchema = new mongoose.Schema(
     companyId:            { type: Number },
     planId:               { type: Number },
     stripeSubscriptionId: { type: String },
-    status:               { type: String },
-    currentPeriodEnd:     { type: Date },
+    status:            { type: String },
+    currentPeriodEnd:  { type: Date },
+    cancelAtPeriodEnd: { type: Boolean, default: false },
     // ── denormalised from Companies + Plans ──
     companyName: { type: String },
     planName:    { type: String },
     planPrice:   { type: Number },
+    jobLimit:    { type: Number },
   },
   { _id: false, timestamps: false, collection: 'subscription_views' }
 );
