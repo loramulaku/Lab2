@@ -10,8 +10,9 @@ const Company = sequelize.define('Company', {
   foundedYear: { type: DataTypes.SMALLINT,   field: 'founded_year' },
   logoPath:    { type: DataTypes.STRING(500), field: 'logo_path' },
   website:     { type: DataTypes.STRING(255) },
-  description: { type: DataTypes.TEXT },
-  createdAt:   { type: DataTypes.DATE,       field: 'created_at' },
+  description:      { type: DataTypes.TEXT },
+  stripeCustomerId: { type: DataTypes.STRING(255), field: 'stripe_customer_id' },
+  createdAt:        { type: DataTypes.DATE,        field: 'created_at' },
 }, {
   tableName: 'Companies',
   timestamps: false,

@@ -2,10 +2,11 @@ const bcrypt        = require('bcryptjs');
 const jwt           = require('jsonwebtoken');
 const crypto        = require('crypto');
 const { Op }        = require('sequelize');
-const UserRole      = require('../models/sql/UserRole');
-const Role          = require('../models/sql/Role');
-const RefreshToken  = require('../models/sql/RefreshToken');
-const userRepo      = require('../repositories/mysql/user.repo');
+const UserRole          = require('../models/sql/UserRole');
+const Role              = require('../models/sql/Role');
+const RefreshToken      = require('../models/sql/RefreshToken');
+const RecruiterProfile  = require('../models/sql/RecruiterProfile');
+const userRepo          = require('../repositories/mysql/user.repo');
 
 const RegisterUserCommand   = require('../application/user/commands/RegisterUser.command');
 const GetUserProfileQuery   = require('../application/user/queries/GetUserProfile.query');
@@ -45,6 +46,12 @@ async function getRoles(userId) {
   return roleRows.map(r => r.name);
 }
 
+async function getCompanyId(userId, roles) {
+  if (!roles.includes('recruiter')) return undefined;
+  const profile = await RecruiterProfile.findOne({ where: { userId } });
+  return profile?.companyId ?? undefined;
+}
+
 async function createRefreshToken(userId) {
   const token     = crypto.randomBytes(40).toString('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -69,7 +76,8 @@ const userController = {
     if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
     const roles       = await getRoles(user.id);
-    const accessToken = signAccess({ id: user.id, email: user.email, roles });
+    const companyId   = await getCompanyId(user.id, roles);
+    const accessToken = signAccess({ id: user.id, email: user.email, roles, companyId });
     const refreshRaw  = await createRefreshToken(user.id);
 
     setRefreshCookie(res, refreshRaw);
@@ -96,7 +104,8 @@ const userController = {
       await stored.destroy();
       const newRefresh  = await createRefreshToken(stored.userId);
       const roles       = await getRoles(stored.userId);
-      const accessToken = signAccess({ id: stored.userId, roles });
+      const companyId   = await getCompanyId(stored.userId, roles);
+      const accessToken = signAccess({ id: stored.userId, roles, companyId });
 
       setRefreshCookie(res, newRefresh);
       return res.json({ token: accessToken });

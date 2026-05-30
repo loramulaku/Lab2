@@ -10,11 +10,16 @@ import Jobs from './pages/admin/Jobs';
 import Companies from './pages/admin/Companies';
 import Applications from './pages/admin/Applications';
 import ThemeEditor from './pages/admin/ThemeEditor';
+import Plans from './pages/admin/Plans';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import MyProfile from './pages/candidate/MyProfile';
 import CompanySetup from './pages/recruiter/CompanySetup';
+import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
+import Subscription from './pages/recruiter/Subscription';
+import PaymentSuccess from './pages/recruiter/PaymentSuccess';
+import PaymentCancelled from './pages/recruiter/PaymentCancelled';
 
 // ── Route guards ──────────────────────────────────────────────────────────────
 
@@ -74,14 +79,34 @@ function AppShell() {
       } />
 
       {/* Recruiter */}
+      <Route path="/recruiter/dashboard" element={
+        <ProtectedRoute roles={['recruiter']}>
+          <RecruiterDashboard />
+        </ProtectedRoute>
+      } />
       <Route path="/recruiter/company" element={
         <ProtectedRoute roles={['recruiter']}>
           <CompanySetup />
         </ProtectedRoute>
       } />
+      <Route path="/recruiter/subscription" element={
+        <ProtectedRoute roles={['recruiter']}>
+          <Subscription />
+        </ProtectedRoute>
+      } />
+      <Route path="/recruiter/payment/success" element={
+        <ProtectedRoute roles={['recruiter']}>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      } />
+      <Route path="/recruiter/payment/cancelled" element={
+        <ProtectedRoute roles={['recruiter']}>
+          <PaymentCancelled />
+        </ProtectedRoute>
+      } />
       <Route path="/recruiter/*" element={
         <ProtectedRoute roles={['recruiter']}>
-          <Navigate to="/recruiter/company" replace />
+          <Navigate to="/recruiter/dashboard" replace />
         </ProtectedRoute>
       } />
 
@@ -114,6 +139,11 @@ function AppShell() {
       <Route path="/admin/theme" element={
         <ProtectedRoute roles={['admin']}>
           <AdminLayout><ThemeEditor /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/plans" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Plans /></AdminLayout>
         </ProtectedRoute>
       } />
 
