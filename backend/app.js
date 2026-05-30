@@ -14,6 +14,7 @@ const candidateRoutes    = require('./src/routes/candidate.routes');
 const recruiterRoutes    = require('./src/routes/recruiter.routes');
 const uploadRoutes       = require('./src/routes/upload.routes');
 const themeRoutes        = require('./src/routes/theme.routes');
+const pipelineRoutes     = require('./src/routes/pipeline.routes');
 const planRoutes         = require('./src/routes/plan.routes');
 const subscriptionRoutes = require('./src/routes/subscription.routes');
 
@@ -38,6 +39,7 @@ app.use('/api/candidate', candidateRoutes);
 app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/upload',    uploadRoutes);
 app.use('/api/theme',     themeRoutes);
+app.use('/api/pipeline',      pipelineRoutes);
 app.use('/api/plans',         planRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
