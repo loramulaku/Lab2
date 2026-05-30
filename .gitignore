@@ -35,3 +35,7 @@ Thumbs.db
 
 # Cursor
 .cursor/
+
+# Claude
+settings.local.json*
+claude.md*
