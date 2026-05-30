@@ -30,24 +30,27 @@ const webhook = async (req, res) => {
   }
 };
 
-const checkout = (req, res) =>
+const checkout = (req, res, next) =>
   createCheckoutSessionHandler.handle(new CreateCheckoutSessionCommand({
     companyId:   req.user.companyId,
     planId:      req.body.planId,
     userEmail:   req.user.email,
     companyName: req.user.companyName,
-  })).then(r => res.json(r));
+  })).then(r => res.json(r)).catch(next);
 
-const getMy = (req, res) =>
+const getMy = (req, res, next) =>
   getMySubscriptionHandler.handle(new GetMySubscriptionQuery(req.user.companyId))
-    .then(r => r ? res.json(SubscriptionDTO.from(r)) : res.json(null));
+    .then(r => r ? res.json(SubscriptionDTO.from(r)) : res.json(null))
+    .catch(next);
 
-const cancel = (req, res) =>
+const cancel = (req, res, next) =>
   cancelSubscriptionHandler.handle(new CancelSubscriptionCommand(req.user.companyId))
-    .then(r => res.json(r));
+    .then(r => res.json(r))
+    .catch(next);
 
-const getAll = (req, res) =>
+const getAll = (req, res, next) =>
   getAllSubscriptionsHandler.handle(new GetAllSubscriptionsQuery(req.query))
-    .then(r => res.json(r));
+    .then(r => res.json(r))
+    .catch(next);
 
 module.exports = { webhook, checkout, getMy, cancel, getAll };
