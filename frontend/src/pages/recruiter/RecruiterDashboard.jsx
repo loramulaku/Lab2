@@ -32,15 +32,14 @@ const RecruiterDashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [subData, jobsRes] = await Promise.all([
+        const [subResult, jobsResult] = await Promise.allSettled([
           subscriptionService.getMySubscription(),
           axios.get(`${API_URL}/jobs`, { headers: getAuthHeader() }),
         ]);
-        setSubscription(subData);
-        setJobs(jobsRes.data.data ?? []);
-      } catch (err) {
-        console.error('Dashboard load error:', err);
-        setSubscription(null);
+        if (subResult.status === 'fulfilled') setSubscription(subResult.value);
+        else { console.error('Subscription load error:', subResult.reason); setSubscription(null); }
+        if (jobsResult.status === 'fulfilled') setJobs(jobsResult.value.data.data ?? []);
+        else console.error('Jobs load error:', jobsResult.reason);
       } finally {
         setLoadingJobs(false);
       }

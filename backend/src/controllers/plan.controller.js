@@ -8,22 +8,26 @@ const deletePlanHandler = require('../application/plan/handlers/DeletePlanHandle
 const getPlansHandler   = require('../application/plan/handlers/GetPlansHandler');
 const PlanDTO           = require('../dtos/plan.dto');
 
-const getAll = (req, res) => {
+const getAll = (req, res, next) => {
   const activeOnly = req.user?.roles?.includes('admin') ? false : true;
   return getPlansHandler.handle(new GetPlansQuery({ activeOnly }))
-    .then(result => res.json(PlanDTO.fromList(result.data)));
+    .then(result => res.json(PlanDTO.fromList(result.data)))
+    .catch(next);
 };
 
-const create = (req, res) =>
+const create = (req, res, next) =>
   createPlanHandler.handle(new CreatePlanCommand(req.body))
-    .then(r => res.status(201).json({ id: r.id, message: 'Plan created' }));
+    .then(r => res.status(201).json({ id: r.id, message: 'Plan created' }))
+    .catch(next);
 
-const update = (req, res) =>
+const update = (req, res, next) =>
   updatePlanHandler.handle(new UpdatePlanCommand({ id: req.params.id, ...req.body }))
-    .then(r => res.json({ id: r.id, message: 'Plan updated' }));
+    .then(r => res.json({ id: r.id, message: 'Plan updated' }))
+    .catch(next);
 
-const remove = (req, res) =>
+const remove = (req, res, next) =>
   deletePlanHandler.handle(new DeletePlanCommand(req.params.id))
-    .then(r => res.json(r));
+    .then(r => res.json(r))
+    .catch(next);
 
 module.exports = { getAll, create, update, delete: remove };
