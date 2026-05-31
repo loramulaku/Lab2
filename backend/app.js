@@ -1,4 +1,5 @@
 require('dotenv').config();
+const notificationRoutes = require('./src/routes/notification.routes');
 const path           = require('path');
 const express        = require('express');
 const cors           = require('cors');
@@ -23,6 +24,7 @@ const PORT = process.env.PORT || 3001;
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({ origin: true, credentials: true }));
+app.use('/api/notifications', notificationRoutes);
 app.use(cookieParser());
 
 // Stripe webhook must receive the raw body before express.json() parses it
