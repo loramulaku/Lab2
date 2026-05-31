@@ -8,6 +8,7 @@ const Application  = require('./Application');
 const Pipeline     = require('./Pipeline');
 const PipelineStage = require('./PipelineStage');
 const StageHistory  = require('./StageHistory');
+const Notification = require('./Notification');
 
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId' });
@@ -32,5 +33,8 @@ StageHistory.belongsTo(PipelineStage, { foreignKey: 'toStageId', as: 'toStage' }
 StageHistory.belongsTo(PipelineStage, { foreignKey: 'fromStageId', as: 'fromStage' });
 
 StageHistory.belongsTo(User, { foreignKey: 'changedBy', as: 'changedByUser' });
+
+Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
 
 module.exports = { User, Role, UserRole, Subscription, Plan, Job, Application, Pipeline, PipelineStage, StageHistory };
