@@ -3,8 +3,21 @@ const subscriptionMysqlRepo = require('../../../repositories/mysql/subscription.
 const Job                   = require('../../../models/sql/Job');
 const { syncJobSafe }       = require('../../../sync/jobSync');
 
+const VALID_JOB_MODES = ['public', 'invite', 'both'];
+
 class CreateJobHandler {
   async handle(command) {
+    // A freelance job must declare a mode (A/B/C); a non-freelance job must not.
+    if (command.employmentType === 'freelance') {
+      if (!VALID_JOB_MODES.includes(command.jobMode)) {
+        const err = new Error('Freelance jobs require jobMode to be public, invite, or both');
+        err.status = 400;
+        throw err;
+      }
+    } else {
+      command.jobMode = null;
+    }
+
     const sub = await subscriptionMysqlRepo.findActiveByCompanyId(command.companyId);
 
     if (!sub) {
