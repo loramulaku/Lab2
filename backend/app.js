@@ -18,6 +18,9 @@ const themeRoutes        = require('./src/routes/theme.routes');
 const pipelineRoutes     = require('./src/routes/pipeline.routes');
 const planRoutes         = require('./src/routes/plan.routes');
 const subscriptionRoutes = require('./src/routes/subscription.routes');
+const bidRoutes          = require('./src/routes/bid.routes');
+const invitationRoutes   = require('./src/routes/invitation.routes');
+const contractRoutes     = require('./src/routes/contract.routes');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -43,6 +46,10 @@ app.use('/api/upload',    uploadRoutes);
 app.use('/api/theme',     themeRoutes);
 app.use('/api/pipeline',      pipelineRoutes);
 app.use('/api/plans',         planRoutes);
+app.use('/api/contracts',     contractRoutes);
+// Hybrid hiring flow — full paths declared inside the routers (e.g. /jobs/:id/bids)
+app.use('/api', bidRoutes);
+app.use('/api', invitationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
