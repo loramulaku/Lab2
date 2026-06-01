@@ -9,6 +9,10 @@ const Pipeline     = require('./Pipeline');
 const PipelineStage = require('./PipelineStage');
 const StageHistory  = require('./StageHistory');
 const Notification = require('./Notification');
+const Company      = require('./Company');
+const Bid          = require('./Bid');
+const Invitation   = require('./Invitation');
+const Contract     = require('./Contract');
 
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId' });
@@ -37,4 +41,28 @@ StageHistory.belongsTo(User, { foreignKey: 'changedBy', as: 'changedByUser' });
 Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
 
-module.exports = { User, Role, UserRole, Subscription, Plan, Job, Application, Pipeline, PipelineStage, StageHistory };
+// Job ↔ Company
+Company.hasMany(Job, { foreignKey: 'companyId' });
+Job.belongsTo(Company, { foreignKey: 'companyId' });
+
+// Hybrid hiring flow (Modes A/B/C)
+Job.hasMany(Bid, { foreignKey: 'jobId' });
+Bid.belongsTo(Job, { foreignKey: 'jobId' });
+Bid.belongsTo(User, { foreignKey: 'freelancerId', as: 'freelancer' });
+
+Job.hasMany(Invitation, { foreignKey: 'jobId' });
+Invitation.belongsTo(Job, { foreignKey: 'jobId' });
+Invitation.belongsTo(Company, { foreignKey: 'companyId' });
+Invitation.belongsTo(User, { foreignKey: 'freelancerId', as: 'freelancer' });
+
+Job.hasMany(Contract, { foreignKey: 'jobId' });
+Contract.belongsTo(Job, { foreignKey: 'jobId' });
+Contract.belongsTo(Company, { foreignKey: 'companyId' });
+Contract.belongsTo(User, { foreignKey: 'freelancerId', as: 'freelancer' });
+Contract.belongsTo(Bid, { foreignKey: 'bidId' });
+Contract.belongsTo(Invitation, { foreignKey: 'invitationId' });
+
+module.exports = {
+  User, Role, UserRole, Subscription, Plan, Job, Application,
+  Pipeline, PipelineStage, StageHistory, Company, Bid, Invitation, Contract,
+};
