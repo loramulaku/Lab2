@@ -24,12 +24,18 @@ const Job              = require('../../src/models/sql/Job');
 const JobSkill         = require('../../src/models/sql/JobSkill');
 const JobCategory      = require('../../src/models/sql/JobCategory');
 const Category         = require('../../src/models/sql/Category');
+const Bid              = require('../../src/models/sql/Bid');
+const Invitation       = require('../../src/models/sql/Invitation');
+const Contract         = require('../../src/models/sql/Contract');
 
 // ── MongoDB views ─────────────────────────────────────────────────────────────
 const UserProfileView      = require('../../src/models/nosql/UserProfileView');
 const CandidateProfileView = require('../../src/models/nosql/CandidateProfileView');
 const RecruiterProfileView = require('../../src/models/nosql/RecruiterProfileView');
 const JobView              = require('../../src/models/nosql/JobView');
+const BidView              = require('../../src/models/nosql/BidView');
+const InvitationView       = require('../../src/models/nosql/InvitationView');
+const ContractView         = require('../../src/models/nosql/ContractView');
 
 // Low-cost hash only used in tests — never in production
 const TEST_PASSWORD_HASH = bcrypt.hashSync('TestPass123!', 1);
@@ -122,11 +128,49 @@ async function createRecruiterProfile(userId, companyId, overrides = {}) {
 async function createJob(companyId, overrides = {}) {
   return Job.create({
     companyId,
+    recruiterId:    overrides.recruiterId    ?? null,
     title:          overrides.title          ?? `Test Job ${Date.now()}`,
     description:    overrides.description    ?? 'Test job description',
     employmentType: overrides.employmentType ?? 'full-time',
     workMode:       overrides.workMode       ?? 'remote',
+    jobMode:        overrides.jobMode        ?? null,
     status:         overrides.status         ?? 'open',
+  });
+}
+
+/** A freelancer is a User with the 'candidate' role. */
+async function createFreelancer(overrides = {}) {
+  const user = await createUser(overrides);
+  await assignRole(user.id, 'candidate');
+  return user;
+}
+
+async function createBid(jobId, freelancerId, overrides = {}) {
+  return Bid.create({
+    jobId,
+    freelancerId,
+    price:            overrides.price            ?? 500,
+    deliveryTimeDays: overrides.deliveryTimeDays ?? 7,
+    message:          overrides.message          ?? 'Test bid',
+    status:           overrides.status           ?? 'pending',
+    createdAt:        new Date(),
+  });
+}
+
+async function createInvitation(companyId, freelancerId, jobId, overrides = {}) {
+  const status = overrides.status ?? 'pending';
+  return Invitation.create({
+    companyId,
+    freelancerId,
+    jobId,
+    title:            overrides.title            ?? 'Test offer',
+    message:          overrides.message          ?? 'Come work with us',
+    priceOffer:       overrides.priceOffer       ?? 800,
+    deliveryTimeDays: overrides.deliveryTimeDays ?? 10,
+    status,
+    activeKey:        status === 'pending' ? `${jobId}:${freelancerId}` : null,
+    expiresAt:        overrides.expiresAt        ?? null,
+    createdAt:        new Date(),
   });
 }
 
@@ -160,8 +204,26 @@ async function cleanupUser(userId) {
   await UserProfileView.findByIdAndDelete(userId);
 }
 
+async function cleanupHiring(jobId) {
+  if (!jobId) return;
+  const contracts = await Contract.findAll({ where: { jobId }, attributes: ['id'] });
+  const bids      = await Bid.findAll({ where: { jobId }, attributes: ['id'] });
+  const invites   = await Invitation.findAll({ where: { jobId }, attributes: ['id'] });
+
+  await Contract.destroy({ where: { jobId } });
+  await Bid.destroy({ where: { jobId } });
+  await Invitation.destroy({ where: { jobId } });
+
+  await Promise.all([
+    ...contracts.map(c => ContractView.findByIdAndDelete(c.id)),
+    ...bids.map(b => BidView.findByIdAndDelete(b.id)),
+    ...invites.map(i => InvitationView.findByIdAndDelete(i.id)),
+  ]);
+}
+
 async function cleanupJob(jobId) {
   if (!jobId) return;
+  await cleanupHiring(jobId);
   await JobSkill.destroy({ where: { jobId } });
   await JobCategory.destroy({ where: { jobId } });
   await Job.destroy({ where: { id: jobId } });
@@ -186,7 +248,11 @@ module.exports = {
   createRecruiterProfile,
   createJob,
   createCategory,
+  createFreelancer,
+  createBid,
+  createInvitation,
   cleanupUser,
   cleanupJob,
+  cleanupHiring,
   cleanupCompany,
 };
