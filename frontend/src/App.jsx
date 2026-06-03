@@ -20,6 +20,8 @@ import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import Subscription from './pages/recruiter/Subscription';
 import PaymentSuccess from './pages/recruiter/PaymentSuccess';
 import PaymentCancelled from './pages/recruiter/PaymentCancelled';
+import Chat from './pages/chat/Chat';
+
 
 // ── Route guards ──────────────────────────────────────────────────────────────
 
@@ -146,6 +148,13 @@ function AppShell() {
           <AdminLayout><Plans /></AdminLayout>
         </ProtectedRoute>
       } />
+
+      {/* Chat */}
+<Route path="/chat" element={
+  <ProtectedRoute roles={['candidate', 'recruiter']}>
+    <Chat />
+  </ProtectedRoute>
+} />
 
       {/* Public home */}
       <Route path="/" element={<Home />} />
