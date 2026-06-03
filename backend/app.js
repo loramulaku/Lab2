@@ -21,6 +21,7 @@ const subscriptionRoutes = require('./src/routes/subscription.routes');
 const bidRoutes          = require('./src/routes/bid.routes');
 const invitationRoutes   = require('./src/routes/invitation.routes');
 const contractRoutes     = require('./src/routes/contract.routes');
+const conversationRoutes = require('./src/routes/conversation.routes');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -51,6 +52,7 @@ app.use('/api/contracts',     contractRoutes);
 app.use('/api', bidRoutes);
 app.use('/api', invitationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/conversations', conversationRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
