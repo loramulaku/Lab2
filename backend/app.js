@@ -77,6 +77,9 @@ const io = new Server(httpServer, {
 
 module.exports = { io };
 
+const initChatSocket = require('./src/socket/chatSocket');
+initChatSocket(io);
+
 (async () => {
   await connectMySQL();
   await connectMongoDB();
