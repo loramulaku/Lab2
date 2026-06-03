@@ -61,9 +61,24 @@ app.use((err, _req, res, _next) => {
   res.status(err.status ?? 500).json({ message: err.message ?? 'Internal server error' });
 });
 
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
+const http = require('http');
+const { Server } = require('socket.io');
+
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+  }
+});
+
+module.exports = { io };
+
 (async () => {
   await connectMySQL();
   await connectMongoDB();
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 })();
