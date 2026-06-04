@@ -3,6 +3,10 @@ import api from './api';
 const candidateService = {
   getProfile:       ()           => api.get('/candidate/profile').then(r => r.data),
   updateProfile:    (data)       => api.put('/candidate/profile', data).then(r => r.data),
+  setFreelanceMode: (active)     => api.put('/candidate/freelance', { active }).then(r => r.data),
+
+  applyToJob:       (jobId)      => api.post('/candidate/applications', { jobId }).then(r => r.data),
+  myApplications:   (params)     => api.get('/candidate/applications', { params }).then(r => r.data),
 
   addSkill:         (data)       => api.post('/candidate/skills', data).then(r => r.data),
   deleteSkill:      (id)         => api.delete(`/candidate/skills/${id}`).then(r => r.data),

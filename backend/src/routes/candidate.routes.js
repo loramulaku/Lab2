@@ -8,6 +8,10 @@ router.use(auth);
 
 router.get('/profile',              c.getProfile);
 router.put('/profile',              c.updateProfile);
+router.put('/freelance',            c.setFreelanceMode);
+
+router.post('/applications',        c.applyToJob);
+router.get('/applications',         c.getMyApplications);
 
 router.post('/skills',              c.addSkill);
 router.delete('/skills/:id',        c.deleteSkill);

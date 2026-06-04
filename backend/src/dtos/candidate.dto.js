@@ -13,6 +13,7 @@ class CandidateProfileDTO {
     this.headline    = data.headline    ?? null;
     this.bio         = data.bio         ?? null;
     this.location    = data.location    ?? null;
+    this.freelanceActive = data.freelanceActive ?? false;
     this.skills      = data.skills      ?? [];
     this.experiences = data.experiences ?? [];
     this.educations  = data.educations  ?? [];

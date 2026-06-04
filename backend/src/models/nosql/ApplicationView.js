@@ -13,8 +13,11 @@ const ApplicationViewSchema = new mongoose.Schema(
     stageId:              { type: Number },
     status:               { type: String },
     appliedAt:            { type: Date },
+    interviewAt:          { type: Date, default: null },
     // ── denormalised from Jobs → Companies ───
+    companyId:            { type: Number },
     jobTitle:             { type: String },
+    jobEmploymentType:    { type: String },
     companyName:          { type: String },
     // ── denormalised from Users ───────────────
     applicantFirstName:   { type: String },
@@ -26,6 +29,7 @@ const ApplicationViewSchema = new mongoose.Schema(
 
 ApplicationViewSchema.index({ jobId: 1 });
 ApplicationViewSchema.index({ userId: 1 });
+ApplicationViewSchema.index({ companyId: 1 });
 ApplicationViewSchema.index({ status: 1 });
 
 module.exports = mongoose.model('ApplicationView', ApplicationViewSchema);

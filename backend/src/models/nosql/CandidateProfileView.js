@@ -17,6 +17,8 @@ const CandidateProfileViewSchema = new mongoose.Schema(
     headline:   { type: String, default: null },
     bio:        { type: String, default: null },
     location:   { type: String, default: null },
+    // ── freelance activation (Feature 1) ─────
+    freelanceActive: { type: Boolean, default: false },
     // ── denormalised skills ──────────────────
     skills: [
       {
