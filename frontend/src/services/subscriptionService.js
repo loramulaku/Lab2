@@ -31,6 +31,15 @@ export const subscriptionService = {
     return response.data;
   },
 
+  confirmCheckoutSession: async (sessionId) => {
+    const response = await axios.post(
+      `${API_URL}/subscriptions/confirm`,
+      { sessionId },
+      { headers: getAuthHeader() }
+    );
+    return response.data;
+  },
+
   cancelSubscription: async () => {
     const response = await axios.post(
       `${API_URL}/subscriptions/cancel`,
