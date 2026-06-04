@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import candidateService from '../services/candidateService';
+import FreelanceToggle from './freelance/FreelanceToggle';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
@@ -87,10 +89,10 @@ function getMenuItems(roles = []) {
   if (has('recruiter') || has('admin')) {
     items.push({ label: 'Company Page', href: '/recruiter/company', icon: <BuildingIcon /> });
   }
-  items.push(
-    { label: 'Dashboard', href: '/dashboard', icon: <GridIcon /> },
-    { label: 'Settings',  href: '/settings',  icon: <GearIcon /> },
-  );
+  const dashboardHref = has('admin') ? '/admin'
+    : has('recruiter') ? '/recruiter/dashboard'
+    : '/my-profile';
+  items.push({ label: 'Dashboard', href: dashboardHref, icon: <GridIcon /> });
   return items;
 }
 
@@ -124,7 +126,26 @@ export default function Header({ notificationCount = 0 }) {
   const location          = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [freelanceActive, setFreelanceActive] = useState(null); // null until loaded
   const dropdownRef                     = useRef(null);
+
+  const isCandidate = (user?.roles ?? []).includes('candidate');
+
+  // Load freelance state for candidates so the menu toggle reflects reality.
+  useEffect(() => {
+    let cancelled = false;
+    if (isCandidate) {
+      candidateService.getProfile()
+        .then(p => { if (!cancelled) setFreelanceActive(!!p.freelanceActive); })
+        .catch(() => {});
+    }
+    return () => { cancelled = true; };
+  }, [isCandidate]);
+
+  const handleFreelanceToggle = async (next) => {
+    await candidateService.setFreelanceMode(next);
+    setFreelanceActive(next);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -247,6 +268,13 @@ export default function Header({ notificationCount = 0 }) {
                     </Link>
                   ))}
                 </div>
+
+                {/* Activate Freelance — candidate side-nav placement */}
+                {isCandidate && freelanceActive !== null && (
+                  <div className="border-t border-gray-100 py-1.5">
+                    <FreelanceToggle compact active={freelanceActive} onChange={handleFreelanceToggle} />
+                  </div>
+                )}
 
                 {/* Sign out */}
                 <div className="border-t border-gray-100 py-1.5">

@@ -1,5 +1,8 @@
 const GetCandidateProfileQuery      = require('../application/candidate/queries/GetCandidateProfile.query');
 const UpdateCandidateProfileCommand = require('../application/candidate/commands/UpdateCandidateProfile.command');
+const SetFreelanceModeCommand       = require('../application/candidate/commands/SetFreelanceMode.command');
+const ApplyToJobCommand             = require('../application/application/commands/ApplyToJob.command');
+const GetMyApplicationsQuery        = require('../application/application/queries/GetMyApplications.query');
 const AddSkillCommand               = require('../application/candidate/commands/AddSkill.command');
 const DeleteSkillCommand            = require('../application/candidate/commands/DeleteSkill.command');
 const AddExperienceCommand          = require('../application/candidate/commands/AddExperience.command');
@@ -11,6 +14,9 @@ const DeleteEducationCommand        = require('../application/candidate/commands
 
 const getCandidateProfileHandler    = require('../application/candidate/handlers/GetCandidateProfileHandler');
 const updateCandidateProfileHandler = require('../application/candidate/handlers/UpdateCandidateProfileHandler');
+const setFreelanceModeHandler       = require('../application/candidate/handlers/SetFreelanceModeHandler');
+const applyToJobHandler             = require('../application/application/handlers/ApplyToJobHandler');
+const getMyApplicationsHandler      = require('../application/application/handlers/GetMyApplicationsHandler');
 const addSkillHandler               = require('../application/candidate/handlers/AddSkillHandler');
 const deleteSkillHandler            = require('../application/candidate/handlers/DeleteSkillHandler');
 const addExperienceHandler          = require('../application/candidate/handlers/AddExperienceHandler');
@@ -21,12 +27,22 @@ const updateEducationHandler        = require('../application/candidate/handlers
 const deleteEducationHandler        = require('../application/candidate/handlers/DeleteEducationHandler');
 
 const CandidateProfileDTO = require('../dtos/candidate.dto');
+const ApplicationDTO      = require('../dtos/application.dto');
 
 const getProfile      = (req, res) => getCandidateProfileHandler.handle(new GetCandidateProfileQuery(req.user.id))
   .then(r => r ? res.json(CandidateProfileDTO.from(r)) : res.status(404).json({ message: 'Profile not found' }));
 
 const updateProfile   = (req, res) => updateCandidateProfileHandler.handle(new UpdateCandidateProfileCommand({ userId: req.user.id, ...req.body }))
   .then(r => res.json(r));
+
+const setFreelanceMode = (req, res) => setFreelanceModeHandler.handle(new SetFreelanceModeCommand({ userId: req.user.id, active: req.body.active }))
+  .then(r => res.json(r));
+
+const applyToJob = (req, res) => applyToJobHandler.handle(new ApplyToJobCommand({ userId: req.user.id, jobId: req.body.jobId }))
+  .then(r => res.status(201).json(r));
+
+const getMyApplications = (req, res) => getMyApplicationsHandler.handle(new GetMyApplicationsQuery(req.user.id, req.query))
+  .then(r => res.json({ ...r, data: ApplicationDTO.fromList(r.data) }));
 
 const addSkill        = (req, res) => addSkillHandler.handle(new AddSkillCommand({ userId: req.user.id, ...req.body }))
   .then(r => res.status(201).json(r));
@@ -53,7 +69,8 @@ const deleteEducation = (req, res) => deleteEducationHandler.handle(new DeleteEd
   .then(r => res.json(r));
 
 module.exports = {
-  getProfile, updateProfile,
+  getProfile, updateProfile, setFreelanceMode,
+  applyToJob, getMyApplications,
   addSkill, deleteSkill,
   addExperience, updateExperience, deleteExperience,
   addEducation, updateEducation, deleteEducation,

@@ -11,7 +11,9 @@ const { paginate } = require('../../../utils/pagination');
  */
 class SearchFreelancersHandler {
   async handle(query) {
-    const filter = {};
+    // Mode B may only surface candidates who have opted into freelance mode
+    // (Feature 1). freelanceActive is projected onto CandidateProfileView.
+    const filter = { freelanceActive: true };
 
     if (query.skills?.length) {
       filter['skills.name'] = { $all: query.skills };

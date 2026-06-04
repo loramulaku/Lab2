@@ -1,3 +1,23 @@
 const ApplicationView  = require('../../models/nosql/ApplicationView');
 const createMongoRepo  = require('./_factory');
-module.exports = createMongoRepo(ApplicationView);
+const { paginate }     = require('../../utils/pagination');
+
+/**
+ * MongoDB READ repository for ApplicationView.
+ * Only query handlers should call this.
+ */
+module.exports = {
+  ...createMongoRepo(ApplicationView),
+
+  async findByUser(userId, { status, page, limit } = {}) {
+    const filter = { userId: Number(userId) };
+    if (status) filter.status = status;
+    return paginate(ApplicationView, filter, { page, limit });
+  },
+
+  async findByCompany(companyId, { status, page, limit } = {}) {
+    const filter = { companyId: Number(companyId) };
+    if (status) filter.status = status;
+    return paginate(ApplicationView, filter, { page, limit });
+  },
+};

@@ -31,4 +31,8 @@ router.get('/profile',       c.getProfile);
 router.post('/setup',        c.setup);
 router.post('/logo', logoUpload.single('logo'), c.uploadLogo);
 
+// Applicants & Candidates — Job Seekers (standard-employment applications)
+router.get('/applicants',                    c.getApplicants);
+router.post('/applicants/:id/interview',     c.scheduleInterview);
+
 module.exports = router;

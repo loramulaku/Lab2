@@ -11,6 +11,8 @@ import StatCard         from '../../components/StatCard';
 import SkillBadge       from '../../components/SkillBadge';
 import TabNav           from '../../components/TabNav';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import FreelanceToggle  from '../../components/freelance/FreelanceToggle';
+import FreelancePanel   from '../../components/freelance/FreelancePanel';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
@@ -18,7 +20,7 @@ const avatarSrc = (path) => path ? `${API_BASE}${path}` : null;
 const fmtDate   = (d) => d ? d.slice(0, 7) : 'Present';
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-const TABS   = ['Profile', 'Skills', 'Experience', 'Education'];
+const BASE_TABS = ['Profile', 'Skills', 'Experience', 'Education'];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/></svg>;
@@ -408,6 +410,11 @@ export default function MyProfile() {
 
   const handleSaveProfile   = async (form) => { await candidateService.updateProfile(form); await load(); };
   const handleAvatarUpload  = async (file) => { await candidateService.uploadAvatar(file); await load(); };
+  const handleFreelanceToggle = async (next) => {
+    await candidateService.setFreelanceMode(next);
+    if (!next && tab === 'Freelance') setTab('Profile');
+    await load();
+  };
 
   const handleSkillAdd    = async (p)    => { const s = await candidateService.addSkill(p);    setData(d => ({ ...d, skills: [...d.skills, s],      stats: { ...d.stats, skillsListed:     d.stats.skillsListed + 1 } })); };
   const handleSkillDelete = async (id)   => { await candidateService.deleteSkill(id);           setData(d => ({ ...d, skills: d.skills.filter(s => s.skillId !== id), stats: { ...d.stats, skillsListed:     d.stats.skillsListed - 1 } })); };
@@ -423,19 +430,24 @@ export default function MyProfile() {
   if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">{error}</div>;
   if (!data)  return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading…</div>;
 
+  const tabs = data.freelanceActive ? [...BASE_TABS, 'Freelance'] : BASE_TABS;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="max-w-3xl mx-auto pt-24 pb-8 px-4">
         <ProfileHeader profile={data} onSave={handleSaveProfile} onAvatarUpload={handleAvatarUpload} />
 
+        <FreelanceToggle active={!!data.freelanceActive} onChange={handleFreelanceToggle} />
+
         <div className="bg-white border border-gray-200">
-          <TabNav tabs={TABS} active={tab} onChange={setTab} />
+          <TabNav tabs={tabs} active={tab} onChange={setTab} />
           <div className="p-6">
             {tab === 'Profile'    && <ProfileTab stats={data.stats} skills={data.skills} />}
             {tab === 'Skills'     && <SkillsTab skills={data.skills} onAdd={handleSkillAdd} onDelete={handleSkillDelete} />}
             {tab === 'Experience' && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}
             {tab === 'Education'  && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}
+            {tab === 'Freelance'  && <FreelancePanel />}
           </div>
         </div>
       </div>
