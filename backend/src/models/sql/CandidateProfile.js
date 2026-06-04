@@ -7,6 +7,7 @@ const CandidateProfile = sequelize.define('CandidateProfile', {
   headline: { type: DataTypes.STRING(255) },
   bio:      { type: DataTypes.TEXT },
   location: { type: DataTypes.STRING(150) },
+  freelanceActive: { type: DataTypes.BOOLEAN, defaultValue: false, field: 'freelance_active' },
 }, {
   tableName: 'CandidateProfiles',
   timestamps: false,

@@ -8,6 +8,7 @@ const Application = sequelize.define('Application', {
   stageId:   { type: DataTypes.INTEGER, field: 'stage_id' },
   status:    { type: DataTypes.STRING(50) },
   appliedAt: { type: DataTypes.DATE, field: 'applied_at' },
+  interviewAt: { type: DataTypes.DATE, field: 'interview_at', allowNull: true },
 }, {
   tableName: 'Applications',
   timestamps: false,

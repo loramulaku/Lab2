@@ -2,11 +2,26 @@ const GetRecruiterProfileQuery = require('../application/recruiter/queries/GetRe
 const SetupRecruiterCommand    = require('../application/recruiter/commands/SetupRecruiter.command');
 const UploadLogoCommand        = require('../application/recruiter/commands/UploadLogo.command');
 
+const GetCompanyApplicantsQuery  = require('../application/application/queries/GetCompanyApplicants.query');
+const ScheduleInterviewCommand   = require('../application/application/commands/ScheduleInterview.command');
+
 const getRecruiterProfileHandler = require('../application/recruiter/handlers/GetRecruiterProfileHandler');
 const setupRecruiterHandler      = require('../application/recruiter/handlers/SetupRecruiterHandler');
 const uploadLogoHandler          = require('../application/recruiter/handlers/UploadLogoHandler');
+const getCompanyApplicantsHandler = require('../application/application/handlers/GetCompanyApplicantsHandler');
+const scheduleInterviewHandler    = require('../application/application/handlers/ScheduleInterviewHandler');
 
+const RecruiterProfile    = require('../models/sql/RecruiterProfile');
 const RecruiterProfileDTO = require('../dtos/recruiter.dto');
+const ApplicationDTO      = require('../dtos/application.dto');
+
+// companyId lives in the JWT, but a recruiter who set up their company after
+// their last login won't have it yet — fall back to the RecruiterProfile row.
+async function resolveCompanyId(req) {
+  if (req.user.companyId) return req.user.companyId;
+  const profile = await RecruiterProfile.findOne({ where: { userId: req.user.id } });
+  return profile?.companyId ?? null;
+}
 
 const getProfile = (req, res) =>
   getRecruiterProfileHandler.handle(new GetRecruiterProfileQuery(req.user.id))
@@ -23,4 +38,22 @@ const uploadLogo = (req, res) => {
     .then(r => res.json(r));
 };
 
-module.exports = { getProfile, setup, uploadLogo };
+const getApplicants = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    const result = await getCompanyApplicantsHandler.handle(new GetCompanyApplicantsQuery(companyId, req.query));
+    res.json({ ...result, data: ApplicationDTO.fromList(result.data) });
+  } catch (err) { next(err); }
+};
+
+const scheduleInterview = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    const result = await scheduleInterviewHandler.handle(new ScheduleInterviewCommand({
+      applicationId: req.params.id, companyId, interviewAt: req.body.interviewAt,
+    }));
+    res.json(result);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getProfile, setup, uploadLogo, getApplicants, scheduleInterview };

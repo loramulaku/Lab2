@@ -15,9 +15,21 @@ import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import MyProfile from './pages/candidate/MyProfile';
+import PublicJobs from './pages/Jobs';
 import CompanySetup from './pages/recruiter/CompanySetup';
-import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
-import Subscription from './pages/recruiter/Subscription';
+import Overview from './pages/recruiter/Overview';
+import MyJobs from './pages/recruiter/MyJobs';
+import ArchivedJobs from './pages/recruiter/ArchivedJobs';
+import JobSeekers from './pages/recruiter/JobSeekers';
+import FreelanceApplicants from './pages/recruiter/FreelanceApplicants';
+import SearchInvite from './pages/recruiter/SearchInvite';
+import InvitedFreelancers from './pages/recruiter/InvitedFreelancers';
+import BidsReceived from './pages/recruiter/BidsReceived';
+import Contracts from './pages/recruiter/Contracts';
+import CurrentPlan from './pages/recruiter/billing/CurrentPlan';
+import BuyUpgrade from './pages/recruiter/billing/BuyUpgrade';
+import Invoices from './pages/recruiter/billing/Invoices';
+import TeamMembers from './pages/recruiter/TeamMembers';
 import PaymentSuccess from './pages/recruiter/PaymentSuccess';
 import PaymentCancelled from './pages/recruiter/PaymentCancelled';
 import Chat from './pages/chat/Chat';
@@ -81,30 +93,31 @@ function AppShell() {
       } />
 
       {/* Recruiter */}
-      <Route path="/recruiter/dashboard" element={
-        <ProtectedRoute roles={['recruiter']}>
-          <RecruiterDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/recruiter/company" element={
-        <ProtectedRoute roles={['recruiter']}>
-          <CompanySetup />
-        </ProtectedRoute>
-      } />
+      {[
+        ['/recruiter/dashboard',            <Overview />],
+        ['/recruiter/jobs',                 <MyJobs />],
+        ['/recruiter/jobs/archived',        <ArchivedJobs />],
+        ['/recruiter/applicants/job-seekers', <JobSeekers />],
+        ['/recruiter/applicants/freelance', <FreelanceApplicants />],
+        ['/recruiter/freelancers/active',   <SearchInvite />],
+        ['/recruiter/freelancers/invited',  <InvitedFreelancers />],
+        ['/recruiter/bids',                 <BidsReceived />],
+        ['/recruiter/contracts',            <Contracts />],
+        ['/recruiter/billing/plan',         <CurrentPlan />],
+        ['/recruiter/billing/upgrade',      <BuyUpgrade />],
+        ['/recruiter/billing/invoices',     <Invoices />],
+        ['/recruiter/users',                <TeamMembers />],
+        ['/recruiter/company',              <CompanySetup />],
+        ['/recruiter/payment/success',      <PaymentSuccess />],
+        ['/recruiter/payment/cancelled',    <PaymentCancelled />],
+      ].map(([path, element]) => (
+        <Route key={path} path={path} element={
+          <ProtectedRoute roles={['recruiter']}>{element}</ProtectedRoute>
+        } />
+      ))}
+      {/* Back-compat: old subscription link → current plan */}
       <Route path="/recruiter/subscription" element={
-        <ProtectedRoute roles={['recruiter']}>
-          <Subscription />
-        </ProtectedRoute>
-      } />
-      <Route path="/recruiter/payment/success" element={
-        <ProtectedRoute roles={['recruiter']}>
-          <PaymentSuccess />
-        </ProtectedRoute>
-      } />
-      <Route path="/recruiter/payment/cancelled" element={
-        <ProtectedRoute roles={['recruiter']}>
-          <PaymentCancelled />
-        </ProtectedRoute>
+        <ProtectedRoute roles={['recruiter']}><Navigate to="/recruiter/billing/plan" replace /></ProtectedRoute>
       } />
       <Route path="/recruiter/*" element={
         <ProtectedRoute roles={['recruiter']}>
@@ -155,6 +168,10 @@ function AppShell() {
     <Chat />
   </ProtectedRoute>
 } />
+
+      {/* Public job board + header filters */}
+      <Route path="/jobs"          element={<PublicJobs />} />
+      <Route path="/jobs/:filter"  element={<PublicJobs />} />
 
       {/* Public home */}
       <Route path="/" element={<Home />} />

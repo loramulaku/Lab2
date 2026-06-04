@@ -66,6 +66,7 @@ async function syncCandidate(userId) {
     headline:   profile?.headline  ?? null,
     bio:        profile?.bio       ?? null,
     location:   profile?.location  ?? null,
+    freelanceActive: profile?.freelanceActive ?? false,
     skills,
     experiences: experiences.map(e => ({
       id:          e.id,
