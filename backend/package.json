@@ -15,7 +15,8 @@
     "test:handlers": "jest --forceExit --runInBand --testPathPatterns=tests/handlers",
     "seed:roles": "node src/seeders/seed-admin-role.js",
     "seed:admin-user": "node src/seeders/seed-admin-user.js",
-    "setup": "npm run db:migrate && npm run seed:roles && npm run seed:admin-user"
+    "setup": "npm run db:migrate && npm run seed:roles && npm run seed:admin-user",
+    "stripe:webhook": "stripe listen --forward-to localhost:3001/api/subscriptions/webhook"
   },
   "jest": {
     "testEnvironment": "node",

@@ -9,10 +9,15 @@ const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
+
     const confirm = async () => {
       try {
-        await new Promise((r) => setTimeout(r, 2000));
-        const sub = await subscriptionService.getMySubscription();
+        const sub = await subscriptionService.confirmCheckoutSession(sessionId);
         setSubscription(sub);
       } catch (err) {
         console.error('Could not verify subscription:', err);
@@ -21,8 +26,7 @@ const PaymentSuccess = () => {
       }
     };
     confirm();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   if (loading) {
     return (

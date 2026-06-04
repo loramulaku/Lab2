@@ -7,6 +7,7 @@ const role         = require('../middlewares/role');
 router.post('/webhook', subCtrl.webhook);
 
 router.post('/checkout', auth, role('recruiter'), subCtrl.checkout);
+router.post('/confirm',  auth, role('recruiter'), subCtrl.confirm);
 router.get('/my',        auth, role('recruiter'), subCtrl.getMy);
 router.post('/cancel',   auth, role('recruiter'), subCtrl.cancel);
 router.get('/',          auth, role('admin'),      subCtrl.getAll);

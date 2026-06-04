@@ -2,11 +2,13 @@ const stripe                          = require('../config/stripe');
 const CreateCheckoutSessionCommand    = require('../application/subscription/commands/CreateCheckoutSession.command');
 const CancelSubscriptionCommand       = require('../application/subscription/commands/CancelSubscription.command');
 const HandleStripeWebhookCommand      = require('../application/subscription/commands/HandleStripeWebhook.command');
+const ConfirmCheckoutSessionCommand   = require('../application/subscription/commands/ConfirmCheckoutSession.command');
 const GetMySubscriptionQuery          = require('../application/subscription/queries/GetMySubscription.query');
 const GetAllSubscriptionsQuery        = require('../application/subscription/queries/GetAllSubscriptions.query');
 const createCheckoutSessionHandler    = require('../application/subscription/handlers/CreateCheckoutSessionHandler');
 const cancelSubscriptionHandler       = require('../application/subscription/handlers/CancelSubscriptionHandler');
 const handleStripeWebhookHandler      = require('../application/subscription/handlers/HandleStripeWebhookHandler');
+const confirmCheckoutSessionHandler   = require('../application/subscription/handlers/ConfirmCheckoutSessionHandler');
 const getMySubscriptionHandler        = require('../application/subscription/handlers/GetMySubscriptionHandler');
 const getAllSubscriptionsHandler       = require('../application/subscription/handlers/GetAllSubscriptionsHandler');
 const SubscriptionDTO                 = require('../dtos/subscription.dto');
@@ -38,6 +40,14 @@ const checkout = (req, res, next) =>
     companyName: req.user.companyName,
   })).then(r => res.json(r)).catch(next);
 
+const confirm = (req, res, next) =>
+  confirmCheckoutSessionHandler.handle(new ConfirmCheckoutSessionCommand({
+    companyId: req.user.companyId,
+    sessionId: req.body.sessionId,
+  }))
+    .then(r => r ? res.json(SubscriptionDTO.from(r)) : res.json(null))
+    .catch(next);
+
 const getMy = (req, res, next) =>
   getMySubscriptionHandler.handle(new GetMySubscriptionQuery(req.user.companyId))
     .then(r => r ? res.json(SubscriptionDTO.from(r)) : res.json(null))
@@ -53,4 +63,4 @@ const getAll = (req, res, next) =>
     .then(r => res.json(r))
     .catch(next);
 
-module.exports = { webhook, checkout, getMy, cancel, getAll };
+module.exports = { webhook, checkout, confirm, getMy, cancel, getAll };
