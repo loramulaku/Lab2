@@ -4,8 +4,8 @@ export default function LeftPanel({ sectionId = 'login-left' }) {
   const s = usePageSection('login', 'login-left');
 
   const bgColor = s.bgColor ?? '#2B3FE7';
-  const heading = s.heading ?? 'Join 50,000+ professionals\nalready on HireFlow';
-  const subtext = s.subtext ?? "Whether you're looking for your next role or building a world-class team, HireFlow gives you the tools to succeed.";
+  const heading = s.heading ?? 'Join 50,000+ professionals\nalready on HireWire';
+  const subtext = s.subtext ?? "Whether you're looking for your next role or building a world-class team, HireWire gives you the tools to succeed.";
 
   const features = [
     'Free account forever',
@@ -28,7 +28,7 @@ export default function LeftPanel({ sectionId = 'login-left' }) {
             <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
           </svg>
         </div>
-        <span className="text-white font-bold text-xl">HireFlow</span>
+        <span className="text-white font-bold text-xl">HireWire</span>
       </div>
 
       <div className="space-y-8">

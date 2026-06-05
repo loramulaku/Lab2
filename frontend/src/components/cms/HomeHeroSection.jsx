@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function HomeHeroSection({ sectionId, settings: s = {} }) {
   const bgFrom        = s.bgFrom        ?? '#7c3aed';
   const bgTo          = s.bgTo          ?? '#ec4899';
-  const title         = s.title         ?? 'Welcome to HireFlow';
+  const title         = s.title         ?? 'Welcome to HireWire';
   const subtitle      = s.subtitle      ?? 'Job Portal & Recruitment Platform';
   const btn1Text      = s.btn1Text      ?? 'Admin Login';
   const btn1BgColor   = s.btn1BgColor   ?? '#ffffff';

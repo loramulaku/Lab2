@@ -1,51 +1,18 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3001/api';
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import api from './api';
 
 export const subscriptionService = {
-  getPlans: async () => {
-    const response = await axios.get(`${API_URL}/plans`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getPlans: () =>
+    api.get('/plans').then(r => r.data),
 
-  getMySubscription: async () => {
-    const response = await axios.get(`${API_URL}/subscriptions/my`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getMySubscription: () =>
+    api.get('/subscriptions/my').then(r => r.data),
 
-  createCheckoutSession: async (planId) => {
-    const response = await axios.post(
-      `${API_URL}/subscriptions/checkout`,
-      { planId },
-      { headers: getAuthHeader() }
-    );
-    return response.data;
-  },
+  createCheckoutSession: (planId) =>
+    api.post('/subscriptions/checkout', { planId }).then(r => r.data),
 
-  confirmCheckoutSession: async (sessionId) => {
-    const response = await axios.post(
-      `${API_URL}/subscriptions/confirm`,
-      { sessionId },
-      { headers: getAuthHeader() }
-    );
-    return response.data;
-  },
+  cancelSubscription: () =>
+    api.post('/subscriptions/cancel').then(r => r.data),
 
-  cancelSubscription: async () => {
-    const response = await axios.post(
-      `${API_URL}/subscriptions/cancel`,
-      {},
-      { headers: getAuthHeader() }
-    );
-    return response.data;
-  },
+  confirmCheckout: (sessionId) =>
+    api.post('/subscriptions/confirm-checkout', { sessionId }).then(r => r.data),
 };

@@ -1,154 +1,36 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = 'http://localhost:3001/api';
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
+// All admin calls go through the shared api instance (auto token-refresh, Vite proxy)
 export const adminApi = {
-  getStats: async () => {
-    const response = await axios.get(`${API_URL}/admin/stats`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getStats:    ()       => api.get('/admin/stats').then(r => r.data),
+  getRoles:    ()       => api.get('/admin/roles').then(r => r.data),
 
-  getUsers: async (params) => {
-    const response = await axios.get(`${API_URL}/admin/users`, {
-      params,
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getUsers:    (params) => api.get('/admin/users',    { params }).then(r => r.data),
+  getUserById: (id)     => api.get(`/admin/users/${id}`).then(r => r.data),
+  createUser:  (data)   => api.post('/admin/users', data).then(r => r.data),
+  updateUser:  (id, d)  => api.put(`/admin/users/${id}`, d).then(r => r.data),
+  deleteUser:  (id)     => api.delete(`/admin/users/${id}`).then(r => r.data),
 
-  getUserById: async (id) => {
-    const response = await axios.get(`${API_URL}/admin/users/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getJobs:     (params) => api.get('/admin/jobs',     { params }).then(r => r.data),
+  getJobById:  (id)     => api.get(`/admin/jobs/${id}`).then(r => r.data),
+  updateJob:   (id, d)  => api.put(`/admin/jobs/${id}`, d).then(r => r.data),
+  deleteJob:   (id)     => api.delete(`/admin/jobs/${id}`).then(r => r.data),
 
-  createUser: async (data) => {
-    const response = await axios.post(`${API_URL}/admin/users`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getCompanies:    (p)  => api.get('/admin/companies',     { params: p }).then(r => r.data),
+  getCompanyById:  (id) => api.get(`/admin/companies/${id}`).then(r => r.data),
+  updateCompany:   (id, d) => api.put(`/admin/companies/${id}`, d).then(r => r.data),
+  deleteCompany:   (id) => api.delete(`/admin/companies/${id}`).then(r => r.data),
 
-  updateUser: async (id, data) => {
-    const response = await axios.put(`${API_URL}/admin/users/${id}`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getApplications: (p)  => api.get('/admin/applications', { params: p }).then(r => r.data),
 
-  deleteUser: async (id) => {
-    const response = await axios.delete(`${API_URL}/admin/users/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  getPlans:    ()       => api.get('/plans').then(r => r.data),
+  createPlan:  (data)   => api.post('/plans', data).then(r => r.data),
+  updatePlan:  (id, d)  => api.put(`/plans/${id}`, d).then(r => r.data),
+  deletePlan:  (id)     => api.delete(`/plans/${id}`).then(r => r.data),
 
-  getJobs: async (params) => {
-    const response = await axios.get(`${API_URL}/admin/jobs`, {
-      params,
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getJobById: async (id) => {
-    const response = await axios.get(`${API_URL}/admin/jobs/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  updateJob: async (id, data) => {
-    const response = await axios.put(`${API_URL}/admin/jobs/${id}`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  deleteJob: async (id) => {
-    const response = await axios.delete(`${API_URL}/admin/jobs/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getCompanies: async (params) => {
-    const response = await axios.get(`${API_URL}/admin/companies`, {
-      params,
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getCompanyById: async (id) => {
-    const response = await axios.get(`${API_URL}/admin/companies/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  updateCompany: async (id, data) => {
-    const response = await axios.put(`${API_URL}/admin/companies/${id}`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  deleteCompany: async (id) => {
-    const response = await axios.delete(`${API_URL}/admin/companies/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getApplications: async (params) => {
-    const response = await axios.get(`${API_URL}/admin/applications`, {
-      params,
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getRoles: async () => {
-    const response = await axios.get(`${API_URL}/admin/roles`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  getPlans: async () => {
-    const response = await axios.get(`${API_URL}/plans`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  createPlan: async (data) => {
-    const response = await axios.post(`${API_URL}/plans`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  updatePlan: async (id, data) => {
-    const response = await axios.put(`${API_URL}/plans/${id}`, data, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
-
-  deletePlan: async (id) => {
-    const response = await axios.delete(`${API_URL}/plans/${id}`, {
-      headers: getAuthHeader(),
-    });
-    return response.data;
-  },
+  // ── Categories (admin CRUD) ────────────────────────────────────────────────
+  getCategories:    ()      => api.get('/admin/categories').then(r => r.data),
+  createCategory:   (data)  => api.post('/admin/categories', data).then(r => r.data),
+  updateCategory:   (id, d) => api.put(`/admin/categories/${id}`, d).then(r => r.data),
+  deleteCategory:   (id)    => api.delete(`/admin/categories/${id}`).then(r => r.data),
 };

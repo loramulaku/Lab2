@@ -77,9 +77,21 @@ async function syncJob(jobId) {
     expiresAt:       job.expiresAt,
     deadline:        job.deadline,
     createdAt:       job.createdAt,
+    responsibilities: job.responsibilities ?? null,
+    requirements:     job.requirements     ?? null,
+    niceToHave:       job.niceToHave       ?? null,
+    benefits:         job.benefits         ?? null,
     company: company
-      ? { id: company.id, name: company.name, website: company.website }
+      ? {
+          id:          company.id,
+          name:        company.name,
+          website:     company.website,
+          location:    company.location    ?? null,
+          logoPath:    company.logoPath    ?? null,
+          description: company.description ?? null,
+        }
       : null,
+    schedule: job.schedule ?? null,
     skills,
     categories,
   });
