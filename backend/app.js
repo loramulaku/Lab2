@@ -17,6 +17,7 @@ const uploadRoutes       = require('./src/routes/upload.routes');
 const themeRoutes        = require('./src/routes/theme.routes');
 const pipelineRoutes     = require('./src/routes/pipeline.routes');
 const planRoutes         = require('./src/routes/plan.routes');
+const categoryRoutes     = require('./src/routes/category.routes');
 const subscriptionRoutes = require('./src/routes/subscription.routes');
 const bidRoutes          = require('./src/routes/bid.routes');
 const invitationRoutes   = require('./src/routes/invitation.routes');
@@ -31,8 +32,8 @@ app.use(cors({ origin: true, credentials: true }));
 app.use('/api/notifications', notificationRoutes);
 app.use(cookieParser());
 
-// Stripe webhook must receive the raw body before express.json() parses it
-app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }), subscriptionRoutes);
+// Stripe webhook must receive the raw body — apply raw parser only to that route
+app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -47,6 +48,7 @@ app.use('/api/upload',    uploadRoutes);
 app.use('/api/theme',     themeRoutes);
 app.use('/api/pipeline',      pipelineRoutes);
 app.use('/api/plans',         planRoutes);
+app.use('/api/categories',   categoryRoutes);
 app.use('/api/contracts',     contractRoutes);
 // Hybrid hiring flow — full paths declared inside the routers (e.g. /jobs/:id/bids)
 app.use('/api', bidRoutes);
