@@ -4,6 +4,7 @@
   "description": "Job Portal API — Node.js + Express, MySQL (Sequelize) + MongoDB (Mongoose), CQRS pattern",
   "main": "app.js",
   "scripts": {
+    "prestart": "node scripts/kill-port.js",
     "start": "node app.js",
     "dev": "nodemon app.js",
     "db:migrate": "sequelize-cli db:migrate",

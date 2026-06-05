@@ -67,9 +67,9 @@ const ChevronDownIcon = ({ open }) => (
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
-  { label: 'Full-time', href: '/jobs/full-time'  },
-  { label: 'Part-time', href: '/jobs/part-time'  },
-  { label: 'Freelance', href: '/jobs/freelance'  },
+  { label: 'Home',        href: '/'     },
+  { label: 'Browse Jobs', href: '/jobs' },
+  { label: 'Contact',     href: '/contact' },
 ];
 
 const ROLE_BADGE = {
@@ -175,32 +175,40 @@ export default function Header({ notificationCount = 0 }) {
   const menuItems  = getMenuItems(roles);
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-blue-950/80 backdrop-blur-md backdrop-saturate-150 border-b border-blue-800/50">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
+    <header
+      className="fixed top-0 inset-x-0 z-50"
+      style={{
+        background: 'transparent',
+        borderBottom: '1px solid rgba(255,255,255,0.28)',
+        boxShadow: '0 1px 12px 0 rgba(255,255,255,0.07)',
+      }}
+    >
+      <div className="relative max-w-7xl mx-auto px-6 h-16 flex items-center">
 
-        {/* ── Logo ── */}
+        {/* ── Logo (left) ── */}
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
           <div className="bg-blue-500 rounded-xl p-1.5 group-hover:bg-blue-400 transition">
             <BriefcaseIcon />
           </div>
-          <span className="text-white font-bold text-lg tracking-tight">
-            Hire<span className="text-blue-300">Flow</span>
+          <span className="text-white font-bold text-lg tracking-tight drop-shadow">
+            Hire<span className="text-blue-300">Wire</span>
           </span>
         </Link>
 
-        {/* ── Nav links ── */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* ── Nav links — absolutely centred ── */}
+        <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
           {NAV_LINKS.map(({ label, href }) => {
             const active = location.pathname === href;
             return (
               <Link
                 key={href}
                 to={href}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
+                className={`px-4 py-1.5 text-sm font-semibold tracking-wide transition border drop-shadow ${
                   active
-                    ? 'bg-white/15 text-white'
-                    : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                    ? 'border-white/50 bg-white/20 text-white'
+                    : 'border-transparent text-white hover:border-white/30 hover:bg-white/10 hover:text-white'
                 }`}
+                style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
               >
                 {label}
               </Link>

@@ -29,7 +29,7 @@ export const DEFAULT_THEME_CONFIG = {
         {
           id: 'home-hero', type: 'home-hero', order: 0, visible: true,
           settings: {
-            title:         'Welcome to HireFlow',
+            title:         'Welcome to HireWire',
             subtitle:      'Job Portal & Recruitment Platform',
             bgFrom:        '#7c3aed',
             bgTo:          '#ec4899',
@@ -45,7 +45,7 @@ export const DEFAULT_THEME_CONFIG = {
           id: 'home-guide', type: 'home-guide', order: 1, visible: true,
           settings: {
             guideTitle:  'Quick Start Guide',
-            step1:       'Register a new account or use: admin@hireflow.com / admin123',
+            step1:       'Register a new account or use: admin@hirewire.com / admin123',
             step2:       'Assign admin role in MySQL Workbench (see SQL file in backend folder)',
             step3:       'Login and navigate to /admin to access the admin dashboard',
             bgColor:     '#7c3aed',
@@ -64,8 +64,8 @@ export const DEFAULT_THEME_CONFIG = {
           id: 'login-left', type: 'login-left', order: 0, visible: true,
           settings: {
             bgColor: '#2B3FE7',
-            heading: 'Join 50,000+ professionals\nalready on HireFlow',
-            subtext: "Whether you're looking for your next role or building a world-class team, HireFlow gives you the tools to succeed.",
+            heading: 'Join 50,000+ professionals\nalready on HireWire',
+            subtext: "Whether you're looking for your next role or building a world-class team, HireWire gives you the tools to succeed.",
           },
         },
         {

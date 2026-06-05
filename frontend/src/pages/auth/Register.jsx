@@ -70,7 +70,7 @@ export default function Register() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const pickRole = (r) => { setRole(r); navigate('/login'); };
+  const pickRole = (r) => { setRole(r); setStep(2); };
 
   const goBack = () => { setStep(1); clearError(); setConfirmErr(''); };
 
