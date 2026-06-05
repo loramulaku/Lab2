@@ -1,5 +1,6 @@
 const jobMysqlRepo          = require('../../../repositories/mysql/job.repo');
 const subscriptionMysqlRepo = require('../../../repositories/mysql/subscription.repo');
+const JobCategory           = require('../../../models/sql/JobCategory');
 const Job                   = require('../../../models/sql/Job');
 const { syncJobSafe }       = require('../../../sync/jobSync');
 
@@ -19,7 +20,6 @@ class CreateJobHandler {
     }
 
     const sub = await subscriptionMysqlRepo.findActiveByCompanyId(command.companyId);
-
     if (!sub) {
       const err = new Error('You need a subscription to post a job');
       err.status = 403;
@@ -38,7 +38,16 @@ class CreateJobHandler {
       }
     }
 
-    const job = await jobMysqlRepo.create(command);
+    // Destructure category before passing to the SQL model
+    const { categoryId, invitees, ...jobData } = command;
+
+    const job = await jobMysqlRepo.create(jobData);
+
+    // Save category association if provided
+    if (categoryId) {
+      await JobCategory.create({ jobId: job.id, categoryId: Number(categoryId) });
+    }
+
     syncJobSafe(job.id);
     return job;
   }

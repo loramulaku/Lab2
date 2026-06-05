@@ -33,4 +33,9 @@ router.post('/theme', themeCtrl.update);
 router.put('/theme/:id', themeCtrl.update);
 router.post('/theme/:id/activate', themeCtrl.setActive);
 
+router.get('/categories',        adminCtrl.getCategories);
+router.post('/categories',       adminCtrl.createCategory);
+router.put('/categories/:id',    adminCtrl.updateCategory);
+router.delete('/categories/:id', adminCtrl.deleteCategory);
+
 module.exports = router;

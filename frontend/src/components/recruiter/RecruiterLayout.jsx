@@ -65,7 +65,7 @@ export default function RecruiterLayout({ children, title }) {
     <div className="min-h-screen bg-gray-100">
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 overflow-y-auto">
         <div className="flex items-center h-16 px-6 bg-gray-800 sticky top-0">
-          <span className="text-xl font-bold text-white">HireFlow</span>
+          <span className="text-xl font-bold text-white">HireWire</span>
           <span className="ml-2 text-xs text-blue-300 font-medium">Recruiter</span>
         </div>
 
