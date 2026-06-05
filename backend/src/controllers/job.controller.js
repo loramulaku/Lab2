@@ -13,7 +13,7 @@ const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdH
 const JobDTO                  = require('../dtos/job.dto');
 
 const getAll = (req, res) =>
-  getJobsHandler.handle(new GetJobsQuery(req.query))
+  getJobsHandler.handle(new GetJobsQuery({ ...req.query, excludeInviteOnly: true }))
     .then(r => res.json({ ...r, data: JobDTO.fromList(r.data) }));
 
 const getById = (req, res) =>

@@ -3,6 +3,7 @@ const jobRepo = require('../repositories/mysql/job.repo');
 const companyRepo = require('../repositories/mysql/company.repo');
 const applicationRepo = require('../repositories/mysql/application.repo');
 const roleRepo = require('../repositories/mysql/role.repo');
+const Category = require('../models/sql/Category');
 const bcrypt = require('bcryptjs');
 
 const adminController = {
@@ -315,6 +316,59 @@ const adminController = {
       return res.status(500).json({ message: 'Failed to fetch roles' });
     }
   },
+
+  // ── Category CRUD ──────────────────────────────────────────────────────────
+
+  async getCategories(req, res) {
+    try {
+      const categories = await Category.findAll({ order: [['name', 'ASC']] });
+      return res.json(categories);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to fetch categories' });
+    }
+  },
+
+  async createCategory(req, res) {
+    try {
+      const { name } = req.body;
+      if (!name?.trim()) return res.status(400).json({ message: 'Name is required' });
+      const existing = await Category.findOne({ where: { name: name.trim() } });
+      if (existing) return res.status(409).json({ message: 'Category already exists' });
+      const category = await Category.create({ name: name.trim() });
+      return res.status(201).json(category);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to create category' });
+    }
+  },
+
+  async updateCategory(req, res) {
+    try {
+      const category = await Category.findByPk(req.params.id);
+      if (!category) return res.status(404).json({ message: 'Category not found' });
+      const { name } = req.body;
+      if (!name?.trim()) return res.status(400).json({ message: 'Name is required' });
+      await category.update({ name: name.trim() });
+      return res.json(category);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to update category' });
+    }
+  },
+
+  async deleteCategory(req, res) {
+    try {
+      const category = await Category.findByPk(req.params.id);
+      if (!category) return res.status(404).json({ message: 'Category not found' });
+      await category.destroy();
+      return res.json({ message: 'Category deleted' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to delete category' });
+    }
+  },
+
 };
 
 module.exports = adminController;

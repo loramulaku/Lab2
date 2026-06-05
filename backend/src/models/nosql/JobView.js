@@ -22,11 +22,21 @@ const JobViewSchema = new mongoose.Schema(
     deadline:       { type: Date },
     createdAt:      { type: Date },
     // ── denormalised ─────────────────────────
+    // ── rich-text detail sections ─────────────────────────────────
+    responsibilities: { type: String },
+    requirements:     { type: String },
+    niceToHave:       { type: String },
+    benefits:         { type: String },
+    // ── denormalised company snapshot ─────────────────────────────
     company: {
-      id:      { type: Number },
-      name:    { type: String },
-      website: { type: String },
+      id:          { type: Number },
+      name:        { type: String },
+      website:     { type: String },
+      location:    { type: String },
+      logoPath:    { type: String },
+      description: { type: String },
     },
+    schedule:         { type: mongoose.Schema.Types.Mixed },  // { days, startTime, endTime }
     skills:           [String],
     categories:       [String],
     applicationCount: { type: Number, default: 0 },
