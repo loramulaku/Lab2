@@ -42,7 +42,7 @@ const Register = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">HireFlow</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">HireWire</h1>
           <p className="text-gray-600">Create Account</p>
         </div>
 

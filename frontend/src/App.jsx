@@ -11,6 +11,8 @@ import Companies from './pages/admin/Companies';
 import Applications from './pages/admin/Applications';
 import ThemeEditor from './pages/admin/ThemeEditor';
 import Plans from './pages/admin/Plans';
+import Categories from './pages/admin/Categories';
+import JobDetail from './pages/JobDetail';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -23,6 +25,7 @@ import ArchivedJobs from './pages/recruiter/ArchivedJobs';
 import JobSeekers from './pages/recruiter/JobSeekers';
 import FreelanceApplicants from './pages/recruiter/FreelanceApplicants';
 import SearchInvite from './pages/recruiter/SearchInvite';
+import FreelancerPicker from './pages/recruiter/FreelancerPicker';
 import InvitedFreelancers from './pages/recruiter/InvitedFreelancers';
 import BidsReceived from './pages/recruiter/BidsReceived';
 import Contracts from './pages/recruiter/Contracts';
@@ -100,6 +103,7 @@ function AppShell() {
         ['/recruiter/applicants/job-seekers', <JobSeekers />],
         ['/recruiter/applicants/freelance', <FreelanceApplicants />],
         ['/recruiter/freelancers/active',   <SearchInvite />],
+        ['/recruiter/freelancers/pick',     <FreelancerPicker />],
         ['/recruiter/freelancers/invited',  <InvitedFreelancers />],
         ['/recruiter/bids',                 <BidsReceived />],
         ['/recruiter/contracts',            <Contracts />],
@@ -161,6 +165,11 @@ function AppShell() {
           <AdminLayout><Plans /></AdminLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/categories" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Categories /></AdminLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Chat */}
 <Route path="/chat" element={
@@ -168,6 +177,9 @@ function AppShell() {
     <Chat />
   </ProtectedRoute>
 } />
+
+      {/* Job detail */}
+      <Route path="/job/:id"       element={<JobDetail />} />
 
       {/* Public job board + header filters */}
       <Route path="/jobs"          element={<PublicJobs />} />
