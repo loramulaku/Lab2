@@ -45,13 +45,6 @@ const GridIcon = () => (
   </svg>
 );
 
-const GearIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-  </svg>
-);
-
 const SignOutIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -72,10 +65,10 @@ const NAV_LINKS = [
   { label: 'Contact',     href: '/contact' },
 ];
 
-const ROLE_BADGE = {
-  candidate: { label: 'Candidate', cls: 'bg-blue-500/30 text-blue-100 border border-blue-400/40'  },
-  recruiter:  { label: 'Recruiter', cls: 'bg-green-500/30 text-green-100 border border-green-400/40' },
-  admin:      { label: 'Admin',     cls: 'bg-purple-500/30 text-purple-100 border border-purple-400/40' },
+const ROLE_LABEL = {
+  candidate: 'Candidate',
+  recruiter: 'Recruiter',
+  admin:     'Admin',
 };
 
 // ── Role-aware dropdown menu items ────────────────────────────────────────────
@@ -107,12 +100,12 @@ function Avatar({ src, firstName, lastName, size = 'md' }) {
       <img
         src={src}
         alt={initials}
-        className={`${dim} rounded-full object-cover ring-2 ring-white/20 flex-shrink-0`}
+        className={`${dim} rounded-full object-cover ring-2 ring-white flex-shrink-0`}
       />
     );
   }
   return (
-    <div className={`${dim} rounded-full bg-blue-500/40 border border-blue-400/40 flex items-center justify-center font-semibold text-white flex-shrink-0`}>
+    <div className={`${dim} rounded-full bg-blue-600 flex items-center justify-center font-semibold text-white flex-shrink-0`}>
       {initials}
     </div>
   );
@@ -126,12 +119,11 @@ export default function Header({ notificationCount = 0 }) {
   const location          = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [freelanceActive, setFreelanceActive] = useState(null); // null until loaded
-  const dropdownRef                     = useRef(null);
+  const [freelanceActive, setFreelanceActive] = useState(null);
+  const dropdownRef = useRef(null);
 
   const isCandidate = (user?.roles ?? []).includes('candidate');
 
-  // Load freelance state for candidates so the menu toggle reflects reality.
   useEffect(() => {
     let cancelled = false;
     if (isCandidate) {
@@ -142,12 +134,6 @@ export default function Header({ notificationCount = 0 }) {
     return () => { cancelled = true; };
   }, [isCandidate]);
 
-  const handleFreelanceToggle = async (next) => {
-    await candidateService.setFreelanceMode(next);
-    setFreelanceActive(next);
-  };
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     function onClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -158,8 +144,12 @@ export default function Header({ notificationCount = 0 }) {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  // Close dropdown on route change
   useEffect(() => { setDropdownOpen(false); }, [location.pathname]);
+
+  const handleFreelanceToggle = async (next) => {
+    await candidateService.setFreelanceMode(next);
+    setFreelanceActive(next);
+  };
 
   const handleSignOut = async () => {
     setDropdownOpen(false);
@@ -167,103 +157,100 @@ export default function Header({ notificationCount = 0 }) {
     navigate('/login', { replace: true });
   };
 
-  const roles      = user?.roles ?? [];
+  const roles       = user?.roles ?? [];
   const primaryRole = roles[0] ?? 'candidate';
-  const badge      = ROLE_BADGE[primaryRole] ?? ROLE_BADGE.candidate;
-  const fullName   = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
-  const avatarSrc  = user?.avatarPath ? `${API_BASE}${user.avatarPath}` : null;
-  const menuItems  = getMenuItems(roles);
+  const roleLabel   = ROLE_LABEL[primaryRole] ?? ROLE_LABEL.candidate;
+  const fullName    = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
+  const displayName = fullName !== roleLabel ? fullName : (user?.email?.split('@')[0] ?? fullName);
+  const avatarSrc   = user?.avatarPath ? `${API_BASE}${user.avatarPath}` : null;
+  const menuItems   = getMenuItems(roles);
+
+  const iconBtn =
+    'relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/50 transition-colors';
 
   return (
-    <header
-      className="fixed top-0 inset-x-0 z-50"
-      style={{
-        background: 'transparent',
-        borderBottom: '1px solid rgba(255,255,255,0.28)',
-        boxShadow: '0 1px 12px 0 rgba(255,255,255,0.07)',
-      }}
-    >
-      <div className="relative max-w-7xl mx-auto px-6 h-16 flex items-center">
+    <header className="fixed top-0 inset-x-0 z-50 bg-blue-50/40 backdrop-blur-md border-b border-blue-200/40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
-        {/* ── Logo (left) ── */}
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-          <div className="bg-blue-500 rounded-xl p-1.5 group-hover:bg-blue-400 transition">
+          <div className="bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
             <BriefcaseIcon />
           </div>
-          <span className="text-white font-bold text-lg tracking-tight drop-shadow">
-            Hire<span className="text-blue-300">Wire</span>
+          <span className="text-gray-900 font-bold text-lg tracking-tight">
+            Hire<span className="text-blue-600">Wire</span>
           </span>
         </Link>
 
-        {/* ── Nav links — absolutely centred ── */}
-        <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+        {/* Nav */}
+        <nav className="hidden md:flex items-center justify-center gap-6">
           {NAV_LINKS.map(({ label, href }) => {
             const active = location.pathname === href;
             return (
               <Link
                 key={href}
                 to={href}
-                className={`px-4 py-1.5 text-sm font-semibold tracking-wide transition border drop-shadow ${
+                className={`relative py-1 text-sm transition-colors ${
                   active
-                    ? 'border-white/50 bg-white/20 text-white'
-                    : 'border-transparent text-white hover:border-white/30 hover:bg-white/10 hover:text-white'
+                    ? 'text-blue-700 font-medium'
+                    : 'text-gray-500 hover:text-gray-800'
                 }`}
-                style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
               >
                 {label}
+                {active && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* ── Spacer ── */}
-        <div className="flex-1" />
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-0.5 sm:gap-1">
 
-        {/* ── Right side icons ── */}
-        <div className="flex items-center gap-1">
-
-          {/* Notifications */}
-          <button className="relative p-2 rounded-lg text-blue-100/70 hover:bg-white/10 hover:text-white transition">
+          <button className={iconBtn} aria-label="Notifications">
             <BellIcon />
             {notificationCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
                 {notificationCount > 9 ? '9+' : notificationCount}
               </span>
             )}
           </button>
 
-          {/* Messages */}
-          <button className="p-2 rounded-lg text-blue-100/70 hover:bg-white/10 hover:text-white transition">
+          <button className={iconBtn} aria-label="Messages">
             <ChatIcon />
           </button>
 
-          {/* User profile + dropdown */}
-          <div className="relative ml-2" ref={dropdownRef}>
+          <div className="hidden sm:block w-px h-6 bg-blue-200/60 mx-1.5" aria-hidden />
+
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(o => !o)}
-              className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-xl hover:bg-white/10 transition"
+              className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5 hover:bg-white/50 transition-colors"
             >
-              <Avatar src={avatarSrc} firstName={user?.firstName} lastName={user?.lastName} />
-              <span className="hidden sm:block text-sm font-semibold text-white">
-                {user?.firstName ?? 'User'}
+              <Avatar
+                src={avatarSrc}
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                size="sm"
+              />
+              <span className="hidden sm:block text-sm text-gray-700 max-w-[6.5rem] truncate">
+                {displayName}
               </span>
-              <span className={`hidden sm:block text-xs font-medium px-2 py-0.5 rounded-full ${badge.cls}`}>
-                {badge.label}
+              <span className="text-gray-400">
+                <ChevronDownIcon open={dropdownOpen} />
               </span>
-              <ChevronDownIcon open={dropdownOpen} />
             </button>
 
-            {/* ── Dropdown ── */}
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden animate-fade-in">
 
-                {/* User info header */}
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/60">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{fullName}</p>
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
                   <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email ?? ''}</p>
+                  <p className="text-xs text-gray-400 mt-1">{roleLabel}</p>
                 </div>
 
-                {/* Menu items */}
                 <div className="py-1.5">
                   {menuItems.map(({ label, href, icon }) => (
                     <Link
@@ -277,14 +264,12 @@ export default function Header({ notificationCount = 0 }) {
                   ))}
                 </div>
 
-                {/* Activate Freelance — candidate side-nav placement */}
                 {isCandidate && freelanceActive !== null && (
                   <div className="border-t border-gray-100 py-1.5">
                     <FreelanceToggle compact active={freelanceActive} onChange={handleFreelanceToggle} />
                   </div>
                 )}
 
-                {/* Sign out */}
                 <div className="border-t border-gray-100 py-1.5">
                   <button
                     onClick={handleSignOut}

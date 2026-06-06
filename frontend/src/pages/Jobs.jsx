@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import Header from '../components/Header';
+import { PageShell } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import { useAuth } from '../context/AuthContext';
@@ -233,9 +233,7 @@ export default function Jobs() {
   const hasFilter = jobType || workMode || expLevel || minSalary || maxSalary || category || activeQ || activeLoc;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
+    <PageShell flush>
       {/* ── Dark-navy search header ──────────────────────────────────────── */}
       <div className="bg-[#1e3a5f] pt-20 pb-8 px-4">
         <div className="max-w-5xl mx-auto">
@@ -552,6 +550,6 @@ export default function Jobs() {
       </div>
 
       {bidJob && <BidModal job={bidJob} onSubmit={submitBid} onClose={() => setBidJob(null)} />}
-    </div>
+    </PageShell>
   );
 }
