@@ -2,6 +2,7 @@ const Bid = require('../../../models/sql/Bid');
 const Job = require('../../../models/sql/Job');
 const { httpError }   = require('../../_shared/ContractService');
 const { syncBidSafe } = require('../../../sync/bidSync');
+const { notify }      = require('../../../utils/notify');
 
 class RejectBidHandler {
   async handle(command) {
@@ -18,6 +19,7 @@ class RejectBidHandler {
 
     await bid.update({ status: 'rejected', updatedAt: new Date() });
     syncBidSafe(bid.id);
+    notify({ userId: bid.freelancerId, type: 'bid_rejected', message: 'Oferta juaj nuk u pranua' });
     return bid;
   }
 }

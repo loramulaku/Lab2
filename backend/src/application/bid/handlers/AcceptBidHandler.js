@@ -6,6 +6,7 @@ const { syncBidSafe }      = require('../../../sync/bidSync');
 const { syncJobSafe }      = require('../../../sync/jobSync');
 const { syncContractSafe } = require('../../../sync/contractSync');
 const { syncInvitationSafe } = require('../../../sync/invitationSync');
+const { notify }             = require('../../../utils/notify');
 
 /**
  * Recruiter accepts a bid → creates the Contract (Mode A win).
@@ -42,6 +43,8 @@ class AcceptBidHandler {
     syncBidSafe(bid.id);
     result.rejectedBidIds.forEach(syncBidSafe);
     result.rejectedInvitationIds.forEach(syncInvitationSafe);
+
+    notify({ userId: bid.freelancerId, type: 'bid_accepted', message: 'Oferta juaj u pranua!' });
 
     return result.contract;
   }

@@ -4,6 +4,7 @@ const jobMysqlRepo       = require('../../../repositories/mysql/job.repo');
 const { invitesAllowed } = require('../../_shared/jobModePolicy');
 const { httpError }      = require('../../_shared/ContractService');
 const { syncInvitationSafe } = require('../../../sync/invitationSync');
+const { notify }             = require('../../../utils/notify');
 
 /**
  * Recruiter sends a direct invitation (Mode B).
@@ -57,6 +58,7 @@ class SendInvitationHandler {
     }
 
     syncInvitationSafe(invitation.id);
+    notify({ userId: command.freelancerId, type: 'new_invitation', message: 'Keni një ftesë të re pune' });
     return invitation;
   }
 }

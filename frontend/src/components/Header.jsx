@@ -206,6 +206,7 @@ export default function Header({ notificationCount = 0 }) {
           {/* Messages */}
           <button
             onClick={() => navigate('/chat')}
+            aria-label="Messages"
             className="p-2 rounded-lg text-blue-100/70 hover:bg-white/10 hover:text-white transition"
           >
             <ChatIcon />

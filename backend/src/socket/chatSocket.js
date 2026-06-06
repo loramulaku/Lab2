@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const conversationRepo = require('../repositories/mysql/conversation.repo');
 const messageRepo = require('../repositories/mysql/message.repo');
+const ConversationParticipant = require('../models/sql/ConversationParticipant');
+const { notify } = require('../utils/notify');
 
 module.exports = function initChatSocket(io) {
 
@@ -48,6 +50,16 @@ module.exports = function initChatSocket(io) {
           isRead: saved.isRead,
           createdAt: saved.createdAt
         });
+
+        // Notify every participant who is not the sender
+        const participants = await ConversationParticipant.findAll({
+          where: { conversationId: data.conversationId },
+        });
+        for (const p of participants) {
+          if (p.userId !== socket.user.id) {
+            notify({ userId: p.userId, type: 'new_message', message: 'Ke një mesazh të ri' });
+          }
+        }
       } catch (err) {
         console.error('send:message error:', err);
         socket.emit('error', { message: 'Failed to send message' });

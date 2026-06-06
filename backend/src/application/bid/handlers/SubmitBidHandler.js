@@ -1,5 +1,6 @@
 const Bid             = require('../../../models/sql/Bid');
 const jobMysqlRepo    = require('../../../repositories/mysql/job.repo');
+const { notify }      = require('../../../utils/notify');
 const { bidsAllowed } = require('../../_shared/jobModePolicy');
 const { httpError }   = require('../../_shared/ContractService');
 const { syncBidSafe } = require('../../../sync/bidSync');
@@ -47,6 +48,11 @@ class SubmitBidHandler {
     }
 
     syncBidSafe(bid.id);
+
+    if (job.recruiterId) {
+      notify({ userId: job.recruiterId, type: 'new_bid', message: 'Një kandidat ka dërguar një ofertë për punën tuaj' });
+    }
+
     return bid;
   }
 }
