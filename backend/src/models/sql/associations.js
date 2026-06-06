@@ -13,6 +13,7 @@ const Company      = require('./Company');
 const Bid          = require('./Bid');
 const Invitation   = require('./Invitation');
 const Contract     = require('./Contract');
+const SavedJob     = require('./SavedJob');
 
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId' });
@@ -62,7 +63,12 @@ Contract.belongsTo(User, { foreignKey: 'freelancerId', as: 'freelancer' });
 Contract.belongsTo(Bid, { foreignKey: 'bidId' });
 Contract.belongsTo(Invitation, { foreignKey: 'invitationId' });
 
+// Saved jobs
+SavedJob.belongsTo(Job, { foreignKey: 'jobId', as: 'Job' });
+Job.hasMany(SavedJob,   { foreignKey: 'jobId' });
+SavedJob.belongsTo(User, { foreignKey: 'userId' });
+
 module.exports = {
   User, Role, UserRole, Subscription, Plan, Job, Application,
-  Pipeline, PipelineStage, StageHistory, Company, Bid, Invitation, Contract,
+  Pipeline, PipelineStage, StageHistory, Company, Bid, Invitation, Contract, SavedJob,
 };

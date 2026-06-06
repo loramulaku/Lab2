@@ -27,6 +27,11 @@ const candidateService = {
   updateEducation:  (id, data)   => api.put(`/candidate/educations/${id}`, data).then(r => r.data),
   deleteEducation:  (id)         => api.delete(`/candidate/educations/${id}`).then(r => r.data),
 
+  getSavedJobs:  ()        => api.get('/candidate/saved-jobs').then(r => r.data),
+  getSavedJobIds:()        => api.get('/candidate/saved-job-ids').then(r => r.data),
+  saveJob:       (jobId)   => api.post(`/candidate/saved-jobs/${jobId}`).then(r => r.data),
+  unsaveJob:     (jobId)   => api.delete(`/candidate/saved-jobs/${jobId}`).then(r => r.data),
+
   uploadAvatar: (file) => {
     const form = new FormData();
     form.append('avatar', file);

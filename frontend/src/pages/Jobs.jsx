@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { PageShell, PageCard } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
+import FreelanceModeGate from '../components/freelance/FreelanceModeGate';
+import ApplicationForm from '../components/jobs/ApplicationForm';
 import { JobsSearchHero, JobsFilterSidebar, JobsCategorySidebar, JobListingCard } from '../components/jobs/JobsBoard';
 import { SORT_OPTIONS } from '../constants/jobsBoard';
 import { useAuth } from '../context/AuthContext';
@@ -30,7 +32,13 @@ export default function Jobs() {
   const [total, setTotal]                 = useState(0);
   const [loading, setLoading]             = useState(true);
   const [bidJob, setBidJob]               = useState(null);
-  const [feedback, setFeedback]         = useState({});
+  const [applyJob, setApplyJob]           = useState(null);
+  const [feedback, setFeedback]           = useState({});
+  const [savedIds, setSavedIds]           = useState(new Set());
+  const [appliedMap, setAppliedMap]       = useState({});  // { jobId: status }
+  const [bidJobIds, setBidJobIds]         = useState(new Set());
+  const [freelanceActive, setFreelanceActive] = useState(null);
+  const [gateJob, setGateJob]             = useState(null);
 
   useEffect(() => {
     if (!urlFilter) return;
@@ -70,6 +78,21 @@ export default function Jobs() {
     api.get('/categories').then((r) => setCategories(r.data ?? [])).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!isCandidate) return;
+    candidateService.getSavedJobIds().then(ids => setSavedIds(new Set(ids))).catch(() => {});
+    candidateService.getProfile().then(p => setFreelanceActive(!!p.freelanceActive)).catch(() => {});
+    candidateService.myApplications({ limit: 200 })
+      .then(r => {
+        const map = {};
+        (r.data ?? []).forEach(a => { map[a.jobId] = a.status; });
+        setAppliedMap(map);
+      }).catch(() => {});
+    freelanceService.myBids({ limit: 200 })
+      .then(r => setBidJobIds(new Set((r.data ?? []).filter(b => b.status !== 'withdrawn').map(b => b.jobId))))
+      .catch(() => {});
+  }, [isCandidate]);
+
   const handleSearch = () => {
     setActiveQ(qInput.trim());
     setActiveLoc(locationInput.trim());
@@ -99,19 +122,35 @@ export default function Jobs() {
     setLocationInput('');
   };
 
-  const apply = async (job) => {
-    if (!user) return;
-    try {
-      await candidateService.applyToJob(job.id);
-      setFeedback((f) => ({ ...f, [job.id]: { ok: true, msg: 'Applied ✓' } }));
-    } catch (err) {
-      setFeedback((f) => ({ ...f, [job.id]: { ok: false, msg: err?.response?.data?.message || 'Failed' } }));
+  const handleToggleSave = async (jobId) => {
+    if (!isCandidate) return;
+    if (savedIds.has(jobId)) {
+      await candidateService.unsaveJob(jobId).catch(() => {});
+      setSavedIds(s => { const n = new Set(s); n.delete(jobId); return n; });
+    } else {
+      await candidateService.saveJob(jobId).catch(() => {});
+      setSavedIds(s => new Set([...s, jobId]));
     }
+  };
+
+  const handleBidClick = (job) => {
+    if (!freelanceActive) { setGateJob(job); return; }
+    setBidJob(job);
+  };
+
+  const handleApplySubmit = async (data) => {
+    const res = await candidateService.applyToJob(applyJob.id, data);
+    const jobId = applyJob.id;
+    setAppliedMap(m => ({ ...m, [jobId]: 'pending' }));
+    setApplyJob(null);
+    setFeedback((f) => ({ ...f, [jobId]: { ok: true, msg: res?.message || 'Applied ✓' } }));
   };
 
   const submitBid = async (data) => {
     await freelanceService.submitBid(bidJob.id, data);
-    setFeedback((f) => ({ ...f, [bidJob.id]: { ok: true, msg: 'Bid submitted ✓' } }));
+    const jobId = bidJob.id;
+    setBidJobIds(s => new Set([...s, jobId]));
+    setFeedback((f) => ({ ...f, [jobId]: { ok: true, msg: 'Bid submitted ✓' } }));
     setBidJob(null);
   };
 
@@ -194,8 +233,12 @@ export default function Jobs() {
                 user={user}
                 isCandidate={isCandidate}
                 feedback={feedback[job.id]}
-                onApply={apply}
-                onBid={setBidJob}
+                appliedStatus={appliedMap[job.id]}
+                hasBid={bidJobIds.has(job.id)}
+                onApply={setApplyJob}
+                onBid={handleBidClick}
+                isSaved={savedIds.has(job.id)}
+                onToggleSave={handleToggleSave}
               />
             ))}
           </div>
@@ -208,7 +251,19 @@ export default function Jobs() {
         />
       </div>
 
-      {bidJob && <BidModal job={bidJob} onSubmit={submitBid} onClose={() => setBidJob(null)} />}
+      {bidJob   && <BidModal job={bidJob} onSubmit={submitBid} onClose={() => setBidJob(null)} />}
+      {applyJob && <ApplicationForm job={applyJob} onSubmit={handleApplySubmit} onClose={() => setApplyJob(null)} />}
+      {gateJob  && (
+        <FreelanceModeGate
+          onActivate={async () => {
+            await candidateService.setFreelanceMode(true);
+            setFreelanceActive(true);
+            setGateJob(null);
+            setBidJob(gateJob);
+          }}
+          onCancel={() => setGateJob(null)}
+        />
+      )}
     </PageShell>
   );
 }

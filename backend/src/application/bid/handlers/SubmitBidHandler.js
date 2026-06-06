@@ -28,6 +28,9 @@ class SubmitBidHandler {
       throw httpError(400, 'price and deliveryTimeDays must be positive', 'INVALID_BID');
     }
 
+    const existing = await Bid.findOne({ where: { jobId: command.jobId, freelancerId: command.freelancerId } });
+    if (existing) throw httpError(409, 'You have already placed a bid on this job', 'ALREADY_BID');
+
     let bid;
     try {
       bid = await Bid.create({

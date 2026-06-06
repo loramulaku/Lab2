@@ -22,6 +22,7 @@ const Bid = sequelize.define('Bid', {
 }, {
   tableName: 'Bids',
   timestamps: false,
+  indexes: [{ unique: true, fields: ['freelancer_id', 'job_id'], name: 'bids_freelancer_job_unique' }],
 });
 
 module.exports = Bid;
