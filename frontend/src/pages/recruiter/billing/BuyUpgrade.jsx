@@ -5,7 +5,8 @@ import { subscriptionService } from '../../../services/subscriptionService';
 
 export default function BuyUpgrade() {
   const location = useLocation();
-  const reason = location.state?.reason;
+  const reason          = location.state?.reason;
+  const suggestedPlanId = location.state?.suggestedPlanId ?? null;
   const [plans, setPlans] = useState([]);
   const [currentSub, setCurrentSub] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,10 +50,21 @@ export default function BuyUpgrade() {
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {plans.map(plan => {
-            const isCurrent = currentSub?.planId === plan.id && currentSub?.status === 'active';
+            const isCurrent   = currentSub?.planId === plan.id && currentSub?.status === 'active';
+            const isSuggested = suggestedPlanId !== null && plan.id === suggestedPlanId;
+            const borderClass = isSuggested
+              ? 'border-green-500 ring-2 ring-green-100'
+              : isCurrent
+                ? 'border-blue-500'
+                : 'border-gray-200';
             return (
-              <div key={plan.id} className={`bg-white border p-6 flex flex-col ${isCurrent ? 'border-blue-500' : 'border-gray-200'}`}>
-                {isCurrent && <span className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-2">Current Plan</span>}
+              <div key={plan.id} className={`bg-white border p-6 flex flex-col ${borderClass}`}>
+                {isSuggested && !isCurrent && (
+                  <span className="text-xs font-medium text-green-600 uppercase tracking-wide mb-2">Recommended</span>
+                )}
+                {isCurrent && (
+                  <span className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-2">Current Plan</span>
+                )}
                 <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">${Number(plan.price).toFixed(2)}<span className="text-sm font-normal text-gray-500">/mo</span></p>
                 <p className="text-sm text-gray-600 mt-3">
@@ -60,7 +72,11 @@ export default function BuyUpgrade() {
                 </p>
                 <div className="mt-auto pt-6">
                   <button onClick={() => subscribe(plan.id)} disabled={!!subscribing || isCurrent}
-                    className={`w-full py-2 text-sm font-medium transition ${isCurrent ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'}`}>
+                    className={`w-full py-2 text-sm font-medium transition ${
+                      isCurrent    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
+                      isSuggested  ? 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50' :
+                                     'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+                    }`}>
                     {subscribing === plan.id ? 'Redirecting…' : isCurrent ? 'Active' : 'Subscribe'}
                   </button>
                 </div>

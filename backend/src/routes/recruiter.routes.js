@@ -31,8 +31,14 @@ router.get('/profile',       c.getProfile);
 router.post('/setup',        c.setup);
 router.post('/logo', logoUpload.single('logo'), c.uploadLogo);
 
+// Recruiter's own job listings (all jobs, including invite-only)
+router.get('/jobs',                          c.listJobs);
+
 // Applicants & Candidates — Job Seekers (standard-employment applications)
 router.get('/applicants',                    c.getApplicants);
 router.post('/applicants/:id/interview',     c.scheduleInterview);
+
+// Freelancers — bids placed on the company's jobs
+router.get('/freelancers',                   c.getFreelancers);
 
 module.exports = router;
