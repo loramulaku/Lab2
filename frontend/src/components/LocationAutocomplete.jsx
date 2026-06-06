@@ -61,7 +61,7 @@ export default function LocationAutocomplete({ value, onChange, placeholder = 'e
   };
 
   const cls = inputClassName
-    ?? `w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`;
+    ?? `page-shell-field w-full px-3 py-2 text-sm text-gray-700 bg-white/90 focus:outline-none rounded-md ${className}`;
 
   return (
     <div ref={containerRef} className="relative">

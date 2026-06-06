@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recruiterService from '../../services/recruiterService';
 import { PageShell, PageCard, PageAlert } from '../../components/layout';
-import CompanyInformationSection from '../../components/recruiter/CompanyInformationSection';
-import RecruiterProfileSection from '../../components/recruiter/RecruiterProfileSection';
+import CompanySetupForm from '../../components/recruiter/CompanySetupForm';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
@@ -22,8 +21,8 @@ export default function CompanySetup() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState('');
-  const [logoSrc, setLogoSrc]     = useState(null);
-  const [, setPhotoFile]          = useState(null);
+  const [logoSrc, setLogoSrc] = useState(null);
+  const [, setPhotoFile]      = useState(null);
   const [company, setCompany]     = useState(EMPTY_COMPANY);
   const [recruiter, setRecruiter] = useState(EMPTY_RECRUITER);
 
@@ -40,9 +39,7 @@ export default function CompanySetup() {
             website:     data.company.website     ?? '',
             description: data.company.description ?? '',
           });
-          if (data.company.logoPath) {
-            setLogoSrc(`${API_BASE}${data.company.logoPath}`);
-          }
+          if (data.company.logoPath) setLogoSrc(`${API_BASE}${data.company.logoPath}`);
         }
         setRecruiter({
           jobTitle:    data.jobTitle    ?? '',
@@ -63,24 +60,9 @@ export default function CompanySetup() {
     setRecruiter((prev) => ({ ...prev, [key]: e.target.value }));
   };
 
-  const onLocationChange = (val) => {
-    setError('');
-    setCompany((prev) => ({ ...prev, location: val }));
-  };
-
-  const onLogoUpload = async (file) => {
-    try {
-      const { path } = await recruiterService.uploadLogo(file);
-      setLogoSrc(`${API_BASE}${path}`);
-    } catch { /* handled by service */ }
-  };
-
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!company.companyName.trim()) {
-      setError('Please fill all required fields');
-      return;
-    }
+    if (!company.companyName.trim()) { setError('Please fill all required fields'); return; }
     setSaving(true);
     try {
       await recruiterService.setup({ ...company, ...recruiter });
@@ -93,37 +75,28 @@ export default function CompanySetup() {
   };
 
   return (
-    <PageShell
-      title="Company Setup"
-      subtitle="Complete your company profile to start posting jobs."
-      loading={loading}
-    >
+    <PageShell title="Company Setup" subtitle="Complete your company profile to start posting jobs." loading={loading}>
       <PageAlert>{error}</PageAlert>
-
       <form onSubmit={onSubmit}>
         <PageCard className="p-6 sm:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <CompanyInformationSection
-              company={company}
-              logoSrc={logoSrc}
-              onFieldChange={onCompanyField}
-              onLocationChange={onLocationChange}
-              onLogoUpload={onLogoUpload}
-            />
-            <RecruiterProfileSection
-              recruiter={recruiter}
-              onFieldChange={onRecruiterField}
-              onPhotoUpload={setPhotoFile}
-            />
-          </div>
+          <CompanySetupForm
+            company={company}
+            recruiter={recruiter}
+            logoSrc={logoSrc}
+            onCompanyField={onCompanyField}
+            onRecruiterField={onRecruiterField}
+            onLocationChange={(val) => { setError(''); setCompany((p) => ({ ...p, location: val })); }}
+            onLogoUpload={async (file) => {
+              try {
+                const { path } = await recruiterService.uploadLogo(file);
+                setLogoSrc(`${API_BASE}${path}`);
+              } catch { /* service handles */ }
+            }}
+            onPhotoUpload={setPhotoFile}
+          />
         </PageCard>
-
         <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 text-sm rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
+          <button type="submit" disabled={saving} className="page-shell-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 text-sm rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed">
             {saving ? 'Saving…' : 'Create & Continue'}
           </button>
         </div>
