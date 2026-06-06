@@ -62,7 +62,10 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(err.status ?? 500).json({ message: err.message ?? 'Internal server error' });
+  const body = { message: err.message ?? 'Internal server error' };
+  if (err.code)          body.code          = err.code;
+  if (err.suggestedPlan) body.suggestedPlan = err.suggestedPlan;
+  res.status(err.status ?? 500).json(body);
 });
 
 
@@ -81,11 +84,17 @@ const io = new Server(httpServer, {
 
 module.exports = { io };
 
+const { setIo } = require('./src/socket/ioInstance');
+setIo(io);
+
 const initChatSocket = require('./src/socket/chatSocket');
 initChatSocket(io);
+
+const { startupSync } = require('./src/sync/startupSync');
 
 (async () => {
   await connectMySQL();
   await connectMongoDB();
   httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  startupSync();
 })();

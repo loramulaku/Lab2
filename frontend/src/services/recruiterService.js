@@ -13,7 +13,7 @@ const recruiterService = {
   setup:      (data)   => api.post('/recruiter/setup', data).then(r => r.data),
 
   // ── Jobs (recruiter-owned) ───────────────────────────────────────────────
-  listJobs:    (params)    => api.get(`/jobs${jobQs(params)}`).then(r => r.data),
+  listJobs:    (params)    => api.get(`/recruiter/jobs${jobQs(params)}`).then(r => r.data),
   createJob:   (data)      => api.post('/jobs', data).then(r => r.data),
   updateJob:   (id, data)  => api.put(`/jobs/${id}`, data).then(r => r.data),
   setJobStatus:(id, status)=> api.patch(`/jobs/${id}/status`, { status }).then(r => r.data),
@@ -22,6 +22,9 @@ const recruiterService = {
   // ── Applicants (Job Seekers) ─────────────────────────────────────────────
   getApplicants:     (params)          => api.get(`/recruiter/applicants${jobQs(params)}`).then(r => r.data),
   scheduleInterview: (id, interviewAt) => api.post(`/recruiter/applicants/${id}/interview`, { interviewAt }).then(r => r.data),
+
+  // ── Freelancers (bids on company jobs) ───────────────────────────────────
+  getFreelancers:    (params)          => api.get(`/recruiter/freelancers${jobQs(params)}`).then(r => r.data),
 
   uploadLogo: (file) => {
     const form = new FormData();

@@ -3,7 +3,10 @@ const User       = require('../../../models/sql/User');
 const jobMysqlRepo       = require('../../../repositories/mysql/job.repo');
 const { invitesAllowed } = require('../../_shared/jobModePolicy');
 const { httpError }      = require('../../_shared/ContractService');
-const { syncInvitationSafe } = require('../../../sync/invitationSync');
+const { syncInvitationSafe }         = require('../../../sync/invitationSync');
+const { sendInvitationEmail }        = require('../../../emails/invitationEmail');
+const CreateNotificationCommand      = require('../../notification/commands/CreateNotification.command');
+const createNotificationHandler      = require('../../notification/handlers/CreateNotificationHandler');
 
 /**
  * Recruiter sends a direct invitation (Mode B).
@@ -57,6 +60,22 @@ class SendInvitationHandler {
     }
 
     syncInvitationSafe(invitation.id);
+
+    const relativePath = '/my-profile?tab=freelance&sub=invitations';
+
+    // In-app notification — fire-and-forget (stores relative path for client-side navigation)
+    createNotificationHandler.handle(new CreateNotificationCommand({
+      userId:  command.freelancerId,
+      type:    'invitation_received',
+      message: `You have a new invitation for "${job.title}"`,
+      link:    relativePath,
+    })).catch(err => console.error('[notification] Failed to create invitation notification:', err.message));
+
+    // Email notification — fire-and-forget (full URL required for email links)
+    sendInvitationEmail({ invitation, job, freelancer }).catch(err =>
+      console.error('[mailer] Failed to send invitation email:', err.message)
+    );
+
     return invitation;
   }
 }

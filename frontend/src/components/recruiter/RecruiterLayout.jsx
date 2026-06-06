@@ -8,43 +8,43 @@ import { useAuth } from '../../context/AuthContext';
 const NAV_GROUPS = [
   {
     title: null,
-    items: [{ name: 'Overview', href: '/recruiter/dashboard', icon: '📊' }],
+    items: [{ name: 'Overview', href: '/recruiter/dashboard' }],
   },
   {
     title: 'Job Management',
     items: [
-      { name: 'Post a Job',      href: '/recruiter/jobs?post=1', match: '/recruiter/jobs', icon: '➕' },
-      { name: 'My Job Listings', href: '/recruiter/jobs',          icon: '📋' },
-      { name: 'Archived Jobs',   href: '/recruiter/jobs/archived', icon: '🗄️' },
+      { name: 'Post a Job',      href: '/recruiter/jobs?post=1', match: '/recruiter/jobs' },
+      { name: 'My Job Listings', href: '/recruiter/jobs' },
+      { name: 'Archived Jobs',   href: '/recruiter/jobs/archived' },
     ],
   },
   {
     title: 'Applicants & Candidates',
     items: [
-      { name: 'Job Seekers',         href: '/recruiter/applicants/job-seekers', icon: '🧑‍💼' },
-      { name: 'Freelance Applicants', href: '/recruiter/applicants/freelance',   icon: '🧑‍💻' },
+      { name: 'Job Seekers',          href: '/recruiter/applicants/job-seekers' },
+      { name: 'Freelance Applicants', href: '/recruiter/applicants/freelance' },
     ],
   },
   {
     title: 'Freelance Management',
     items: [
-      { name: 'Active Freelancers',  href: '/recruiter/freelancers/active',  icon: '🔎' },
-      { name: 'Invited Freelancers', href: '/recruiter/freelancers/invited', icon: '✉️' },
-      { name: 'Bids Received',       href: '/recruiter/bids',                icon: '💬' },
-      { name: 'Contracts',           href: '/recruiter/contracts',           icon: '📑' },
+      { name: 'Active Freelancers',  href: '/recruiter/freelancers/active' },
+      { name: 'Invited Freelancers', href: '/recruiter/freelancers/invited' },
+      { name: 'Bids Received',       href: '/recruiter/bids' },
+      { name: 'Contracts',           href: '/recruiter/contracts' },
     ],
   },
   {
     title: 'Billing & Payments',
     items: [
-      { name: 'My Current Plan',          href: '/recruiter/billing/plan',     icon: '💳' },
-      { name: 'Buy / Upgrade Plan',       href: '/recruiter/billing/upgrade',  icon: '⬆️' },
-      { name: 'Invoices & Billing History', href: '/recruiter/billing/invoices', icon: '🧾' },
+      { name: 'My Current Plan',            href: '/recruiter/billing/plan' },
+      { name: 'Buy / Upgrade Plan',         href: '/recruiter/billing/upgrade' },
+      { name: 'Invoices & Billing History', href: '/recruiter/billing/invoices' },
     ],
   },
   {
     title: 'User Management',
-    items: [{ name: 'Team Members', href: '/recruiter/users', icon: '👥' }],
+    items: [{ name: 'Team Members', href: '/recruiter/users' }],
   },
 ];
 
@@ -85,7 +85,6 @@ export default function RecruiterLayout({ children, title }) {
                       : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                   }`}
                 >
-                  <span className="mr-3">{item.icon}</span>
                   <span className="font-medium">{item.name}</span>
                 </Link>
               ))}

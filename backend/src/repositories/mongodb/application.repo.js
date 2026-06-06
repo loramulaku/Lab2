@@ -15,9 +15,10 @@ module.exports = {
     return paginate(ApplicationView, filter, { page, limit });
   },
 
-  async findByCompany(companyId, { status, page, limit } = {}) {
+  async findByCompany(companyId, { status, page, limit, jobEmploymentType } = {}) {
     const filter = { companyId: Number(companyId) };
     if (status) filter.status = status;
+    if (jobEmploymentType) filter.jobEmploymentType = jobEmploymentType;
     return paginate(ApplicationView, filter, { page, limit });
   },
 };

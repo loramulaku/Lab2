@@ -32,7 +32,7 @@ export default function MyJobs() {
       const cid = profile?.company?.id ?? null;
       setCompanyId(cid);
       setHasSub(!!sub);
-      const res = await recruiterService.listJobs({ companyId: cid, limit: 100 });
+      const res = await recruiterService.listJobs({ limit: 100 });
       setJobs((res.data ?? []).filter(j => j.status !== 'archived'));
     } catch {
       setNotice('Failed to load jobs.');
@@ -129,7 +129,12 @@ export default function MyJobs() {
       const msg    = err?.response?.data?.message || '';
       if (status === 403 && /subscription|limit/i.test(msg)) {
         setModalOpen(false);
-        navigate('/recruiter/billing/upgrade', { state: { reason: msg } });
+        navigate('/recruiter/billing/upgrade', {
+          state: {
+            reason:          msg,
+            suggestedPlanId: err?.response?.data?.suggestedPlan?.id ?? null,
+          },
+        });
         return;
       }
       throw err;

@@ -9,6 +9,7 @@ const Company    = require('../models/sql/Company');
 const User       = require('../models/sql/User');
 const FailedSync = require('../models/sql/FailedSync');
 const bidViewRepo = require('../repositories/mongodb/bid.repo');
+const JobView    = require('../models/nosql/JobView');
 
 async function syncBid(bidId) {
   const bid = await Bid.findByPk(bidId);
@@ -29,11 +30,23 @@ async function syncBid(bidId) {
     message:             bid.message,
     status:              bid.status,
     deliveryTimeDays:    bid.deliveryTimeDays,
+    bidType:             bid.bidType ?? 'fixed',
+    hoursPerWeek:        bid.hoursPerWeek ?? null,
+    startDate:           bid.startDate ?? null,
+    milestones:          bid.milestones ?? null,
+    portfolioLinks:      bid.portfolioLinks ?? null,
+    skillsSnapshot:      bid.skillsSnapshot ?? null,
+    companyId:           job?.companyId ?? null,
     jobTitle:            job?.title ?? null,
     companyName:         company?.name ?? null,
     freelancerFirstName: freelancer?.firstName ?? null,
     freelancerLastName:  freelancer?.lastName ?? null,
   });
+
+  if (bid.jobId) {
+    const count = await Bid.count({ where: { jobId: bid.jobId } });
+    await JobView.updateOne({ _id: bid.jobId }, { $set: { bidCount: count } });
+  }
 
   await FailedSync.destroy({ where: { entityType: 'bid', entityId: bidId } });
 }

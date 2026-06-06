@@ -11,7 +11,7 @@ class JobDTO {
     this.employmentType  = job.employmentType;
     this.experienceLevel = job.experienceLevel ?? null;
     this.workMode        = job.workMode;
-    // Expose whether candidates can submit bids without revealing the internal A/B/C mode
+    this.jobMode         = job.jobMode ?? null;
     this.acceptsBids     = job.workMode === 'freelance' && ['public', 'both'].includes(job.jobMode);
     this.budgetMin       = job.budgetMin;
     this.budgetMax       = job.budgetMax;
@@ -27,6 +27,8 @@ class JobDTO {
     this.categories       = job.categories  ?? [];
     this.schedule         = job.schedule    ?? null;
     this.createdAt        = job.createdAt;
+    this.applicationCount = job.applicationCount ?? 0;
+    this.bidCount         = job.bidCount         ?? 0;
   }
 
   static from(job) {

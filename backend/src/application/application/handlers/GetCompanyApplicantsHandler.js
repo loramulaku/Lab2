@@ -4,7 +4,13 @@ const applicationRepo = require('../../../repositories/mongodb/application.repo'
 class GetCompanyApplicantsHandler {
   async handle(query) {
     if (!query.companyId) return { data: [], page: query.page, limit: query.limit, total: 0 };
-    return applicationRepo.findByCompany(query.companyId, { status: query.status, page: query.page, limit: query.limit });
+    return applicationRepo.findByCompany(query.companyId, {
+      status:            query.status,
+      page:              query.page,
+      limit:             query.limit,
+      jobEmploymentType: 'standard-employment',
+    });
   }
 }
+
 module.exports = new GetCompanyApplicantsHandler();
