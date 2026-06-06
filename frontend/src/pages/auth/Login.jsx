@@ -56,7 +56,7 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
               <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
             </svg>
           </div>
-          <span className="text-gray-900 font-bold text-xl">HireFlow</span>
+          <span className="text-gray-900 font-bold text-xl">HireWire</span>
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{s.heading ?? 'Welcome back'}</h2>
