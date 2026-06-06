@@ -23,6 +23,11 @@ const jobMysqlRepo = {
       budgetMax:       data.budgetMax,
       expiresAt:       data.expiresAt,
       deadline:        data.deadline,
+      responsibilities: data.responsibilities,
+      requirements:     data.requirements,
+      niceToHave:       data.niceToHave,
+      benefits:         data.benefits,
+      schedule:         data.schedule,
       status:          'open',
     });
 

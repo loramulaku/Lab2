@@ -26,6 +26,13 @@ const WORK_MODES = [
   { value: 'hybrid',  label: 'Hybrid' },
 ];
 
+const EXPERIENCE_LEVELS = [
+  { value: '',       label: 'Any' },
+  { value: 'junior', label: 'Junior' },
+  { value: 'mid',    label: 'Mid' },
+  { value: 'senior', label: 'Senior' },
+];
+
 const FREELANCE_MODES = [
   { value: 'public', label: 'Bid',    tag: 'A', desc: 'Post publicly — freelancers browse and submit bids with their price and timeline.' },
   { value: 'invite', label: 'Invite', tag: 'B', desc: 'Search the freelancer pool and send direct invitations yourself.' },
@@ -40,6 +47,7 @@ const EMPTY = {
   employmentType: 'full-time',
   workMode: 'remote',
   jobMode: 'public',
+  experienceLevel: '',
   budgetMin: '',
   budgetMax: '',
   categoryId: '',
@@ -153,6 +161,7 @@ export default function JobFormModal({
         employmentType:  form.employmentType,
         workMode:        form.workMode,
         jobMode:         topType === 'freelance' ? form.jobMode : null,
+        experienceLevel: form.experienceLevel || null,
         budgetMin:       form.budgetMin !== '' ? Number(form.budgetMin) : null,
         budgetMax:       form.budgetMax !== '' ? Number(form.budgetMax) : null,
         categoryId:      form.categoryId !== '' ? Number(form.categoryId) : null,
@@ -304,6 +313,19 @@ export default function JobFormModal({
                 </div>
               </div>
             )}
+
+            {/* Experience required — applies to both standard and freelance roles */}
+            <div>
+              <p className={labelCls}>Experience Required</p>
+              <div className="flex gap-1.5">
+                {EXPERIENCE_LEVELS.map(l => (
+                  <Pill key={l.value} active={form.experienceLevel === l.value}
+                    onClick={() => setVal('experienceLevel', l.value)}>
+                    {l.label}
+                  </Pill>
+                ))}
+              </div>
+            </div>
 
             {/* 2-column main grid */}
             <div className="grid grid-cols-2 gap-x-5 items-stretch">

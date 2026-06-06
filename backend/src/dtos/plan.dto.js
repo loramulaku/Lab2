@@ -3,6 +3,7 @@ class PlanDTO {
     this.id       = plan._id ?? plan.id;
     this.name     = plan.name;
     this.price    = plan.price;
+    this.billingInterval = plan.billingInterval ?? 'month';
     this.jobLimit = plan.jobLimit ?? null;
     this.isActive = plan.isActive ?? true;
   }

@@ -5,6 +5,7 @@ class SubscriptionDTO {
     this.planId               = sub.planId;
     this.planName             = sub.planName ?? null;
     this.planPrice            = sub.planPrice ?? null;
+    this.planInterval         = sub.planInterval ?? 'month';
     this.jobLimit             = sub.jobLimit ?? null;
     this.status               = sub.status;
     this.currentPeriodEnd     = sub.currentPeriodEnd;

@@ -75,7 +75,13 @@ export default function MyJobs() {
       id: job.id, title: job.title, description: job.description,
       employmentType: job.employmentType, workMode: job.workMode,
       jobMode: job.jobMode ?? 'public',
+      experienceLevel: job.experienceLevel ?? '',
       budgetMin: job.budgetMin ?? '', budgetMax: job.budgetMax ?? '',
+      responsibilities: job.responsibilities ?? '',
+      requirements: job.requirements ?? '',
+      niceToHave: job.niceToHave ?? '',
+      benefits: job.benefits ?? '',
+      schedule: job.schedule ?? undefined,
     });
     setInvitees([]);
     setModalOpen(true);

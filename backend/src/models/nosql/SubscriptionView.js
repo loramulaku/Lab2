@@ -18,6 +18,7 @@ const SubscriptionViewSchema = new mongoose.Schema(
     companyName: { type: String },
     planName:    { type: String },
     planPrice:   { type: Number },
+    planInterval:{ type: String, default: 'month' },
     jobLimit:    { type: Number },
   },
   { _id: false, timestamps: false, collection: 'subscription_views' }

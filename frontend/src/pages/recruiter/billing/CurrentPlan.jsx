@@ -42,6 +42,14 @@ export default function CurrentPlan() {
                 <p className="text-base font-medium text-gray-900 mt-1">{sub.planName}</p>
               </div>
               <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Price</p>
+                <p className="text-base font-medium text-gray-900 mt-1">
+                  {sub.planPrice != null
+                    ? `$${Number(sub.planPrice).toFixed(2)}/${sub.planInterval === 'year' ? 'year' : 'month'}`
+                    : '—'}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Status</p>
                 <div className="mt-1"><StatusBadge status={sub.status} /></div>
               </div>
