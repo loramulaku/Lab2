@@ -1,48 +1,35 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recruiterService from '../../services/recruiterService';
-import AvatarUpload          from '../../components/AvatarUpload';
-import FormInput             from '../../components/FormInput';
-import FormTextarea          from '../../components/FormTextarea';
-import FormSelect            from '../../components/FormSelect';
-import SectionHeader         from '../../components/SectionHeader';
-import Header                from '../../components/Header';
-import LocationAutocomplete  from '../../components/LocationAutocomplete';
+import { PageShell, PageCard, PageAlert } from '../../components/layout';
+import CompanyInformationSection from '../../components/recruiter/CompanyInformationSection';
+import RecruiterProfileSection from '../../components/recruiter/RecruiterProfileSection';
 
-// ── Constants ─────────────────────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
-const SIZES = [
-  { value: '', label: 'Select size…' },
-  { value: '1-10',     label: '1–10 employees' },
-  { value: '11-50',    label: '11–50 employees' },
-  { value: '51-200',   label: '51–200 employees' },
-  { value: '201-1000', label: '201–1000 employees' },
-  { value: '1000+',    label: '1000+ employees' },
-];
+const EMPTY_COMPANY = {
+  companyName: '', industry: '', location: '',
+  size: '', foundedYear: '', website: '', description: '',
+};
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+const EMPTY_RECRUITER = {
+  jobTitle: '', phone: '', linkedinUrl: '',
+};
+
 export default function CompanySetup() {
   const navigate = useNavigate();
 
-  const [loading, setLoading]     = useState(true);
-  const [saving, setSaving]       = useState(false);
-  const [error, setError]         = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState('');
   const [logoSrc, setLogoSrc]     = useState(null);
-  const [photoFile, setPhotoFile] = useState(null);
-
-  const [company, setCompany] = useState({
-    companyName: '', industry: '', location: '',
-    size: '', foundedYear: '', website: '', description: '',
-  });
-
-  const [recruiter, setRecruiter] = useState({
-    jobTitle: '', phone: '', linkedinUrl: '',
-  });
+  const [, setPhotoFile]          = useState(null);
+  const [company, setCompany]     = useState(EMPTY_COMPANY);
+  const [recruiter, setRecruiter] = useState(EMPTY_RECRUITER);
 
   useEffect(() => {
     recruiterService.getProfile()
-      .then(data => {
+      .then((data) => {
         if (data.company) {
           setCompany({
             companyName: data.company.name        ?? '',
@@ -67,19 +54,33 @@ export default function CompanySetup() {
       .finally(() => setLoading(false));
   }, []);
 
-  const setC = (key) => (e) => { setError(''); setCompany(p => ({ ...p, [key]: e.target.value })); };
-  const setR = (key) => (e) => { setRecruiter(p => ({ ...p, [key]: e.target.value })); };
+  const onCompanyField = (key) => (e) => {
+    setError('');
+    setCompany((prev) => ({ ...prev, [key]: e.target.value }));
+  };
 
-  const handleLogoUpload = async (file) => {
+  const onRecruiterField = (key) => (e) => {
+    setRecruiter((prev) => ({ ...prev, [key]: e.target.value }));
+  };
+
+  const onLocationChange = (val) => {
+    setError('');
+    setCompany((prev) => ({ ...prev, location: val }));
+  };
+
+  const onLogoUpload = async (file) => {
     try {
       const { path } = await recruiterService.uploadLogo(file);
       setLogoSrc(`${API_BASE}${path}`);
-    } catch {}
+    } catch { /* handled by service */ }
   };
 
-  const handleSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (!company.companyName.trim()) { setError('Please fill all required fields'); return; }
+    if (!company.companyName.trim()) {
+      setError('Please fill all required fields');
+      return;
+    }
     setSaving(true);
     try {
       await recruiterService.setup({ ...company, ...recruiter });
@@ -91,142 +92,42 @@ export default function CompanySetup() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading…</div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <PageShell
+      title="Company Setup"
+      subtitle="Complete your company profile to start posting jobs."
+      loading={loading}
+    >
+      <PageAlert>{error}</PageAlert>
 
-      <div className="max-w-5xl mx-auto px-6 pt-24 pb-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Company Setup</h1>
-        <p className="text-sm text-gray-500 mb-8">Complete your company profile to start posting jobs.</p>
-
-        {error && (
-          <div className="mb-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
+      <form onSubmit={onSubmit}>
+        <PageCard className="p-6 sm:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <CompanyInformationSection
+              company={company}
+              logoSrc={logoSrc}
+              onFieldChange={onCompanyField}
+              onLocationChange={onLocationChange}
+              onLogoUpload={onLogoUpload}
+            />
+            <RecruiterProfileSection
+              recruiter={recruiter}
+              onFieldChange={onRecruiterField}
+              onPhotoUpload={setPhotoFile}
+            />
           </div>
-        )}
+        </PageCard>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-6 p-6 border border-gray-200 bg-white">
-
-            {/* ── Left — Company Information ── */}
-            <div className="border-r border-gray-200 pr-6">
-              <SectionHeader title="Company Information" />
-
-              <AvatarUpload
-                layout="inline"
-                shape="square"
-                src={logoSrc}
-                onUpload={handleLogoUpload}
-                label="Company Logo"
-                buttonLabel="Upload Logo"
-                hint="PNG, JPG up to 5 MB"
-              />
-
-              <div className="space-y-4">
-                <FormInput
-                  label="Company Name *"
-                  value={company.companyName}
-                  onChange={setC('companyName')}
-                  placeholder="e.g. Acme Corp"
-                />
-                <FormInput
-                  label="Industry"
-                  value={company.industry}
-                  onChange={setC('industry')}
-                  placeholder="e.g. Software / Technology"
-                />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <LocationAutocomplete
-                    value={company.location}
-                    onChange={(val) => { setError(''); setCompany(p => ({ ...p, location: val })); }}
-                  />
-                </div>
-                <FormSelect
-                  label="Company Size"
-                  value={company.size}
-                  onChange={setC('size')}
-                  options={SIZES}
-                />
-                <FormInput
-                  label="Founded Year"
-                  type="number"
-                  value={company.foundedYear}
-                  onChange={setC('foundedYear')}
-                  placeholder="e.g. 2010"
-                />
-                <FormInput
-                  label="Website"
-                  type="url"
-                  value={company.website}
-                  onChange={setC('website')}
-                  placeholder="https://example.com"
-                />
-                <FormTextarea
-                  label="Description"
-                  value={company.description}
-                  onChange={setC('description')}
-                  placeholder="Tell candidates about your company…"
-                  rows={4}
-                />
-              </div>
-            </div>
-
-            {/* ── Right — Recruiter Profile ── */}
-            <div>
-              <SectionHeader title="Recruiter Profile" />
-
-              <AvatarUpload
-                layout="inline"
-                shape="circle"
-                src={null}
-                onUpload={setPhotoFile}
-                label="Photo"
-                buttonLabel="Upload Photo"
-                hint="PNG, JPG up to 5 MB"
-              />
-
-              <div className="space-y-4">
-                <FormInput
-                  label="Job Title"
-                  value={recruiter.jobTitle}
-                  onChange={setR('jobTitle')}
-                  placeholder="e.g. Head of Talent"
-                />
-                <FormInput
-                  label="Phone"
-                  type="tel"
-                  value={recruiter.phone}
-                  onChange={setR('phone')}
-                  placeholder="+1 555 000 0000"
-                />
-                <FormInput
-                  label="LinkedIn URL"
-                  type="url"
-                  value={recruiter.linkedinUrl}
-                  onChange={setR('linkedinUrl')}
-                  placeholder="https://linkedin.com/in/yourprofile"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Submit */}
-          <div className="mt-6 flex justify-end">
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed rounded-none"
-            >
-              {saving ? 'Saving…' : 'Create & Continue'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 text-sm rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Saving…' : 'Create & Continue'}
+          </button>
+        </div>
+      </form>
+    </PageShell>
   );
 }

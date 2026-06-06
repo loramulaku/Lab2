@@ -50,6 +50,20 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+@layer components {
+  .page-shell-bg {
+    background: linear-gradient(160deg, #dbeafe 0%, #f1f5f9 35%, #e0e7ff 70%, #eff6ff 100%);
+  }
+
+  .page-shell-card {
+    border: 1px solid rgba(147, 197, 253, 0.45);
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px -8px rgba(37, 99, 235, 0.12);
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.15s ease-out;
@@ -58,4 +72,5 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
     from { opacity: 0; transform: translateY(-6px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0)    scale(1);    }
   }
+
 }

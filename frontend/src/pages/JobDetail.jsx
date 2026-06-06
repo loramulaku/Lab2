@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import Header from '../components/Header';
+import { PageShell } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
@@ -50,28 +50,22 @@ export default function JobDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-3xl mx-auto pt-28 px-4">
-          <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 w-1/2"/>
-            <div className="h-4 bg-gray-100 w-1/3"/>
-            <div className="h-40 bg-gray-100"/>
-          </div>
+      <PageShell width="sm" mainClassName="pt-28">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200/80 w-1/2 rounded"/>
+          <div className="h-4 bg-gray-100 w-1/3 rounded"/>
+          <div className="h-40 bg-gray-100/80 rounded-xl"/>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-3xl mx-auto pt-28 px-4 text-center">
-          <p className="text-gray-500 text-lg">Job not found.</p>
-          <Link to="/jobs" className="text-blue-600 text-sm hover:underline mt-2 inline-block">← Back to jobs</Link>
-        </div>
-      </div>
+      <PageShell width="sm" mainClassName="pt-28 text-center">
+        <p className="text-gray-500 text-lg">Job not found.</p>
+        <Link to="/jobs" className="text-blue-600 text-sm hover:underline mt-2 inline-block">← Back to jobs</Link>
+      </PageShell>
     );
   }
 
@@ -96,10 +90,7 @@ export default function JobDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <div className="max-w-3xl mx-auto pt-24 pb-12 px-4">
+    <PageShell width="sm" mainClassName="pb-12">
         {/* Back */}
         <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-800 mb-6 flex items-center gap-1">
           ← Back to results
@@ -212,9 +203,8 @@ export default function JobDetail() {
             )}
           </div>
         )}
-      </div>
 
       {bidOpen && <BidModal job={job} onSubmit={submitBid} onClose={() => setBidOpen(false)} />}
-    </div>
+    </PageShell>
   );
 }

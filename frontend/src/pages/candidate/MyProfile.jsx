@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import candidateService from '../../services/candidateService';
-import Header from '../../components/Header';
+import { PageShell, PageCard } from '../../components/layout';
 import FormInput        from '../../components/FormInput';
 import FormTextarea     from '../../components/FormTextarea';
 import FormSelect       from '../../components/FormSelect';
@@ -427,20 +427,18 @@ export default function MyProfile() {
   const handleEduUpdate = async (id,p) => { const e = await candidateService.updateEducation(id,p); setData(d => ({ ...d, educations: d.educations.map(x => x.id === id ? e : x) })); };
   const handleEduDelete = async (id)   => { await candidateService.deleteEducation(id);              setData(d => ({ ...d, educations: d.educations.filter(x => x.id !== id), stats: { ...d.stats, educationRecords: d.stats.educationRecords - 1 } })); };
 
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">{error}</div>;
-  if (!data)  return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading…</div>;
+  if (error) return <PageShell width="sm"><p className="text-center text-red-500 py-20">{error}</p></PageShell>;
+  if (!data)  return <PageShell width="sm" loading />;
 
   const tabs = data.freelanceActive ? [...BASE_TABS, 'Freelance'] : BASE_TABS;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="max-w-3xl mx-auto pt-24 pb-8 px-4">
+    <PageShell width="sm" mainClassName="pb-8">
         <ProfileHeader profile={data} onSave={handleSaveProfile} onAvatarUpload={handleAvatarUpload} />
 
         <FreelanceToggle active={!!data.freelanceActive} onChange={handleFreelanceToggle} />
 
-        <div className="bg-white border border-gray-200">
+        <PageCard>
           <TabNav tabs={tabs} active={tab} onChange={setTab} />
           <div className="p-6">
             {tab === 'Profile'    && <ProfileTab stats={data.stats} skills={data.skills} />}
@@ -449,8 +447,7 @@ export default function MyProfile() {
             {tab === 'Education'  && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}
             {tab === 'Freelance'  && <FreelancePanel />}
           </div>
-        </div>
-      </div>
-    </div>
+        </PageCard>
+    </PageShell>
   );
 }
