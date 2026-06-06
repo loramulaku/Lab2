@@ -1,7 +1,26 @@
 const express = require('express');
+const path    = require('path');
+const fs      = require('fs');
+const multer  = require('multer');
 const router  = express.Router();
 const auth    = require('../middlewares/auth');
 const c       = require('../controllers/candidate.controller');
+
+// CV upload — stored once on the profile, reused (prefilled) on every application.
+const CV_DIR = path.join(__dirname, '../../public/uploads/cvs');
+fs.mkdirSync(CV_DIR, { recursive: true });
+
+const cvUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, CV_DIR),
+    filename: (req, file, cb) => cb(null, `cv_user_${req.user.id}${path.extname(file.originalname).toLowerCase()}`),
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = /pdf|msword|officedocument|document/.test(file.mimetype) || /\.(pdf|doc|docx)$/i.test(file.originalname);
+    return ok ? cb(null, true) : cb(new Error('Only PDF or Word documents are allowed'));
+  },
+});
 
 // All routes require authentication
 router.use(auth);
@@ -9,6 +28,7 @@ router.use(auth);
 router.get('/profile',              c.getProfile);
 router.put('/profile',              c.updateProfile);
 router.put('/freelance',            c.setFreelanceMode);
+router.post('/cv', cvUpload.single('cv'), c.uploadCv);
 
 router.post('/applications',        c.applyToJob);
 router.get('/applications',         c.getMyApplications);

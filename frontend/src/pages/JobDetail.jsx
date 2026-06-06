@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { PageShell } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
+import ApplicationForm from '../components/jobs/ApplicationForm';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
 import candidateService from '../services/candidateService';
@@ -36,10 +37,11 @@ export default function JobDetail() {
   const { user }   = useAuth();
   const isCandidate = (user?.roles ?? []).includes('candidate');
 
-  const [job,      setJob]      = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [bidOpen,  setBidOpen]  = useState(false);
-  const [feedback, setFeedback] = useState(null);
+  const [job,        setJob]      = useState(null);
+  const [loading,    setLoading]  = useState(true);
+  const [bidOpen,    setBidOpen]  = useState(false);
+  const [applyOpen,  setApplyOpen] = useState(false);
+  const [feedback,   setFeedback] = useState(null);
 
   useEffect(() => {
     freelanceService.getJob(id)
@@ -74,13 +76,10 @@ export default function JobDetail() {
   const logoSrc     = job.company?.logoPath ? `${API_BASE}${job.company.logoPath}` : null;
   const sched       = fmtSchedule(job.schedule);
 
-  const apply = async () => {
-    try {
-      await candidateService.applyToJob(job.id);
-      setFeedback({ ok: true, msg: 'Applied successfully ✓' });
-    } catch (err) {
-      setFeedback({ ok: false, msg: err?.response?.data?.message || 'Failed to apply' });
-    }
+  const submitApplication = async (data) => {
+    const res = await candidateService.applyToJob(job.id, data);
+    setApplyOpen(false);
+    setFeedback({ ok: true, msg: res?.message || 'Application submitted — In review ✓' });
   };
 
   const submitBid = async (data) => {
@@ -161,7 +160,7 @@ export default function JobDetail() {
                   ? canBid
                     ? <button onClick={() => setBidOpen(true)} className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">Submit Bid</button>
                     : <span className="text-sm text-gray-400 italic">Invite only</span>
-                  : <button onClick={apply} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">Apply Now</button>
+                  : <button onClick={() => setApplyOpen(true)} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">Apply Now</button>
               ) : null}
             </div>
           </div>
@@ -204,7 +203,8 @@ export default function JobDetail() {
           </div>
         )}
 
-      {bidOpen && <BidModal job={job} onSubmit={submitBid} onClose={() => setBidOpen(false)} />}
+      {bidOpen   && <BidModal job={job} onSubmit={submitBid} onClose={() => setBidOpen(false)} />}
+      {applyOpen && <ApplicationForm job={job} onSubmit={submitApplication} onClose={() => setApplyOpen(false)} />}
     </PageShell>
   );
 }

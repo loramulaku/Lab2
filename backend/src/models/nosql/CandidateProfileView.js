@@ -19,6 +19,14 @@ const CandidateProfileViewSchema = new mongoose.Schema(
     location:   { type: String, default: null },
     // ── freelance activation (Feature 1) ─────
     freelanceActive: { type: Boolean, default: false },
+    // ── reusable prefill fields ──────────────
+    phone:             { type: String, default: null },
+    linkedinUrl:       { type: String, default: null },
+    githubUrl:         { type: String, default: null },
+    portfolioUrl:      { type: String, default: null },
+    cvPath:            { type: String, default: null },
+    willingToRelocate: { type: Boolean, default: false },
+    yearsExperience:   { type: Number, default: null },
     // ── denormalised skills ──────────────────
     skills: [
       {
