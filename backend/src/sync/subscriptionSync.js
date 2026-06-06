@@ -25,6 +25,7 @@ async function syncSubscription(subscriptionId) {
     companyName:          company?.name ?? null,
     planName:             plan?.name    ?? null,
     planPrice:            plan?.price   ? Number(plan.price) : null,
+    planInterval:         plan?.billingInterval ?? 'month',
     jobLimit:             plan?.jobLimit ?? null,
   });
 

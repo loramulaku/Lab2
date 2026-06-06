@@ -9,6 +9,7 @@ const PlanViewSchema = new mongoose.Schema(
     _id:          { type: Number },   // MySQL Plans.id
     name:         { type: String },
     price:        { type: Number },
+    billingInterval: { type: String, default: 'month' },
     jobLimit:     { type: Number },
     stripePriceId:{ type: String },
     isActive:     { type: Boolean, default: true },

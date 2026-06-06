@@ -12,6 +12,7 @@ async function syncPlan(planId) {
     id:           plan.id,
     name:         plan.name,
     price:        plan.price ? Number(plan.price) : 0,
+    billingInterval: plan.billingInterval ?? 'month',
     jobLimit:     plan.jobLimit,
     stripePriceId:plan.stripePriceId,
     isActive:     plan.isActive,

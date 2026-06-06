@@ -54,7 +54,8 @@ export default function BuyUpgrade() {
               <div key={plan.id} className={`bg-white border p-6 flex flex-col ${isCurrent ? 'border-blue-500' : 'border-gray-200'}`}>
                 {isCurrent && <span className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-2">Current Plan</span>}
                 <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">${Number(plan.price).toFixed(2)}<span className="text-sm font-normal text-gray-500">/mo</span></p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">${Number(plan.price).toFixed(2)}<span className="text-sm font-normal text-gray-500">/{plan.billingInterval === 'year' ? 'yr' : 'mo'}</span></p>
+                <p className="text-xs text-gray-400 mt-0.5">Billed {plan.billingInterval === 'year' ? 'yearly' : 'monthly'}, recurring</p>
                 <p className="text-sm text-gray-600 mt-3">
                   {plan.jobLimit == null ? 'Unlimited job postings' : `Up to ${plan.jobLimit} job posting${plan.jobLimit !== 1 ? 's' : ''}`}
                 </p>

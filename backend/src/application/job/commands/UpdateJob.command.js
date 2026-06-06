@@ -11,6 +11,11 @@ class UpdateJobCommand {
     this.budgetMax       = data.budgetMax;
     this.expiresAt       = data.expiresAt;
     this.deadline        = data.deadline;
+    this.responsibilities = data.responsibilities;
+    this.requirements     = data.requirements;
+    this.niceToHave       = data.niceToHave;
+    this.benefits         = data.benefits;
+    this.schedule         = data.schedule;
     this.skillIds        = data.skillIds;
     this.categoryIds     = data.categoryIds;
   }
