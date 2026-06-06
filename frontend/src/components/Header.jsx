@@ -204,7 +204,10 @@ export default function Header({ notificationCount = 0 }) {
           </button>
 
           {/* Messages */}
-          <button className="p-2 rounded-lg text-blue-100/70 hover:bg-white/10 hover:text-white transition">
+          <button
+            onClick={() => navigate('/chat')}
+            className="p-2 rounded-lg text-blue-100/70 hover:bg-white/10 hover:text-white transition"
+          >
             <ChatIcon />
           </button>
 

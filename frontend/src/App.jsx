@@ -20,7 +20,8 @@ import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import Subscription from './pages/recruiter/Subscription';
 import PaymentSuccess from './pages/recruiter/PaymentSuccess';
 import PaymentCancelled from './pages/recruiter/PaymentCancelled';
-import Chat from './pages/chat/Chat';
+import Chat from './pages/chat/chat';
+import CandidateJobs from './pages/candidate/Jobs';
 
 
 // ── Route guards ──────────────────────────────────────────────────────────────
@@ -112,6 +113,13 @@ function AppShell() {
         </ProtectedRoute>
       } />
 
+      {/* Chat — must be before /recruiter/* catch-all */}
+      <Route path="/chat" element={
+        <ProtectedRoute roles={['candidate', 'recruiter']}>
+          <Chat />
+        </ProtectedRoute>
+      } />
+
       {/* Admin - Dashboard */}
       <Route path="/admin" element={
         <ProtectedRoute roles={['admin']}>
@@ -149,12 +157,11 @@ function AppShell() {
         </ProtectedRoute>
       } />
 
-      {/* Chat */}
-<Route path="/chat" element={
-  <ProtectedRoute roles={['candidate', 'recruiter']}>
-    <Chat />
-  </ProtectedRoute>
-} />
+      <Route path="/jobs" element={
+        <ProtectedRoute roles={['candidate']}>
+          <CandidateJobs />
+        </ProtectedRoute>
+      } />
 
       {/* Public home */}
       <Route path="/" element={<Home />} />
