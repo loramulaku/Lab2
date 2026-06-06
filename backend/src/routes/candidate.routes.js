@@ -33,6 +33,11 @@ router.post('/cv', cvUpload.single('cv'), c.uploadCv);
 router.post('/applications',        c.applyToJob);
 router.get('/applications',         c.getMyApplications);
 
+router.get('/saved-jobs',           c.getSavedJobs);
+router.get('/saved-job-ids',        c.getSavedJobIds);
+router.post('/saved-jobs/:jobId',   c.saveJob);
+router.delete('/saved-jobs/:jobId', c.unsaveJob);
+
 router.post('/skills',              c.addSkill);
 router.delete('/skills/:id',        c.deleteSkill);
 

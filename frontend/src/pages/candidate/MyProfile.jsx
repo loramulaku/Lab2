@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import candidateService from '../../services/candidateService';
 import { PageShell, PageCard } from '../../components/layout';
 import FormInput        from '../../components/FormInput';
@@ -20,7 +21,7 @@ const avatarSrc = (path) => path ? `${API_BASE}${path}` : null;
 const fmtDate   = (d) => d ? d.slice(0, 7) : 'Present';
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-const BASE_TABS = ['Profile', 'Skills', 'Experience', 'Education'];
+const BASE_TABS = ['Profile', 'Skills', 'Experience', 'Education', 'Applications', 'Saved'];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/></svg>;
@@ -434,6 +435,117 @@ function EducationTab({ educations, onAdd, onUpdate, onDelete }) {
   );
 }
 
+// ── Status helpers ────────────────────────────────────────────────────────────
+const APP_STATUS = {
+  pending:    { label: 'In review',  cls: 'bg-yellow-100 text-yellow-800' },
+  in_review:  { label: 'In review',  cls: 'bg-yellow-100 text-yellow-800' },
+  shortlisted:{ label: 'Shortlisted',cls: 'bg-blue-100 text-blue-700' },
+  interview:  { label: 'Interview',  cls: 'bg-purple-100 text-purple-700' },
+  offer:      { label: 'Offer',      cls: 'bg-green-100 text-green-800' },
+  accepted:   { label: 'Accepted',   cls: 'bg-green-100 text-green-800' },
+  rejected:   { label: 'Rejected',   cls: 'bg-red-100 text-red-700' },
+  withdrawn:  { label: 'Withdrawn',  cls: 'bg-gray-100 text-gray-500' },
+};
+const statusBadge = (s) => APP_STATUS[s] ?? { label: s, cls: 'bg-gray-100 text-gray-600' };
+const fmtApplied  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
+// ── Applications Tab ──────────────────────────────────────────────────────────
+function ApplicationsTab() {
+  const [apps, setApps]     = useState(null);
+  const [error, setError]   = useState('');
+
+  useEffect(() => {
+    candidateService.myApplications({ limit: 100 })
+      .then(r => setApps(r.data ?? []))
+      .catch(() => setError('Failed to load applications.'));
+  }, []);
+
+  if (error) return <p className="text-sm text-red-500">{error}</p>;
+  if (!apps) return <p className="text-sm text-gray-400">Loading…</p>;
+
+  if (apps.length === 0) return (
+    <EmptyState message="No applications submitted yet." onAdd={null} addLabel="" />
+  );
+
+  return (
+    <div className="divide-y divide-gray-100">
+      {apps.map(app => {
+        const badge = statusBadge(app.status);
+        return (
+          <div key={app.id} className="flex items-center gap-4 py-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? `Job #${app.jobId}`}</p>
+              <p className="text-xs text-gray-500">{app.companyName ?? '—'}</p>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
+              <span className={`text-xs px-2 py-0.5 font-medium ${badge.cls}`}>{badge.label}</span>
+              <Link to={`/job/${app.jobId}`} className="text-xs text-blue-600 hover:underline">View</Link>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Saved Jobs Tab ────────────────────────────────────────────────────────────
+const API_BASE_SAVED = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? '';
+
+function SavedJobsTab() {
+  const [saved, setSaved]   = useState(null);
+  const [error, setError]   = useState('');
+
+  const load = () => candidateService.getSavedJobs()
+    .then(r => setSaved(Array.isArray(r) ? r : []))
+    .catch(() => setError('Failed to load saved jobs.'));
+
+  useEffect(() => { load(); }, []);
+
+  const handleUnsave = async (jobId) => {
+    await candidateService.unsaveJob(jobId).catch(() => {});
+    setSaved(s => s.filter(j => j.id !== jobId));
+  };
+
+  if (error) return <p className="text-sm text-red-500">{error}</p>;
+  if (!saved) return <p className="text-sm text-gray-400">Loading…</p>;
+
+  if (saved.length === 0) return (
+    <EmptyState message="No saved jobs yet. Bookmark jobs from the job board." onAdd={null} addLabel="" />
+  );
+
+  return (
+    <div className="divide-y divide-gray-100">
+      {saved.map(job => {
+        const logoSrc = job.company?.logoPath ? `${API_BASE_SAVED}${job.company.logoPath}` : null;
+        return (
+          <div key={job.id} className="flex items-center gap-3 py-3">
+            {logoSrc
+              ? <img src={logoSrc} alt={job.company?.name} className="w-9 h-9 object-contain border border-gray-100 flex-shrink-0" />
+              : <div className="w-9 h-9 bg-blue-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                  {(job.company?.name ?? '?').slice(0, 2).toUpperCase()}
+                </div>
+            }
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm">{job.title}</p>
+              <p className="text-xs text-gray-500">{job.company?.name ?? '—'} · {job.employmentType?.replace(/-/g, '‑')}</p>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {job.status !== 'open' && <span className="text-xs text-gray-400 italic">Closed</span>}
+              <Link to={`/job/${job.id}`} className="text-xs text-blue-600 hover:underline">View</Link>
+              <button onClick={() => handleUnsave(job.id)} className="text-gray-300 hover:text-red-500 transition" title="Remove">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MyProfile() {
   const [data, setData]   = useState(null);
@@ -471,6 +583,7 @@ export default function MyProfile() {
   if (!data)  return <PageShell width="sm" loading />;
 
   const tabs = data.freelanceActive ? [...BASE_TABS, 'Freelance'] : BASE_TABS;
+  // BASE_TABS already includes Applications + Saved
 
   return (
     <PageShell width="sm" mainClassName="pb-8">
@@ -481,11 +594,13 @@ export default function MyProfile() {
         <PageCard>
           <TabNav tabs={tabs} active={tab} onChange={setTab} />
           <div className="p-6">
-            {tab === 'Profile'    && <ProfileTab stats={data.stats} skills={data.skills} />}
-            {tab === 'Skills'     && <SkillsTab skills={data.skills} onAdd={handleSkillAdd} onDelete={handleSkillDelete} />}
-            {tab === 'Experience' && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}
-            {tab === 'Education'  && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}
-            {tab === 'Freelance'  && <FreelancePanel />}
+            {tab === 'Profile'      && <ProfileTab stats={data.stats} skills={data.skills} />}
+            {tab === 'Skills'       && <SkillsTab skills={data.skills} onAdd={handleSkillAdd} onDelete={handleSkillDelete} />}
+            {tab === 'Experience'   && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}
+            {tab === 'Education'    && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}
+            {tab === 'Applications' && <ApplicationsTab />}
+            {tab === 'Saved'        && <SavedJobsTab />}
+            {tab === 'Freelance'    && <FreelancePanel />}
           </div>
         </PageCard>
     </PageShell>

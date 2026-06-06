@@ -22,6 +22,7 @@ const Application = sequelize.define('Application', {
 }, {
   tableName: 'Applications',
   timestamps: false,
+  indexes: [{ unique: true, fields: ['user_id', 'job_id'], name: 'applications_user_job_unique' }],
 });
 
 module.exports = Application;

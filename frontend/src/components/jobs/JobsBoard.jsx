@@ -148,7 +148,25 @@ export function JobsCategorySidebar({ categories, activeCategory, onSelect }) {
   );
 }
 
-export function JobListingCard({ job, user, isCandidate, feedback, onApply, onBid }) {
+function BookmarkIcon({ filled }) {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+    </svg>
+  );
+}
+
+const APP_STATUS_LABEL = {
+  pending:     'In review',
+  in_review:   'In review',
+  shortlisted: 'Shortlisted',
+  interview:   'Interview',
+  offer:       'Offer sent',
+  accepted:    'Accepted',
+  rejected:    'Rejected',
+};
+
+export function JobListingCard({ job, user, isCandidate, feedback, appliedStatus, hasBid, onApply, onBid, isSaved, onToggleSave }) {
   const freelance = job.workMode === 'freelance';
   const canBid = !!job.acceptsBids;
   const salary = fmtSalary(job);
@@ -168,15 +186,27 @@ export function JobListingCard({ job, user, isCandidate, feedback, onApply, onBi
               <p className="text-sm text-gray-500 mt-0.5">{job.company?.name ?? '—'}</p>
             </div>
             <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-              <Link to={`/job/${job.id}`} className="text-xs text-blue-600 hover:underline whitespace-nowrap">View details →</Link>
+              <div className="flex items-center gap-2">
+                {user && isCandidate && onToggleSave && (
+                  <button onClick={() => onToggleSave(job.id)} title={isSaved ? 'Remove bookmark' : 'Save job'}
+                    className={`transition ${isSaved ? 'text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}>
+                    <BookmarkIcon filled={isSaved} />
+                  </button>
+                )}
+                <Link to={`/job/${job.id}`} className="text-xs text-blue-600 hover:underline whitespace-nowrap">View details →</Link>
+              </div>
               {feedback ? (
                 <span className={`text-sm font-medium ${feedback.ok ? 'text-green-600' : 'text-red-600'}`}>{feedback.msg}</span>
               ) : !user ? (
                 <Link to="/login" className="page-shell-btn px-4 py-1.5 text-gray-700 text-xs hover:bg-white/70 whitespace-nowrap rounded-md bg-white/80">Sign in</Link>
               ) : isCandidate ? (
                 freelance
-                  ? canBid && <button onClick={() => onBid(job)} className="page-shell-btn px-4 py-1.5 bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 whitespace-nowrap rounded-md transition-all">Submit Bid</button>
-                  : <button onClick={() => onApply(job)} className="page-shell-btn px-4 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 whitespace-nowrap rounded-md transition-all">Apply</button>
+                  ? canBid && (hasBid
+                      ? <span className="text-xs text-gray-400 italic">Bid submitted</span>
+                      : <button onClick={() => onBid(job)} className="page-shell-btn px-4 py-1.5 bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 whitespace-nowrap rounded-md transition-all">Submit Bid</button>)
+                  : appliedStatus
+                      ? <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 whitespace-nowrap">{APP_STATUS_LABEL[appliedStatus] ?? 'Applied'}</span>
+                      : <button onClick={() => onApply(job)} className="page-shell-btn px-4 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 whitespace-nowrap rounded-md transition-all">Apply</button>
               ) : null}
             </div>
           </div>

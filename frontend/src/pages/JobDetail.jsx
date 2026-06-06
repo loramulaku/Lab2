@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { PageShell } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
+import FreelanceModeGate from '../components/freelance/FreelanceModeGate';
 import ApplicationForm from '../components/jobs/ApplicationForm';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
@@ -40,8 +41,13 @@ export default function JobDetail() {
   const [job,        setJob]      = useState(null);
   const [loading,    setLoading]  = useState(true);
   const [bidOpen,    setBidOpen]  = useState(false);
+  const [gateOpen,   setGateOpen] = useState(false);
   const [applyOpen,  setApplyOpen] = useState(false);
   const [feedback,   setFeedback] = useState(null);
+  const [isSaved,        setIsSaved]        = useState(false);
+  const [freelanceActive, setFreelanceActive] = useState(null);
+  const [appliedStatus,  setAppliedStatus]  = useState(null);
+  const [hasBid,         setHasBid]         = useState(false);
 
   useEffect(() => {
     freelanceService.getJob(id)
@@ -49,6 +55,23 @@ export default function JobDetail() {
       .catch(() => setJob(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!isCandidate) return;
+    const numId = Number(id);
+    candidateService.getSavedJobIds().then(ids => setIsSaved(ids.includes(numId))).catch(() => {});
+    candidateService.getProfile().then(p => setFreelanceActive(!!p.freelanceActive)).catch(() => {});
+    candidateService.myApplications({ limit: 200 })
+      .then(r => {
+        const match = (r.data ?? []).find(a => a.jobId === numId);
+        if (match) setAppliedStatus(match.status);
+      }).catch(() => {});
+    freelanceService.myBids({ limit: 200 })
+      .then(r => {
+        const match = (r.data ?? []).find(b => b.jobId === numId && b.status !== 'withdrawn');
+        if (match) setHasBid(true);
+      }).catch(() => {});
+  }, [id, isCandidate]);
 
   if (loading) {
     return (
@@ -76,14 +99,32 @@ export default function JobDetail() {
   const logoSrc     = job.company?.logoPath ? `${API_BASE}${job.company.logoPath}` : null;
   const sched       = fmtSchedule(job.schedule);
 
+  const toggleSave = async () => {
+    if (!isCandidate) return;
+    if (isSaved) {
+      await candidateService.unsaveJob(Number(id)).catch(() => {});
+      setIsSaved(false);
+    } else {
+      await candidateService.saveJob(Number(id)).catch(() => {});
+      setIsSaved(true);
+    }
+  };
+
+  const handleBidClick = () => {
+    if (!freelanceActive) { setGateOpen(true); return; }
+    setBidOpen(true);
+  };
+
   const submitApplication = async (data) => {
     const res = await candidateService.applyToJob(job.id, data);
     setApplyOpen(false);
+    setAppliedStatus('pending');
     setFeedback({ ok: true, msg: res?.message || 'Application submitted — In review ✓' });
   };
 
   const submitBid = async (data) => {
     await freelanceService.submitBid(job.id, data);
+    setHasBid(true);
     setFeedback({ ok: true, msg: 'Bid submitted ✓' });
     setBidOpen(false);
   };
@@ -149,8 +190,16 @@ export default function JobDetail() {
               )}
             </div>
 
-            {/* Apply / Bid action */}
-            <div className="flex-shrink-0">
+            {/* Apply / Bid action + bookmark */}
+            <div className="flex-shrink-0 flex items-center gap-3">
+              {isCandidate && (
+                <button onClick={toggleSave} title={isSaved ? 'Remove bookmark' : 'Save job'}
+                  className={`transition ${isSaved ? 'text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                  </svg>
+                </button>
+              )}
               {feedback ? (
                 <span className={`text-sm font-medium ${feedback.ok ? 'text-green-600' : 'text-red-600'}`}>{feedback.msg}</span>
               ) : !user ? (
@@ -158,9 +207,15 @@ export default function JobDetail() {
               ) : isCandidate ? (
                 isFreelance
                   ? canBid
-                    ? <button onClick={() => setBidOpen(true)} className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">Submit Bid</button>
+                    ? hasBid
+                      ? <span className="text-sm text-gray-500 bg-gray-100 px-3 py-2">Bid submitted</span>
+                      : <button onClick={handleBidClick} className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">Submit Bid</button>
                     : <span className="text-sm text-gray-400 italic">Invite only</span>
-                  : <button onClick={() => setApplyOpen(true)} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">Apply Now</button>
+                  : appliedStatus
+                    ? <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-2">
+                        {appliedStatus === 'pending' ? 'In review' : appliedStatus.charAt(0).toUpperCase() + appliedStatus.slice(1)}
+                      </span>
+                    : <button onClick={() => setApplyOpen(true)} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">Apply Now</button>
               ) : null}
             </div>
           </div>
@@ -205,6 +260,17 @@ export default function JobDetail() {
 
       {bidOpen   && <BidModal job={job} onSubmit={submitBid} onClose={() => setBidOpen(false)} />}
       {applyOpen && <ApplicationForm job={job} onSubmit={submitApplication} onClose={() => setApplyOpen(false)} />}
+      {gateOpen  && (
+        <FreelanceModeGate
+          onActivate={async () => {
+            await candidateService.setFreelanceMode(true);
+            setFreelanceActive(true);
+            setGateOpen(false);
+            setBidOpen(true);
+          }}
+          onCancel={() => setGateOpen(false)}
+        />
+      )}
     </PageShell>
   );
 }

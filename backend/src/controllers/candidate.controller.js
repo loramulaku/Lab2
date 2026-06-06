@@ -30,6 +30,9 @@ const deleteEducationHandler        = require('../application/candidate/handlers
 
 const CandidateProfileDTO = require('../dtos/candidate.dto');
 const ApplicationDTO      = require('../dtos/application.dto');
+const SavedJob            = require('../models/sql/SavedJob');
+const Job                 = require('../models/sql/Job');
+const Company             = require('../models/sql/Company');
 
 const getProfile      = (req, res) => getCandidateProfileHandler.handle(new GetCandidateProfileQuery(req.user.id))
   .then(r => r ? res.json(CandidateProfileDTO.from(r)) : res.status(404).json({ message: 'Profile not found' }));
@@ -79,10 +82,51 @@ const updateEducation = (req, res) => updateEducationHandler.handle(new UpdateEd
 const deleteEducation = (req, res) => deleteEducationHandler.handle(new DeleteEducationCommand({ userId: req.user.id, educationId: Number(req.params.id) }))
   .then(r => res.json(r));
 
+const getSavedJobs = async (req, res, next) => {
+  try {
+    const rows = await SavedJob.findAll({
+      where: { userId: req.user.id },
+      include: [{ model: Job, as: 'Job', include: [{ model: Company, attributes: ['id', 'name', 'logoPath'] }] }],
+      order: [['created_at', 'DESC']],
+    });
+    res.json(rows.map(r => ({
+      savedAt:  r.created_at,
+      id:       r.Job?.id,
+      title:    r.Job?.title,
+      company:  r.Job ? { name: r.Job.Company?.name, logoPath: r.Job.Company?.logoPath } : null,
+      employmentType: r.Job?.employmentType,
+      workMode: r.Job?.workMode,
+      status:   r.Job?.status,
+    })));
+  } catch (err) { next(err); }
+};
+
+const saveJob = async (req, res, next) => {
+  try {
+    await SavedJob.findOrCreate({ where: { userId: req.user.id, jobId: Number(req.params.jobId) } });
+    res.json({ saved: true });
+  } catch (err) { next(err); }
+};
+
+const unsaveJob = async (req, res, next) => {
+  try {
+    await SavedJob.destroy({ where: { userId: req.user.id, jobId: Number(req.params.jobId) } });
+    res.json({ saved: false });
+  } catch (err) { next(err); }
+};
+
+const getSavedJobIds = async (req, res, next) => {
+  try {
+    const rows = await SavedJob.findAll({ where: { userId: req.user.id }, attributes: ['jobId'] });
+    res.json(rows.map(r => r.jobId));
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   getProfile, updateProfile, setFreelanceMode,
   applyToJob, getMyApplications, uploadCv,
   addSkill, deleteSkill,
   addExperience, updateExperience, deleteExperience,
   addEducation, updateEducation, deleteEducation,
+  getSavedJobs, saveJob, unsaveJob, getSavedJobIds,
 };
