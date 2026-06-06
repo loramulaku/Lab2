@@ -12,7 +12,8 @@ const AdminLayout = ({ children }) => {
     { name: 'Companies', href: '/admin/companies', icon: '🏢' },
     { name: 'Applications', href: '/admin/applications', icon: '📋' },
     { name: 'Plans', href: '/admin/plans', icon: '💳' },
-    { name: 'Theme Editor', href: '/admin/theme', icon: '🎨' },
+    { name: 'Reports',      href: '/admin/reports', icon: '📈' },
+    { name: 'Theme Editor', href: '/admin/theme',   icon: '🎨' },
   ];
 
   const isActive = (href) => {

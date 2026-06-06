@@ -22,6 +22,7 @@ import PaymentSuccess from './pages/recruiter/PaymentSuccess';
 import PaymentCancelled from './pages/recruiter/PaymentCancelled';
 import Chat from './pages/chat/chat';
 import CandidateJobs from './pages/candidate/Jobs';
+import Reports from './pages/admin/Reports';
 
 
 // ── Route guards ──────────────────────────────────────────────────────────────
@@ -154,6 +155,11 @@ function AppShell() {
       <Route path="/admin/plans" element={
         <ProtectedRoute roles={['admin']}>
           <AdminLayout><Plans /></AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminLayout><Reports /></AdminLayout>
         </ProtectedRoute>
       } />
 
