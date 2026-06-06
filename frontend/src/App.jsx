@@ -1,42 +1,57 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemePreviewBridge from './components/admin/ThemePreviewBridge';
 import { AdminShell } from './components/layout';
-import Dashboard from './pages/admin/Dashboard';
-import Users from './pages/admin/Users';
-import Jobs from './pages/admin/Jobs';
-import Companies from './pages/admin/Companies';
-import Applications from './pages/admin/Applications';
-import ThemeEditor from './pages/admin/ThemeEditor';
-import Plans from './pages/admin/Plans';
-import Categories from './pages/admin/Categories';
-import JobDetail from './pages/JobDetail';
-import Home from './pages/Home';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import MyProfile from './pages/candidate/MyProfile';
-import PublicJobs from './pages/Jobs';
-import CompanySetup from './pages/recruiter/CompanySetup';
-import Overview from './pages/recruiter/Overview';
-import MyJobs from './pages/recruiter/MyJobs';
-import ArchivedJobs from './pages/recruiter/ArchivedJobs';
-import JobSeekers from './pages/recruiter/JobSeekers';
-import FreelanceApplicants from './pages/recruiter/FreelanceApplicants';
-import SearchInvite from './pages/recruiter/SearchInvite';
-import FreelancerPicker from './pages/recruiter/FreelancerPicker';
-import InvitedFreelancers from './pages/recruiter/InvitedFreelancers';
-import BidsReceived from './pages/recruiter/BidsReceived';
-import Contracts from './pages/recruiter/Contracts';
-import CurrentPlan from './pages/recruiter/billing/CurrentPlan';
-import BuyUpgrade from './pages/recruiter/billing/BuyUpgrade';
-import Invoices from './pages/recruiter/billing/Invoices';
-import TeamMembers from './pages/recruiter/TeamMembers';
-import PaymentSuccess from './pages/recruiter/PaymentSuccess';
-import PaymentCancelled from './pages/recruiter/PaymentCancelled';
-import Chat from './pages/chat/Chat';
 
+// ── Lazy-loaded route components ───────────────────────────────────────────────
+// Each page is code-split into its own chunk and fetched on first navigation,
+// so the initial bundle stays small. The shell/providers/guards above are eager
+// because they are needed to render anything at all.
+const Dashboard           = lazy(() => import('./pages/admin/Dashboard'));
+const Users               = lazy(() => import('./pages/admin/Users'));
+const Jobs                = lazy(() => import('./pages/admin/Jobs'));
+const Companies           = lazy(() => import('./pages/admin/Companies'));
+const Applications        = lazy(() => import('./pages/admin/Applications'));
+const ThemeEditor         = lazy(() => import('./pages/admin/ThemeEditor'));
+const Plans               = lazy(() => import('./pages/admin/Plans'));
+const Categories          = lazy(() => import('./pages/admin/Categories'));
+const JobDetail           = lazy(() => import('./pages/JobDetail'));
+const Home                = lazy(() => import('./pages/Home'));
+const Login               = lazy(() => import('./pages/auth/Login'));
+const Register            = lazy(() => import('./pages/auth/Register'));
+const MyProfile           = lazy(() => import('./pages/candidate/MyProfile'));
+const PublicJobs          = lazy(() => import('./pages/Jobs'));
+const CompanySetup        = lazy(() => import('./pages/recruiter/CompanySetup'));
+const Overview            = lazy(() => import('./pages/recruiter/Overview'));
+const MyJobs              = lazy(() => import('./pages/recruiter/MyJobs'));
+const ArchivedJobs        = lazy(() => import('./pages/recruiter/ArchivedJobs'));
+const JobSeekers          = lazy(() => import('./pages/recruiter/JobSeekers'));
+const FreelanceApplicants = lazy(() => import('./pages/recruiter/FreelanceApplicants'));
+const SearchInvite        = lazy(() => import('./pages/recruiter/SearchInvite'));
+const FreelancerPicker    = lazy(() => import('./pages/recruiter/FreelancerPicker'));
+const InvitedFreelancers  = lazy(() => import('./pages/recruiter/InvitedFreelancers'));
+const BidsReceived        = lazy(() => import('./pages/recruiter/BidsReceived'));
+const Contracts           = lazy(() => import('./pages/recruiter/Contracts'));
+const CurrentPlan         = lazy(() => import('./pages/recruiter/billing/CurrentPlan'));
+const BuyUpgrade          = lazy(() => import('./pages/recruiter/billing/BuyUpgrade'));
+const Invoices            = lazy(() => import('./pages/recruiter/billing/Invoices'));
+const TeamMembers         = lazy(() => import('./pages/recruiter/TeamMembers'));
+const PaymentSuccess      = lazy(() => import('./pages/recruiter/PaymentSuccess'));
+const PaymentCancelled    = lazy(() => import('./pages/recruiter/PaymentCancelled'));
+const Chat                = lazy(() => import('./pages/chat/Chat'));
+
+
+// ── Suspense fallback ──────────────────────────────────────────────────────────
+// Shown while a lazily-loaded route chunk is being fetched.
+function PageFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-gray-500">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+    </div>
+  );
+}
 
 // ── Route guards ──────────────────────────────────────────────────────────────
 
@@ -78,6 +93,7 @@ function AppShell() {
   if (bootstrapping) return null; // blank while restoring session
 
   return (
+    <Suspense fallback={<PageFallback />}>
     <Routes>
       {/* Public */}
       <Route path="/login"        element={<Login />} />
@@ -191,6 +207,7 @@ function AppShell() {
       {/* Default */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 
