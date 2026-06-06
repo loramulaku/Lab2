@@ -6,7 +6,7 @@ A job & freelance marketplace (think *LinkedIn + Upwork*) with four roles — **
 **freelancers**, **recruiters**, and **admins**. It is built on a **CQRS architecture**: MySQL is
 the transactional source of truth (write side) and MongoDB serves denormalised read models.
 
-> For a deeper architecture walkthrough see [STUDY_GUIDE.md](STUDY_GUIDE.md).
+
 
 ---
 
