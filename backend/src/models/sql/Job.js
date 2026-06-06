@@ -16,8 +16,6 @@ const Job = sequelize.define('Job', {
   expiresAt:       { type: DataTypes.DATE, field: 'expires_at' },
   deadline:        { type: DataTypes.DATE },
   status:          { type: DataTypes.STRING(50), defaultValue: 'open' },
-  closedAt:        { type: DataTypes.DATE, field: 'closed_at' },
-  archivedAt:      { type: DataTypes.DATE, field: 'archived_at' },
   createdAt:      { type: DataTypes.DATE, field: 'created_at' },
   updatedAt:      { type: DataTypes.DATE, field: 'updated_at' },
 }, {
