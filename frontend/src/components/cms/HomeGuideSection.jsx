@@ -1,35 +1,27 @@
+import { PageCard } from '../layout';
+
 export default function HomeGuideSection({ sectionId, settings: s = {} }) {
   const guideTitle = s.guideTitle ?? 'Quick Start Guide';
-  const step1      = s.step1      ?? 'Register a new account or use: admin@hireflow.com / admin123';
-  const step2      = s.step2      ?? 'Assign admin role in MySQL Workbench (see SQL file in backend folder)';
-  const step3      = s.step3      ?? 'Login and navigate to /admin to access the admin dashboard';
-  const bgColor    = s.bgColor    ?? '#ffffff';
-  const textColor  = s.textColor  ?? '#ffffff';
-  const cardOpacity = s.cardOpacity ?? '20';
-
+  const step1      = s.step1      ?? 'Create an account as a candidate or recruiter.';
+  const step2      = s.step2      ?? 'Complete your profile to unlock all features.';
+  const step3      = s.step3      ?? 'Browse jobs, apply, or post openings from your dashboard.';
   const steps = [step1, step2, step3].filter(Boolean);
 
   return (
-    <section
-      data-theme-section={sectionId}
-      data-theme-label="Guide"
-      className="px-4 py-12"
-      style={{ backgroundColor: bgColor, color: textColor }}
-    >
-      <div
-        className="max-w-2xl mx-auto p-6 rounded-lg backdrop-blur-lg"
-        style={{ backgroundColor: `${textColor}${cardOpacity}` }}
-      >
-        <h2 className="text-2xl font-bold mb-4">{guideTitle}</h2>
+    <section data-theme-section={sectionId} data-theme-label="Guide" className="px-4 py-12">
+      <PageCard className="max-w-2xl mx-auto p-6 sm:p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">{guideTitle}</h2>
         <ol className="space-y-3">
           {steps.map((step, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="font-bold flex-shrink-0">{i + 1}.</span>
-              <span className="leading-relaxed">{step}</span>
+            <li key={i} className="flex items-start gap-3 text-gray-700">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold flex items-center justify-center">
+                {i + 1}
+              </span>
+              <span className="leading-relaxed pt-0.5">{step}</span>
             </li>
           ))}
         </ol>
-      </div>
+      </PageCard>
     </section>
   );
 }

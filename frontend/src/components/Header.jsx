@@ -166,15 +166,15 @@ export default function Header({ notificationCount = 0 }) {
   const menuItems   = getMenuItems(roles);
 
   const iconBtn =
-    'relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/50 transition-colors';
+    'page-shell-btn relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-blue-700 hover:bg-white/50 transition-all';
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-blue-50/40 backdrop-blur-md border-b border-blue-200/40">
+    <header className="fixed top-0 inset-x-0 z-50 page-shell-bar">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-          <div className="bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
+          <div className="page-shell-btn bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-all">
             <BriefcaseIcon />
           </div>
           <span className="text-gray-900 font-bold text-lg tracking-tight">
@@ -226,7 +226,7 @@ export default function Header({ notificationCount = 0 }) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(o => !o)}
-              className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5 hover:bg-white/50 transition-colors"
+              className="page-shell-btn flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5 hover:bg-white/50 transition-all"
             >
               <Avatar
                 src={avatarSrc}

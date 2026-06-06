@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemePreviewBridge from './components/admin/ThemePreviewBridge';
-import AdminLayout from './components/admin/AdminLayout';
+import { AdminShell } from './components/layout';
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Jobs from './pages/admin/Jobs';
@@ -132,42 +132,42 @@ function AppShell() {
       {/* Admin - Dashboard */}
       <Route path="/admin" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Dashboard /></AdminLayout>
+          <AdminShell><Dashboard /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/users" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Users /></AdminLayout>
+          <AdminShell><Users /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/jobs" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Jobs /></AdminLayout>
+          <AdminShell><Jobs /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/companies" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Companies /></AdminLayout>
+          <AdminShell><Companies /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/applications" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Applications /></AdminLayout>
+          <AdminShell><Applications /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/theme" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><ThemeEditor /></AdminLayout>
+          <AdminShell><ThemeEditor /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/plans" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Plans /></AdminLayout>
+          <AdminShell><Plans /></AdminShell>
         </ProtectedRoute>
       } />
       <Route path="/admin/categories" element={
         <ProtectedRoute roles={['admin']}>
-          <AdminLayout><Categories /></AdminLayout>
+          <AdminShell><Categories /></AdminShell>
         </ProtectedRoute>
       } />
 

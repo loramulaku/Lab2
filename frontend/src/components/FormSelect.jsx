@@ -7,7 +7,7 @@ export default function FormSelect({ label, error, options = [], className = '',
         </label>
       )}
       <select
-        className={`w-full border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none ${className}`}
+        className={`page-shell-field w-full px-3 py-2 text-sm text-gray-700 bg-white/90 focus:outline-none rounded-md ${className}`}
         {...props}
       >
         {options.map(opt => (

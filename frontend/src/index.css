@@ -52,15 +52,70 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
 
 @layer components {
   .page-shell-bg {
-    background: linear-gradient(160deg, #dbeafe 0%, #f1f5f9 35%, #e0e7ff 70%, #eff6ff 100%);
+    background: linear-gradient(160deg, #bfdbfe 0%, #e2e8f0 30%, #c7d2fe 65%, #dbeafe 100%);
   }
 
+  /* Frosted cards — softest edge in the hierarchy */
   .page-shell-card {
-    border: 1px solid rgba(147, 197, 253, 0.45);
-    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(147, 197, 253, 0.35);
+    background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px -8px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 8px 24px -12px rgba(30, 64, 175, 0.18);
+  }
+
+  /* Inputs & search — frosted glass, slightly stronger edge than cards */
+  .page-shell-field {
+    border: 1px solid rgba(147, 197, 253, 0.55);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 2px 8px -4px rgba(30, 64, 175, 0.1);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .page-shell-field:focus-within {
+    border-color: rgba(96, 165, 250, 0.75);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 3px rgba(191, 219, 254, 0.55),
+      0 2px 8px -4px rgba(30, 64, 175, 0.12);
+  }
+
+  /* Buttons — same glass language, subtle lift on hover */
+  .page-shell-btn {
+    border: 1px solid rgba(147, 197, 253, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 2px 6px -2px rgba(30, 64, 175, 0.12);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .page-shell-btn:hover {
+    border-color: rgba(96, 165, 250, 0.65);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 4px 12px -4px rgba(30, 64, 175, 0.18);
+  }
+
+  /* Top bar — shared by Header and page hero bands */
+  .page-shell-bar {
+    background: rgba(239, 246, 255, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(147, 197, 253, 0.4);
+  }
+
+  /* Jobs hero — same glass language, slightly richer blue (flows from header) */
+  .page-shell-hero-band {
+    background: linear-gradient(
+      180deg,
+      rgba(219, 234, 254, 0.82) 0%,
+      rgba(191, 219, 254, 0.5) 100%
+    );
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(96, 165, 250, 0.35);
   }
 }
 
