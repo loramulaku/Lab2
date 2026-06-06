@@ -14,6 +14,13 @@ class CandidateProfileDTO {
     this.bio         = data.bio         ?? null;
     this.location    = data.location    ?? null;
     this.freelanceActive = data.freelanceActive ?? false;
+    this.phone             = data.phone             ?? null;
+    this.linkedinUrl       = data.linkedinUrl       ?? null;
+    this.githubUrl         = data.githubUrl         ?? null;
+    this.portfolioUrl      = data.portfolioUrl      ?? null;
+    this.cvPath            = data.cvPath            ?? null;
+    this.willingToRelocate = data.willingToRelocate ?? false;
+    this.yearsExperience   = data.yearsExperience   ?? null;
     this.skills      = data.skills      ?? [];
     this.experiences = data.experiences ?? [];
     this.educations  = data.educations  ?? [];

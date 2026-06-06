@@ -67,6 +67,13 @@ async function syncCandidate(userId) {
     bio:        profile?.bio       ?? null,
     location:   profile?.location  ?? null,
     freelanceActive: profile?.freelanceActive ?? false,
+    phone:             profile?.phone             ?? null,
+    linkedinUrl:       profile?.linkedinUrl       ?? null,
+    githubUrl:         profile?.githubUrl         ?? null,
+    portfolioUrl:      profile?.portfolioUrl      ?? null,
+    cvPath:            profile?.cvPath            ?? null,
+    willingToRelocate: profile?.willingToRelocate ?? false,
+    yearsExperience:   profile?.yearsExperience   ?? null,
     skills,
     experiences: experiences.map(e => ({
       id:          e.id,

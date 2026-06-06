@@ -38,20 +38,35 @@ const BTN_PRIMARY = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 p
 const BTN_OUTLINE = 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-none';
 
 // ── Profile Header ────────────────────────────────────────────────────────────
-function ProfileHeader({ profile, onSave, onAvatarUpload }) {
+function ProfileHeader({ profile, onSave, onAvatarUpload, onCvUpload }) {
   const [editing, setEditing]     = useState(false);
   const [form, setForm]           = useState({});
   const [formError, setFormError] = useState('');
+  const [uploadingCv, setUploadingCv] = useState(false);
 
   useEffect(() => {
     setForm({
-      firstName: profile.firstName ?? '',
-      lastName:  profile.lastName  ?? '',
-      headline:  profile.headline  ?? '',
-      location:  profile.location  ?? '',
-      bio:       profile.bio       ?? '',
+      firstName:         profile.firstName ?? '',
+      lastName:          profile.lastName  ?? '',
+      headline:          profile.headline  ?? '',
+      location:          profile.location  ?? '',
+      bio:               profile.bio       ?? '',
+      phone:             profile.phone        ?? '',
+      linkedinUrl:       profile.linkedinUrl  ?? '',
+      portfolioUrl:      profile.portfolioUrl ?? '',
+      githubUrl:         profile.githubUrl    ?? '',
+      yearsExperience:   profile.yearsExperience ?? '',
+      willingToRelocate: !!profile.willingToRelocate,
     });
   }, [profile]);
+
+  const handleCv = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !onCvUpload) return;
+    setUploadingCv(true);
+    try { await onCvUpload(file); } finally { setUploadingCv(false); }
+  };
+  const cvName = profile.cvPath ? profile.cvPath.split('/').pop() : null;
 
   const set = (key) => (e) => { setFormError(''); setForm(p => ({ ...p, [key]: e.target.value })); };
 
@@ -91,8 +106,19 @@ function ProfileHeader({ profile, onSave, onAvatarUpload }) {
               {profile.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{profile.bio}</p>}
             </div>
           </div>
-          <div className="flex gap-3 mt-5">
-            <button className={BTN_PRIMARY}><UploadIcon /> Upload Resume</button>
+          <div className="flex flex-wrap items-center gap-3 mt-5">
+            <label className={`${BTN_PRIMARY} cursor-pointer`}>
+              <UploadIcon /> {uploadingCv ? 'Uploading…' : cvName ? 'Replace CV' : 'Upload CV'}
+              <input type="file" accept=".pdf,.doc,.docx" onChange={handleCv} className="hidden" disabled={uploadingCv} />
+            </label>
+            {cvName && (
+              <a href={avatarSrc(profile.cvPath)} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline truncate">
+                📄 {cvName}
+              </a>
+            )}
+            {(profile.linkedinUrl || profile.portfolioUrl || profile.githubUrl) && (
+              <span className="text-xs text-gray-400">· links on file</span>
+            )}
           </div>
         </>
       ) : (
@@ -108,6 +134,19 @@ function ProfileHeader({ profile, onSave, onAvatarUpload }) {
           </div>
           <div className="mt-3">
             <FormTextarea value={form.bio} onChange={set('bio')} placeholder="Write a short bio..." rows={3} />
+          </div>
+          {/* Reusable details that prefill the application & bid forms */}
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <FormInput value={form.phone}           onChange={set('phone')}           placeholder="Phone" />
+            <FormInput type="number"                value={form.yearsExperience} onChange={set('yearsExperience')} placeholder="Years of experience" />
+            <FormInput value={form.linkedinUrl}     onChange={set('linkedinUrl')}     placeholder="LinkedIn URL" />
+            <FormInput value={form.portfolioUrl}    onChange={set('portfolioUrl')}    placeholder="Portfolio URL" />
+            <FormInput value={form.githubUrl}       onChange={set('githubUrl')}       placeholder="GitHub URL" />
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input type="checkbox" checked={!!form.willingToRelocate}
+                onChange={e => setForm(p => ({ ...p, willingToRelocate: e.target.checked }))} className="h-4 w-4" />
+              Willing to relocate
+            </label>
           </div>
           {formError && <p className="mt-2 text-sm text-red-500">{formError}</p>}
           <div className="flex gap-3 mt-4">
@@ -410,6 +449,7 @@ export default function MyProfile() {
 
   const handleSaveProfile   = async (form) => { await candidateService.updateProfile(form); await load(); };
   const handleAvatarUpload  = async (file) => { await candidateService.uploadAvatar(file); await load(); };
+  const handleCvUpload      = async (file) => { await candidateService.uploadCv(file);     await load(); };
   const handleFreelanceToggle = async (next) => {
     await candidateService.setFreelanceMode(next);
     if (!next && tab === 'Freelance') setTab('Profile');
@@ -434,7 +474,7 @@ export default function MyProfile() {
 
   return (
     <PageShell width="sm" mainClassName="pb-8">
-        <ProfileHeader profile={data} onSave={handleSaveProfile} onAvatarUpload={handleAvatarUpload} />
+        <ProfileHeader profile={data} onSave={handleSaveProfile} onAvatarUpload={handleAvatarUpload} onCvUpload={handleCvUpload} />
 
         <FreelanceToggle active={!!data.freelanceActive} onChange={handleFreelanceToggle} />
 

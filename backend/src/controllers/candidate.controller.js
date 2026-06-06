@@ -3,6 +3,7 @@ const UpdateCandidateProfileCommand = require('../application/candidate/commands
 const SetFreelanceModeCommand       = require('../application/candidate/commands/SetFreelanceMode.command');
 const ApplyToJobCommand             = require('../application/application/commands/ApplyToJob.command');
 const GetMyApplicationsQuery        = require('../application/application/queries/GetMyApplications.query');
+const UploadCvCommand               = require('../application/candidate/commands/UploadCv.command');
 const AddSkillCommand               = require('../application/candidate/commands/AddSkill.command');
 const DeleteSkillCommand            = require('../application/candidate/commands/DeleteSkill.command');
 const AddExperienceCommand          = require('../application/candidate/commands/AddExperience.command');
@@ -17,6 +18,7 @@ const updateCandidateProfileHandler = require('../application/candidate/handlers
 const setFreelanceModeHandler       = require('../application/candidate/handlers/SetFreelanceModeHandler');
 const applyToJobHandler             = require('../application/application/handlers/ApplyToJobHandler');
 const getMyApplicationsHandler      = require('../application/application/handlers/GetMyApplicationsHandler');
+const uploadCvHandler               = require('../application/candidate/handlers/UploadCvHandler');
 const addSkillHandler               = require('../application/candidate/handlers/AddSkillHandler');
 const deleteSkillHandler            = require('../application/candidate/handlers/DeleteSkillHandler');
 const addExperienceHandler          = require('../application/candidate/handlers/AddExperienceHandler');
@@ -38,8 +40,17 @@ const updateProfile   = (req, res) => updateCandidateProfileHandler.handle(new U
 const setFreelanceMode = (req, res) => setFreelanceModeHandler.handle(new SetFreelanceModeCommand({ userId: req.user.id, active: req.body.active }))
   .then(r => res.json(r));
 
-const applyToJob = (req, res) => applyToJobHandler.handle(new ApplyToJobCommand({ userId: req.user.id, jobId: req.body.jobId }))
-  .then(r => res.status(201).json(r));
+const applyToJob = (req, res) => applyToJobHandler.handle(new ApplyToJobCommand({ userId: req.user.id, ...req.body }))
+  .then(r => res.status(201).json(r))
+  .catch(err => res.status(err.status || 500).json({ message: err.message || 'Failed to apply' }));
+
+const uploadCv = (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  const cvPath = `/uploads/cvs/${req.file.filename}`;
+  return uploadCvHandler.handle(new UploadCvCommand({ userId: req.user.id, cvPath }))
+    .then(() => res.json({ path: cvPath }))
+    .catch(err => res.status(err.status || 500).json({ message: err.message || 'Failed to upload CV' }));
+};
 
 const getMyApplications = (req, res) => getMyApplicationsHandler.handle(new GetMyApplicationsQuery(req.user.id, req.query))
   .then(r => res.json({ ...r, data: ApplicationDTO.fromList(r.data) }));
@@ -70,7 +81,7 @@ const deleteEducation = (req, res) => deleteEducationHandler.handle(new DeleteEd
 
 module.exports = {
   getProfile, updateProfile, setFreelanceMode,
-  applyToJob, getMyApplications,
+  applyToJob, getMyApplications, uploadCv,
   addSkill, deleteSkill,
   addExperience, updateExperience, deleteExperience,
   addEducation, updateEducation, deleteEducation,

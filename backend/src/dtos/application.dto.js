@@ -13,6 +13,15 @@ class ApplicationDTO {
     this.jobTitle          = data.jobTitle ?? null;
     this.jobEmploymentType = data.jobEmploymentType ?? null;
     this.companyName       = data.companyName ?? null;
+    this.coverLetter       = data.coverLetter ?? null;
+    this.expectedSalary    = data.expectedSalary ?? null;
+    this.availableFrom     = data.availableFrom ?? null;
+    this.cvPath            = data.cvPath ?? null;
+    this.phone             = data.phone ?? null;
+    this.willingToRelocate = data.willingToRelocate ?? null;
+    this.yearsExperience   = data.yearsExperience ?? null;
+    this.screeningAnswers  = data.screeningAnswers ?? null;
+    this.skillsSnapshot    = data.skillsSnapshot ?? null;
     this.applicant = {
       firstName: data.applicantFirstName ?? null,
       lastName:  data.applicantLastName ?? null,

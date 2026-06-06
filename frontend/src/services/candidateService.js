@@ -5,8 +5,16 @@ const candidateService = {
   updateProfile:    (data)       => api.put('/candidate/profile', data).then(r => r.data),
   setFreelanceMode: (active)     => api.put('/candidate/freelance', { active }).then(r => r.data),
 
-  applyToJob:       (jobId)      => api.post('/candidate/applications', { jobId }).then(r => r.data),
+  applyToJob:       (jobId, data = {}) => api.post('/candidate/applications', { jobId, ...data }).then(r => r.data),
   myApplications:   (params)     => api.get('/candidate/applications', { params }).then(r => r.data),
+
+  uploadCv: (file) => {
+    const form = new FormData();
+    form.append('cv', file);
+    return api.post('/candidate/cv', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);   // { path }
+  },
 
   addSkill:         (data)       => api.post('/candidate/skills', data).then(r => r.data),
   deleteSkill:      (id)         => api.delete(`/candidate/skills/${id}`).then(r => r.data),

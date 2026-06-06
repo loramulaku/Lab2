@@ -14,6 +14,16 @@ const ApplicationViewSchema = new mongoose.Schema(
     status:               { type: String },
     appliedAt:            { type: Date },
     interviewAt:          { type: Date, default: null },
+    // ── submitted application form ────────────
+    coverLetter:          { type: String, default: null },
+    expectedSalary:       { type: Number, default: null },
+    availableFrom:        { type: String, default: null },
+    cvPath:               { type: String, default: null },
+    phone:                { type: String, default: null },
+    willingToRelocate:    { type: Boolean, default: null },
+    yearsExperience:      { type: Number, default: null },
+    screeningAnswers:     { type: mongoose.Schema.Types.Mixed, default: null },
+    skillsSnapshot:       { type: mongoose.Schema.Types.Mixed, default: null },
     // ── denormalised from Jobs → Companies ───
     companyId:            { type: Number },
     jobTitle:             { type: String },

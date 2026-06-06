@@ -11,6 +11,12 @@ class BidDTO {
     this.deliveryTimeDays = bid.deliveryTimeDays;
     this.message          = bid.message ?? null;
     this.coverLetter      = bid.coverLetter ?? null;
+    this.bidType          = bid.bidType ?? 'fixed';
+    this.hoursPerWeek     = bid.hoursPerWeek ?? null;
+    this.startDate        = bid.startDate ?? null;
+    this.milestones       = bid.milestones ?? null;
+    this.portfolioLinks   = bid.portfolioLinks ?? null;
+    this.skillsSnapshot   = bid.skillsSnapshot ?? null;
     this.status           = bid.status;
     this.jobTitle         = bid.jobTitle ?? null;
     this.companyName      = bid.companyName ?? null;
