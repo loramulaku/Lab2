@@ -41,9 +41,9 @@ class ApplyToJobHandler {
       const e = new Error('A CV/resume is required to apply'); e.status = 400; throw e;
     }
 
-    // Place at the first pipeline stage ("CV stage") when the job has a pipeline.
+    // Place at the first stage of the company's pipeline automatically.
     let stageId = null;
-    const pipeline = await Pipeline.findOne({ where: { jobId: command.jobId } });
+    const pipeline = await Pipeline.findOne({ where: { companyId: job.companyId } });
     if (pipeline) {
       const firstStage = await PipelineStage.findOne({
         where: { pipelineId: pipeline.id },
