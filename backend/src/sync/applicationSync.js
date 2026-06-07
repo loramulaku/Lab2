@@ -9,13 +9,14 @@
  *           ├─ SELECT Application + Job + Company + User  (MySQL)
  *           └─ ApplicationView.upsert({ _id: applicationId, ... })  (MongoDB)
  */
-const Application = require('../models/sql/Application');
-const Job         = require('../models/sql/Job');
-const Company     = require('../models/sql/Company');
-const User        = require('../models/sql/User');
-const FailedSync  = require('../models/sql/FailedSync');
+const Application   = require('../models/sql/Application');
+const Job           = require('../models/sql/Job');
+const Company       = require('../models/sql/Company');
+const User          = require('../models/sql/User');
+const PipelineStage = require('../models/sql/PipelineStage');
+const FailedSync    = require('../models/sql/FailedSync');
 const applicationRepo = require('../repositories/mongodb/application.repo');
-const JobView     = require('../models/nosql/JobView');
+const JobView       = require('../models/nosql/JobView');
 
 async function syncApplication(applicationId) {
   const app = await Application.findByPk(applicationId);
@@ -24,9 +25,10 @@ async function syncApplication(applicationId) {
     return;
   }
 
-  const [job, user] = await Promise.all([
-    app.jobId ? Job.findByPk(app.jobId) : null,
-    app.userId ? User.findByPk(app.userId) : null,
+  const [job, user, stage] = await Promise.all([
+    app.jobId   ? Job.findByPk(app.jobId)           : null,
+    app.userId  ? User.findByPk(app.userId)          : null,
+    app.stageId ? PipelineStage.findByPk(app.stageId): null,
   ]);
   const company = job?.companyId ? await Company.findByPk(job.companyId) : null;
 
@@ -35,6 +37,7 @@ async function syncApplication(applicationId) {
     jobId:              app.jobId,
     userId:             app.userId,
     stageId:            app.stageId ?? null,
+    stageName:          stage?.name ?? null,
     status:             app.status,
     appliedAt:          app.appliedAt,
     interviewAt:        app.interviewAt ?? null,

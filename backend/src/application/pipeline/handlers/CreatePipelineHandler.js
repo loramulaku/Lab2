@@ -1,6 +1,11 @@
 const Pipeline      = require('../../../models/sql/Pipeline');
 const PipelineStage = require('../../../models/sql/PipelineStage');
 
+const normaliseStage = (s) =>
+  typeof s === 'string'
+    ? { name: s.trim(), hasCalendar: false }
+    : { name: (s.name ?? '').trim(), hasCalendar: !!s.hasCalendar };
+
 class CreatePipelineHandler {
   async handle(command) {
     const existing = await Pipeline.findOne({ where: { companyId: command.companyId } });
@@ -14,20 +19,8 @@ class CreatePipelineHandler {
       name:      'Recruitment Pipeline',
     });
 
-    // "Application" is always the mandatory first stage (no calendar, locked)
-    // Then recruiter's custom stages follow.
-    // Each stage may be a string (legacy) or { name, hasCalendar }
-    const normalise = (s) =>
-      typeof s === 'string' ? { name: s.trim(), hasCalendar: false } : { name: (s.name ?? '').trim(), hasCalendar: !!s.hasCalendar };
-
-    const customStages = command.stages
-      .map(normalise)
-      .filter(s => s.name);
-
-    const allStages = [
-      { name: 'Application', hasCalendar: false },
-      ...customStages,
-    ];
+    const customStages = command.stages.map(normaliseStage).filter(s => s.name);
+    const allStages    = [{ name: 'Application', hasCalendar: false }, ...customStages];
 
     for (let i = 0; i < allStages.length; i++) {
       await PipelineStage.create({

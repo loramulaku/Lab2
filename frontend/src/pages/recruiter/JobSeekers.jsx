@@ -35,14 +35,11 @@ export default function JobSeekers() {
         if (err?.response?.status === 404) return null;
         throw err;
       });
-
       if (!pipeline || !pipeline.stages?.length) {
         navigate('/recruiter/pipeline/create');
         return;
       }
-
-      // Navigate to the board — the recruiter drags the card to their target
-      // stage and fills in the mandatory transition note there.
+      // Navigate to board — recruiter drags the candidate and fills mandatory note there
       navigate('/recruiter/pipeline/board');
     } catch {
       alert('Could not open pipeline. Please try again.');

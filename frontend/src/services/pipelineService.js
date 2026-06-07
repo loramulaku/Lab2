@@ -3,6 +3,8 @@ import api from './api';
 const pipelineService = {
   // stages: array of { name, hasCalendar } objects
   createPipeline: (stages) => api.post('/pipeline', { stages }).then(r => r.data),
+  // destructive edit — resets all candidate stages
+  editPipeline:   (stages) => api.put('/pipeline', { stages }).then(r => r.data),
   getMyPipeline:  ()       => api.get('/pipeline/my').then(r => r.data),
   getBoard:       (search = '') =>
     api.get(`/pipeline/board${search ? `?search=${encodeURIComponent(search)}` : ''}`).then(r => r.data),

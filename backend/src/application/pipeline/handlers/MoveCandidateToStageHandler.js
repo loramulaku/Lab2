@@ -7,7 +7,6 @@ const createNotificationHandler  = require('../../notification/handlers/CreateNo
 
 class MoveCandidateToStageHandler {
   async handle(command) {
-    // Note is mandatory for every stage transition
     if (!command.note || !command.note.trim()) {
       const e = new Error('A transition note is required when moving a candidate to a new stage');
       e.status = 400; e.code = 'NOTE_REQUIRED'; throw e;
@@ -19,15 +18,11 @@ class MoveCandidateToStageHandler {
     const stage = await PipelineStage.findByPk(command.toStageId);
     if (!stage) { const e = new Error('Stage not found'); e.status = 404; throw e; }
 
-    // Build update payload
     const updatePayload = { stageId: command.toStageId };
-    if (command.interviewDate) {
-      updatePayload.interviewAt = new Date(command.interviewDate);
-    }
+    if (command.interviewDate) updatePayload.interviewAt = new Date(command.interviewDate);
 
     await app.update(updatePayload);
 
-    // Always save the mandatory note
     await PipelineNote.create({
       applicationId: command.applicationId,
       stageId:       command.toStageId,
@@ -38,7 +33,6 @@ class MoveCandidateToStageHandler {
 
     syncApplicationSafe(app.id);
 
-    // Build notification message
     let msg = `Your application has been moved to "${stage.name}": ${command.note.trim()}`;
     if (command.interviewDate) {
       const dateStr = new Date(command.interviewDate).toLocaleString('en-GB', {
