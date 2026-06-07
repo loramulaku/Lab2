@@ -36,15 +36,18 @@ function avatarColor(name) {
 
 export default function ShowPipeline() {
   const navigate = useNavigate();
-  const [board, setBoard]         = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState('');
-  const [searchInput, setInput]   = useState('');
-  const [error, setError]         = useState('');
-  const [noteModal, setNoteModal] = useState(null);
-  const [dragCard, setDragCard]   = useState(null);
-  const [overStage, setOverStage] = useState(null);
-  const debounceRef               = useRef(null);
+  const [board, setBoard]               = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState('');
+  const [searchInput, setInput]         = useState('');
+  const [error, setError]               = useState('');
+  // noteModal: { applicationId, fromStageId, toStageId, toStageName, hasCalendar, candidateName } | null
+  const [noteModal, setNoteModal]       = useState(null);
+  // addNoteModal: same shape but for "Add Note" button (no stage move)
+  const [addNoteModal, setAddNoteModal] = useState(null);
+  const [dragCard, setDragCard]         = useState(null);
+  const [overStage, setOverStage]       = useState(null);
+  const debounceRef                     = useRef(null);
 
   const load = useCallback(async (q = search) => {
     setLoading(true);
@@ -73,21 +76,38 @@ export default function ShowPipeline() {
   };
 
   // ── Native drag-and-drop ─────────────────────────────────────────────────
-  const onDragStart = (applicationId, fromStageId) =>
-    setDragCard({ applicationId, fromStageId });
+  const onDragStart = (applicationId, fromStageId, firstName, lastName) =>
+    setDragCard({ applicationId, fromStageId, firstName, lastName });
 
   const onDragOver = (e, stageId) => {
     e.preventDefault();
     setOverStage(stageId);
   };
 
-  const onDrop = async (e, toStageId) => {
+  const onDrop = (e, toStage) => {
     e.preventDefault();
     setOverStage(null);
-    if (!dragCard || dragCard.fromStageId === toStageId) { setDragCard(null); return; }
+    if (!dragCard || dragCard.fromStageId === toStage.id) { setDragCard(null); return; }
 
     const moved = { ...dragCard };
     setDragCard(null);
+
+    // Open mandatory note modal before executing the move
+    setNoteModal({
+      applicationId: moved.applicationId,
+      fromStageId:   moved.fromStageId,
+      toStageId:     toStage.id,
+      toStageName:   toStage.name,
+      hasCalendar:   !!toStage.hasCalendar,
+      candidateName: `${moved.firstName ?? ''} ${moved.lastName ?? ''}`.trim() || `Candidate #${moved.applicationId}`,
+    });
+  };
+
+  const onDragEnd = () => { setOverStage(null); setDragCard(null); };
+
+  // Called when the note modal confirms the move
+  const handleMoveConfirmed = async ({ applicationId, fromStageId, toStageId, note, interviewDate }) => {
+    setNoteModal(null);
 
     // Optimistic UI update
     setBoard(prev => {
@@ -96,7 +116,7 @@ export default function ShowPipeline() {
       const stages = prev.stages.map(s => ({
         ...s,
         candidates: s.candidates.filter(c => {
-          if (c.applicationId === moved.applicationId) { card = { ...c, stageId: toStageId }; return false; }
+          if (c.applicationId === applicationId) { card = { ...c, stageId: toStageId }; return false; }
           return true;
         }),
       }));
@@ -109,13 +129,11 @@ export default function ShowPipeline() {
     });
 
     try {
-      await pipelineService.moveCandidate(moved.applicationId, toStageId, null);
+      await pipelineService.moveCandidate(applicationId, toStageId, note, interviewDate);
     } catch {
-      load(); // revert
+      load(); // revert optimistic update
     }
   };
-
-  const onDragEnd = () => { setOverStage(null); setDragCard(null); };
 
   if (loading && !board) return (
     <RecruiterLayout title="Pipeline Board">
@@ -152,7 +170,7 @@ export default function ShowPipeline() {
           </button>
         )}
         <span className="text-xs text-gray-400 ml-auto">
-          Drag cards between columns to move candidates
+          Drag cards between columns to move candidates · A note is required on every move
         </span>
       </div>
 
@@ -163,16 +181,25 @@ export default function ShowPipeline() {
             <div
               key={stage.id}
               onDragOver={e => onDragOver(e, stage.id)}
-              onDrop={e => onDrop(e, stage.id)}
+              onDrop={e => onDrop(e, stage)}
               className={`flex-shrink-0 w-64 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col transition-all duration-150 ${
                 overStage === stage.id ? 'ring-2 ring-blue-400 bg-blue-50/30' : ''
               } border-t-4 ${COLUMN_COLORS[si % COLUMN_COLORS.length]}`}
             >
               {/* Column header */}
               <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
-                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[140px]">
-                  {stage.name}
-                </h3>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[120px]">
+                    {stage.name}
+                  </h3>
+                  {stage.hasCalendar && (
+                    <span title="Calendar stage — interview/meeting date can be set on move">
+                      <svg className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2.5 py-0.5 ml-2 flex-shrink-0">
                   {stage.candidates.length}
                 </span>
@@ -185,12 +212,11 @@ export default function ShowPipeline() {
                     key={c.applicationId}
                     candidate={c}
                     stageId={stage.id}
-                    stageName={stage.name}
                     stageIndex={si}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
                     onViewDetails={() => navigate(`/recruiter/pipeline/candidate/${c.applicationId}`)}
-                    onAddNote={() => setNoteModal({
+                    onAddNote={() => setAddNoteModal({
                       applicationId: c.applicationId,
                       stageId:       stage.id,
                       stageName:     stage.name,
@@ -209,11 +235,21 @@ export default function ShowPipeline() {
         </div>
       )}
 
+      {/* Mandatory note modal (triggered on drag-drop) */}
       {noteModal && (
-        <NoteModal
+        <TransitionNoteModal
           {...noteModal}
-          onClose={() => setNoteModal(null)}
-          onSaved={() => { setNoteModal(null); load(); }}
+          onClose={() => { setNoteModal(null); load(); }}
+          onConfirm={handleMoveConfirmed}
+        />
+      )}
+
+      {/* Add note modal (triggered by card button — no stage change) */}
+      {addNoteModal && (
+        <AddNoteModal
+          {...addNoteModal}
+          onClose={() => setAddNoteModal(null)}
+          onSaved={() => { setAddNoteModal(null); load(); }}
         />
       )}
     </RecruiterLayout>
@@ -229,7 +265,7 @@ function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd,
   return (
     <div
       draggable
-      onDragStart={() => onDragStart(candidate.applicationId, stageId)}
+      onDragStart={() => onDragStart(candidate.applicationId, stageId, candidate.firstName, candidate.lastName)}
       onDragEnd={onDragEnd}
       className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow select-none"
     >
@@ -283,7 +319,114 @@ function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd,
   );
 }
 
-function NoteModal({ applicationId, stageId, stageName, candidateName, onClose, onSaved }) {
+/**
+ * Shown when a candidate is dragged to a new stage.
+ * Note is mandatory. Date picker appears only if the target stage has hasCalendar.
+ */
+function TransitionNoteModal({ applicationId, fromStageId, toStageId, toStageName, hasCalendar, candidateName, onClose, onConfirm }) {
+  const [note, setNote]               = useState('');
+  const [interviewDate, setDate]      = useState('');
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!note.trim()) { setError('A note is required to move this candidate.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      await onConfirm({
+        applicationId,
+        fromStageId,
+        toStageId,
+        note: note.trim(),
+        interviewDate: interviewDate || null,
+      });
+    } catch {
+      setError('Failed to move candidate. Please try again.');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div
+        className="bg-white w-full max-w-md border border-gray-200 shadow-xl rounded-xl overflow-hidden"
+        onMouseDown={e => e.stopPropagation()}
+      >
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <div>
+            <h3 className="font-semibold text-gray-900">Move to "{toStageName}"</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{candidateName}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <form onSubmit={submit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Transition note <span className="text-red-500">*</span>
+            </label>
+            <p className="text-xs text-gray-400 mb-1.5">
+              Required — this note is sent to the candidate as a notification.
+            </p>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={4}
+              placeholder="e.g. Strong technical skills, moving to next round…"
+              className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+              autoFocus
+            />
+          </div>
+
+          {hasCalendar && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Schedule date{' '}
+                <span className="text-xs font-normal text-gray-400">(optional — notifies the candidate)</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={interviewDate}
+                onChange={e => setDate(e.target.value)}
+                className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              />
+              {interviewDate && (
+                <p className="text-xs text-blue-600 mt-1">
+                  The candidate will be notified of this date via real-time notification.
+                </p>
+              )}
+            </div>
+          )}
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded"
+            >
+              {saving ? 'Moving…' : 'Confirm Move'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Shown when the recruiter clicks "Add Note" on a card (no stage change).
+ */
+function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClose, onSaved }) {
   const [note, setNote]     = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState('');

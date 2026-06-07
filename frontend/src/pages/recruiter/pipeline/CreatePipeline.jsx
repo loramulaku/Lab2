@@ -5,24 +5,29 @@ import pipelineService from '../../../services/pipelineService';
 
 export default function CreatePipeline() {
   const navigate = useNavigate();
-  const [stageCount, setStageCount]   = useState('');
-  const [stageNames, setStageNames]   = useState([]);
-  const [saving, setSaving]           = useState(false);
-  const [error, setError]             = useState('');
+  const [stageCount, setStageCount] = useState('');
+  // stages: array of { name: string, hasCalendar: boolean }
+  const [stages, setStages]         = useState([]);
+  const [saving, setSaving]         = useState(false);
+  const [error, setError]           = useState('');
 
   const applyCount = () => {
     const n = Math.max(1, Math.min(20, parseInt(stageCount, 10) || 0));
-    setStageNames(Array.from({ length: n }, (_, i) => stageNames[i] ?? ''));
+    setStages(prev =>
+      Array.from({ length: n }, (_, i) => prev[i] ?? { name: '', hasCalendar: false })
+    );
   };
 
-  const updateName = (i, val) => {
-    setStageNames(prev => { const next = [...prev]; next[i] = val; return next; });
-  };
+  const updateName = (i, val) =>
+    setStages(prev => prev.map((s, idx) => idx === i ? { ...s, name: val } : s));
+
+  const toggleCalendar = (i) =>
+    setStages(prev => prev.map((s, idx) => idx === i ? { ...s, hasCalendar: !s.hasCalendar } : s));
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    const valid = stageNames.filter(s => s.trim());
+    const valid = stages.filter(s => s.name.trim());
     if (!valid.length) { setError('Add at least one stage name.'); return; }
     setSaving(true);
     try {
@@ -45,6 +50,7 @@ export default function CreatePipeline() {
         <p className="text-sm text-gray-500 mb-6">
           Your pipeline always starts with an <strong>Application</strong> stage (added automatically).
           Enter how many additional stages you want, fill in their names, then click Create.
+          Toggle <strong>Has Calendar</strong> on any stage where you want to schedule an interview or meeting date.
         </p>
 
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
@@ -72,10 +78,10 @@ export default function CreatePipeline() {
           </div>
         </div>
 
-        {/* Step 2 — fill in names */}
-        {stageNames.length > 0 && (
+        {/* Step 2 — fill in names + calendar toggle */}
+        {stages.length > 0 && (
           <form onSubmit={submit}>
-            <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-3">
+            <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-4">
               {/* Locked first stage */}
               <div>
                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
@@ -87,18 +93,40 @@ export default function CreatePipeline() {
                 />
               </div>
 
-              {stageNames.map((name, i) => (
-                <div key={i}>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              {stages.map((stage, i) => (
+                <div key={i} className="border border-gray-100 rounded-lg p-3 space-y-2">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     Stage {i + 2}
                   </label>
                   <input
                     type="text"
-                    value={name}
+                    value={stage.name}
                     onChange={e => updateName(i, e.target.value)}
                     placeholder={`e.g. ${['Phone Screen', 'Technical Interview', 'HR Interview', 'Offer'][i] ?? `Stage ${i + 2}`}`}
                     className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {/* Calendar toggle */}
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+                    <button
+                      type="button"
+                      onClick={() => toggleCalendar(i)}
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        stage.hasCalendar ? 'bg-blue-600' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${
+                          stage.hasCalendar ? 'translate-x-4' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      {stage.hasCalendar
+                        ? <span className="font-medium text-blue-700">Has Calendar — recruiter can schedule a date</span>
+                        : <span className="text-gray-400">Has Calendar (off)</span>
+                      }
+                    </span>
+                  </label>
                 </div>
               ))}
             </div>

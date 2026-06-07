@@ -31,7 +31,6 @@ export default function JobSeekers() {
   const handleMoveToPipeline = async (a) => {
     setMovingId(a.id);
     try {
-      // Fetch pipeline to get first stage
       const pipeline = await pipelineService.getMyPipeline().catch(err => {
         if (err?.response?.status === 404) return null;
         throw err;
@@ -42,11 +41,11 @@ export default function JobSeekers() {
         return;
       }
 
-      const firstStage = pipeline.stages[0];
-      await pipelineService.moveCandidate(a.id, firstStage.id, null);
+      // Navigate to the board — the recruiter drags the card to their target
+      // stage and fills in the mandatory transition note there.
       navigate('/recruiter/pipeline/board');
     } catch {
-      alert('Could not move candidate to pipeline. Please try again.');
+      alert('Could not open pipeline. Please try again.');
     } finally {
       setMovingId(null);
     }

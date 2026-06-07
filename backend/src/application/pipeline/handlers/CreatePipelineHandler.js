@@ -14,10 +14,28 @@ class CreatePipelineHandler {
       name:      'Recruitment Pipeline',
     });
 
-    // "Application" is always the mandatory first stage; recruiter's stages follow.
-    const allStageNames = ['Application', ...command.stages.filter(s => s.trim())];
-    for (let i = 0; i < allStageNames.length; i++) {
-      await PipelineStage.create({ pipelineId: pipeline.id, name: allStageNames[i], orderIndex: i });
+    // "Application" is always the mandatory first stage (no calendar, locked)
+    // Then recruiter's custom stages follow.
+    // Each stage may be a string (legacy) or { name, hasCalendar }
+    const normalise = (s) =>
+      typeof s === 'string' ? { name: s.trim(), hasCalendar: false } : { name: (s.name ?? '').trim(), hasCalendar: !!s.hasCalendar };
+
+    const customStages = command.stages
+      .map(normalise)
+      .filter(s => s.name);
+
+    const allStages = [
+      { name: 'Application', hasCalendar: false },
+      ...customStages,
+    ];
+
+    for (let i = 0; i < allStages.length; i++) {
+      await PipelineStage.create({
+        pipelineId:  pipeline.id,
+        name:        allStages[i].name,
+        orderIndex:  i,
+        hasCalendar: allStages[i].hasCalendar,
+      });
     }
 
     const stages = await PipelineStage.findAll({

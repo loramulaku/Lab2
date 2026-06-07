@@ -4,7 +4,7 @@ const auth    = require('../middlewares/auth');
 const role    = require('../middlewares/role');
 const c       = require('../controllers/pipeline.controller');
 
-const recruiter = [auth, role(['recruiter', 'admin'])];
+const recruiter = [auth, role('recruiter', 'admin')];
 
 // Pipeline management
 router.post('/',      ...recruiter, c.createPipeline);

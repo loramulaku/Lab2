@@ -70,13 +70,17 @@ const getTransitionNotes = async (req, res, next) => {
 // POST /api/pipeline/move — move a candidate to a different stage
 const moveCandidate = async (req, res, next) => {
   try {
-    const { applicationId, toStageId, note } = req.body;
+    const { applicationId, toStageId, note, interviewDate } = req.body;
     if (!applicationId || !toStageId) return res.status(400).json({ message: 'applicationId and toStageId required' });
+    if (!note || !note.trim()) return res.status(400).json({ message: 'A transition note is required', code: 'NOTE_REQUIRED' });
     const result = await moveCandidateToStageHandler.handle(
-      new MoveCandidateToStageCommand({ applicationId, toStageId, note, recruiterId: req.user.id })
+      new MoveCandidateToStageCommand({ applicationId, toStageId, note, recruiterId: req.user.id, interviewDate })
     );
     res.json(result);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 'NOTE_REQUIRED') return res.status(400).json({ message: err.message, code: err.code });
+    next(err);
+  }
 };
 
 // POST /api/pipeline/note — add a stage note without moving
