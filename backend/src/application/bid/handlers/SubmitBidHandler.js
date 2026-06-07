@@ -29,7 +29,29 @@ class SubmitBidHandler {
     }
 
     const existing = await Bid.findOne({ where: { jobId: command.jobId, freelancerId: command.freelancerId } });
-    if (existing) throw httpError(409, 'You have already placed a bid on this job', 'ALREADY_BID');
+    if (existing) {
+      if (existing.status !== 'withdrawn') {
+        throw httpError(409, 'You have already placed a bid on this job', 'ALREADY_BID');
+      }
+      // Re-bid after withdrawal: update the existing row in-place so the unique constraint stays intact.
+      await existing.update({
+        price:            command.price,
+        deliveryTimeDays: command.deliveryTimeDays,
+        message:          command.message,
+        coverLetter:      command.coverLetter   ?? null,
+        bidType:          command.bidType       ?? 'fixed',
+        hoursPerWeek:     command.hoursPerWeek  ?? null,
+        startDate:        command.startDate     ?? null,
+        milestones:       command.milestones    ?? null,
+        portfolioLinks:   command.portfolioLinks ?? null,
+        skillsSnapshot:   command.skillsSnapshot ?? null,
+        status:           'pending',
+        createdAt:        now,
+        updatedAt:        now,
+      });
+      syncBidSafe(existing.id);
+      return existing;
+    }
 
     let bid;
     try {

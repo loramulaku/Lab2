@@ -12,32 +12,57 @@ const getJobsHandler          = require('../application/job/handlers/GetJobsHand
 const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdHandler');
 const JobDTO                  = require('../dtos/job.dto');
 
-const getAll = (req, res) =>
-  getJobsHandler.handle(new GetJobsQuery({ ...req.query, excludeInviteOnly: true }))
-    .then(r => res.json({ ...r, data: JobDTO.fromList(r.data) }));
+// Public read — excludes invite-only freelance jobs (candidates can't apply to them)
+const getAll = async (req, res, next) => {
+  try {
+    const r = await getJobsHandler.handle(new GetJobsQuery({ ...req.query, excludeInviteOnly: true }));
+    res.json({ ...r, data: JobDTO.fromList(r.data) });
+  } catch (err) { next(err); }
+};
 
-const getById = (req, res) =>
-  getJobByIdHandler.handle(new GetJobByIdQuery(Number(req.params.id)))
-    .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
+const getById = async (req, res, next) => {
+  try {
+    const r = await getJobByIdHandler.handle(new GetJobByIdQuery(Number(req.params.id)));
+    if (!r) return res.status(404).json({ message: 'Job not found' });
+    res.json(JobDTO.from(r));
+  } catch (err) { next(err); }
+};
 
-const create = (req, res) =>
-  createJobHandler.handle(new CreateJobCommand({
-    ...req.body,
-    companyId: req.user.companyId,
-    recruiterId: req.user.id,
-  }))
-    .then(r => res.status(201).json(JobDTO.from(r)));
+const create = async (req, res, next) => {
+  try {
+    const r = await createJobHandler.handle(new CreateJobCommand({
+      ...req.body,
+      companyId:   req.user.companyId,
+      recruiterId: req.user.id,
+    }));
+    res.status(201).json(JobDTO.from(r));
+  } catch (err) { next(err); }
+};
 
-const update = (req, res) =>
-  updateJobHandler.handle(new UpdateJobCommand(Number(req.params.id), req.body))
-    .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
+const update = async (req, res, next) => {
+  try {
+    const r = await updateJobHandler.handle(new UpdateJobCommand(Number(req.params.id), req.body));
+    if (!r) return res.status(404).json({ message: 'Job not found' });
+    res.json(JobDTO.from(r));
+  } catch (err) { next(err); }
+};
 
-const updateStatus = (req, res) =>
-  updateJobStatusHandler.handle(new UpdateJobStatusCommand(Number(req.params.id), req.body.status))
-    .then(r => r ? res.json(JobDTO.from(r)) : res.status(404).json({ message: 'Job not found' }));
+const updateStatus = async (req, res, next) => {
+  try {
+    const r = await updateJobStatusHandler.handle(
+      new UpdateJobStatusCommand(Number(req.params.id), req.body.status)
+    );
+    if (!r) return res.status(404).json({ message: 'Job not found' });
+    res.json(JobDTO.from(r));
+  } catch (err) { next(err); }
+};
 
-const remove = (req, res) =>
-  deleteJobHandler.handle(new DeleteJobCommand(Number(req.params.id)))
-    .then(r => r ? res.json(r) : res.status(404).json({ message: 'Job not found' }));
+const remove = async (req, res, next) => {
+  try {
+    const r = await deleteJobHandler.handle(new DeleteJobCommand(Number(req.params.id)));
+    if (!r) return res.status(404).json({ message: 'Job not found' });
+    res.json(r);
+  } catch (err) { next(err); }
+};
 
 module.exports = { getAll, getById, create, update, updateStatus, delete: remove };

@@ -6,6 +6,7 @@ const Notification = sequelize.define('Notification', {
   userId:    { type: DataTypes.INTEGER, field: 'user_id' },
   type:      { type: DataTypes.STRING(100) },
   message:   { type: DataTypes.TEXT },
+  link:      { type: DataTypes.STRING(500), allowNull: true, defaultValue: null },
   isRead:    { type: DataTypes.BOOLEAN, defaultValue: false, field: 'is_read' },
   createdAt: { type: DataTypes.DATE, field: 'created_at' },
 }, {

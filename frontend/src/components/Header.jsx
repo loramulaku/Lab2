@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import candidateService from '../services/candidateService';
 import FreelanceToggle from './freelance/FreelanceToggle';
 
@@ -113,14 +114,17 @@ function Avatar({ src, firstName, lastName, size = 'md' }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function Header({ notificationCount = 0 }) {
+export default function Header() {
   const { user, logout }  = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
   const navigate          = useNavigate();
   const location          = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [bellOpen, setBellOpen]         = useState(false);
   const [freelanceActive, setFreelanceActive] = useState(null);
   const dropdownRef = useRef(null);
+  const bellRef     = useRef(null);
 
   const isCandidate = (user?.roles ?? []).includes('candidate');
 
@@ -136,15 +140,14 @@ export default function Header({ notificationCount = 0 }) {
 
   useEffect(() => {
     function onClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
+      if (bellRef.current    && !bellRef.current.contains(e.target))     setBellOpen(false);
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  useEffect(() => { setDropdownOpen(false); }, [location.pathname]);
+  useEffect(() => { setDropdownOpen(false); setBellOpen(false); }, [location.pathname]);
 
   const handleFreelanceToggle = async (next) => {
     await candidateService.setFreelanceMode(next);
@@ -208,14 +211,69 @@ export default function Header({ notificationCount = 0 }) {
         {/* Actions */}
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
 
-          <button className={iconBtn} aria-label="Notifications">
-            <BellIcon />
-            {notificationCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                {notificationCount > 9 ? '9+' : notificationCount}
-              </span>
+          {/* ── Notification bell ── */}
+          <div className="relative" ref={bellRef}>
+            <button
+              className={iconBtn}
+              aria-label="Notifications"
+              onClick={() => setBellOpen(o => !o)}
+            >
+              <BellIcon />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {bellOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} className="text-xs text-blue-600 hover:underline">
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                  {notifications.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-8">No notifications yet.</p>
+                  ) : (
+                    notifications.map(n => (
+                      <div
+                        key={n.id}
+                        onClick={() => {
+                          if (!n.isRead) markAsRead(n.id);
+                          setBellOpen(false);
+                          if (n.link) navigate(n.link);
+                        }}
+                        className={`flex gap-3 px-4 py-3 transition-colors ${n.link ? 'cursor-pointer hover:bg-gray-50' : ''} ${n.isRead ? '' : 'bg-indigo-50/60'}`}
+                      >
+                        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.isRead ? 'bg-gray-200' : 'bg-indigo-500'}`} />
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-sm leading-snug ${n.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
+                            {n.message}
+                          </p>
+                          <div className="flex items-center justify-between mt-0.5 gap-2">
+                            <p className="text-xs text-gray-400">
+                              {new Date(n.createdAt).toLocaleString()}
+                            </p>
+                            {n.link && (
+                              <span className="text-xs text-indigo-600 font-medium whitespace-nowrap">
+                                View →
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             )}
-          </button>
+          </div>
 
           <button className={iconBtn} aria-label="Messages">
             <ChatIcon />

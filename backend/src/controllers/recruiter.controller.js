@@ -4,16 +4,22 @@ const UploadLogoCommand        = require('../application/recruiter/commands/Uplo
 
 const GetCompanyApplicantsQuery  = require('../application/application/queries/GetCompanyApplicants.query');
 const ScheduleInterviewCommand   = require('../application/application/commands/ScheduleInterview.command');
+const GetRecruiterJobsQuery      = require('../application/job/queries/GetRecruiterJobs.query');
+const GetCompanyBidsQuery        = require('../application/bid/queries/GetCompanyBids.query');
 
-const getRecruiterProfileHandler = require('../application/recruiter/handlers/GetRecruiterProfileHandler');
-const setupRecruiterHandler      = require('../application/recruiter/handlers/SetupRecruiterHandler');
-const uploadLogoHandler          = require('../application/recruiter/handlers/UploadLogoHandler');
+const getRecruiterProfileHandler  = require('../application/recruiter/handlers/GetRecruiterProfileHandler');
+const setupRecruiterHandler       = require('../application/recruiter/handlers/SetupRecruiterHandler');
+const uploadLogoHandler           = require('../application/recruiter/handlers/UploadLogoHandler');
 const getCompanyApplicantsHandler = require('../application/application/handlers/GetCompanyApplicantsHandler');
 const scheduleInterviewHandler    = require('../application/application/handlers/ScheduleInterviewHandler');
+const getRecruiterJobsHandler     = require('../application/job/handlers/GetRecruiterJobsHandler');
+const getCompanyBidsHandler       = require('../application/bid/handlers/GetCompanyBidsHandler');
 
 const RecruiterProfile    = require('../models/sql/RecruiterProfile');
 const RecruiterProfileDTO = require('../dtos/recruiter.dto');
 const ApplicationDTO      = require('../dtos/application.dto');
+const JobDTO              = require('../dtos/job.dto');
+const BidDTO              = require('../dtos/bid.dto');
 
 // companyId lives in the JWT, but a recruiter who set up their company after
 // their last login won't have it yet — fall back to the RecruiterProfile row.
@@ -56,4 +62,22 @@ const scheduleInterview = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getProfile, setup, uploadLogo, getApplicants, scheduleInterview };
+const listJobs = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    const result = await getRecruiterJobsHandler.handle(
+      new GetRecruiterJobsQuery(companyId, req.query)
+    );
+    res.json({ ...result, data: JobDTO.fromList(result.data) });
+  } catch (err) { next(err); }
+};
+
+const getFreelancers = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    const result = await getCompanyBidsHandler.handle(new GetCompanyBidsQuery(companyId, req.query));
+    res.json({ ...result, data: BidDTO.fromList(result.data) });
+  } catch (err) { next(err); }
+};
+
+module.exports = { getProfile, setup, uploadLogo, getApplicants, scheduleInterview, listJobs, getFreelancers };

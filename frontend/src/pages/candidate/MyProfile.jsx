@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import candidateService from '../../services/candidateService';
 import { PageShell, PageCard } from '../../components/layout';
 import FormInput        from '../../components/FormInput';
@@ -548,6 +548,7 @@ function SavedJobsTab() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MyProfile() {
+  const [searchParams]    = useSearchParams();
   const [data, setData]   = useState(null);
   const [error, setError] = useState('');
   const [tab, setTab]     = useState('Profile');
@@ -558,6 +559,15 @@ export default function MyProfile() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Deep-link from notification/email: ?tab=freelance auto-selects the Freelance tab.
+  // Depends on both data (initial load) and searchParams (when already mounted and URL changes).
+  useEffect(() => {
+    if (!data) return;
+    if (searchParams.get('tab')?.toLowerCase() === 'freelance' && data.freelanceActive) {
+      setTab('Freelance');
+    }
+  }, [data, searchParams]);
 
   const handleSaveProfile   = async (form) => { await candidateService.updateProfile(form); await load(); };
   const handleAvatarUpload  = async (file) => { await candidateService.uploadAvatar(file); await load(); };
