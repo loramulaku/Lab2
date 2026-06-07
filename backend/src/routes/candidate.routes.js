@@ -30,8 +30,9 @@ router.put('/profile',              c.updateProfile);
 router.put('/freelance',            c.setFreelanceMode);
 router.post('/cv', cvUpload.single('cv'), c.uploadCv);
 
-router.post('/applications',        c.applyToJob);
-router.get('/applications',         c.getMyApplications);
+router.post('/applications',                          c.applyToJob);
+router.get('/applications',                           c.getMyApplications);
+router.get('/applications/:applicationId/notes',      c.getApplicationNotes);
 
 router.get('/saved-jobs',           c.getSavedJobs);
 router.get('/saved-job-ids',        c.getSavedJobIds);

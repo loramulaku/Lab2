@@ -2,10 +2,11 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/mysql');
 
 const PipelineStage = sequelize.define('PipelineStage', {
-  id:         { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  pipelineId: { type: DataTypes.INTEGER, field: 'pipeline_id' },
-  name:       { type: DataTypes.STRING(100) },
-  orderIndex: { type: DataTypes.INTEGER, field: 'order_index' },
+  id:          { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  pipelineId:  { type: DataTypes.INTEGER, field: 'pipeline_id' },
+  name:        { type: DataTypes.STRING(100) },
+  orderIndex:  { type: DataTypes.INTEGER, field: 'order_index' },
+  hasCalendar: { type: DataTypes.BOOLEAN, field: 'has_calendar', defaultValue: false },
 }, {
   tableName: 'PipelineStages',
   timestamps: false,

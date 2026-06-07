@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useNotifications } from '../../hooks/useNotifications';
 import candidateService from '../../services/candidateService';
 import { PageShell, PageCard } from '../../components/layout';
 import FormInput        from '../../components/FormInput';
@@ -435,24 +436,81 @@ function EducationTab({ educations, onAdd, onUpdate, onDelete }) {
   );
 }
 
-// ── Status helpers ────────────────────────────────────────────────────────────
-const APP_STATUS = {
-  pending:    { label: 'In review',  cls: 'bg-yellow-100 text-yellow-800' },
-  in_review:  { label: 'In review',  cls: 'bg-yellow-100 text-yellow-800' },
-  shortlisted:{ label: 'Shortlisted',cls: 'bg-blue-100 text-blue-700' },
-  interview:  { label: 'Interview',  cls: 'bg-purple-100 text-purple-700' },
-  offer:      { label: 'Offer',      cls: 'bg-green-100 text-green-800' },
-  accepted:   { label: 'Accepted',   cls: 'bg-green-100 text-green-800' },
-  rejected:   { label: 'Rejected',   cls: 'bg-red-100 text-red-700' },
-  withdrawn:  { label: 'Withdrawn',  cls: 'bg-gray-100 text-gray-500' },
-};
-const statusBadge = (s) => APP_STATUS[s] ?? { label: s, cls: 'bg-gray-100 text-gray-600' };
-const fmtApplied  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+// ── Applications helpers ──────────────────────────────────────────────────────
+const fmtApplied = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
 
 // ── Applications Tab ──────────────────────────────────────────────────────────
+function NotesModal({ applicationId, jobTitle, onClose }) {
+  const [notes, setNotes] = useState(null);
+  const [err, setErr]     = useState('');
+
+  useEffect(() => {
+    candidateService.getApplicationNotes(applicationId)
+      .then(setNotes)
+      .catch(() => setErr('Failed to load notes.'));
+  }, [applicationId]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div className="bg-white w-full max-w-lg rounded-xl border border-gray-200 shadow-2xl overflow-hidden"
+        onMouseDown={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <div>
+            <h3 className="font-semibold text-gray-900">Recruiter Notes</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{jobTitle}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <div className="p-5 max-h-96 overflow-y-auto">
+          {err && <p className="text-sm text-red-500">{err}</p>}
+          {!notes && !err && <p className="text-sm text-gray-400">Loading…</p>}
+          {notes && notes.length === 0 && <p className="text-sm text-gray-400">No notes yet.</p>}
+          {notes && notes.length > 0 && (
+            <div className="space-y-3">
+              {notes.map(n => (
+                <div key={n.id} className="border border-gray-100 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    {n.stageName && (
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">
+                        {n.stageName}
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400 ml-auto">{new Date(n.createdAt).toLocaleString()}</span>
+                  </div>
+                  {n.interviewAt && (
+                    <div className="flex items-center gap-1.5 mb-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-2 py-1">
+                      <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Interview scheduled: {new Date(n.interviewAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-700 leading-relaxed">{n.note}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="px-5 py-3 border-t border-gray-100 text-right">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ApplicationsTab() {
-  const [apps, setApps]     = useState(null);
-  const [error, setError]   = useState('');
+  const [apps, setApps]         = useState(null);
+  const [error, setError]       = useState('');
+  const [notesFor, setNotesFor] = useState(null);
+  const { notifications, markAsRead } = useNotifications();
+
+  // Pipeline stage-change notifications, most recent first (API returns desc order)
+  const pipelineNotifs = notifications.filter(n => n.type === 'pipeline_stage_change');
+  // First unread pipeline notification (the one that gates the next recruiter move)
+  const firstUnread = pipelineNotifs.find(n => !n.isRead) ?? null;
 
   useEffect(() => {
     candidateService.myApplications({ limit: 100 })
@@ -462,30 +520,81 @@ function ApplicationsTab() {
 
   if (error) return <p className="text-sm text-red-500">{error}</p>;
   if (!apps) return <p className="text-sm text-gray-400">Loading…</p>;
-
-  if (apps.length === 0) return (
-    <EmptyState message="No applications submitted yet." onAdd={null} addLabel="" />
-  );
+  if (apps.length === 0) return <EmptyState message="No applications submitted yet." onAdd={null} addLabel="" />;
 
   return (
-    <div className="divide-y divide-gray-100">
-      {apps.map(app => {
-        const badge = statusBadge(app.status);
-        return (
-          <div key={app.id} className="flex items-center gap-4 py-3">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? `Job #${app.jobId}`}</p>
-              <p className="text-xs text-gray-500">{app.companyName ?? '—'}</p>
+    <>
+      {/* Global unread banner */}
+      {firstUnread && (
+        <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">You have an unread notification</p>
+            <p className="text-xs text-amber-700 mt-0.5 line-clamp-2">{firstUnread.message}</p>
+          </div>
+          <button
+            onClick={() => markAsRead(firstUnread.id)}
+            className="flex-shrink-0 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1.5 rounded transition-colors"
+          >
+            Mark as Read
+          </button>
+        </div>
+      )}
+
+      <div className="divide-y divide-gray-100">
+        {apps.map(app => (
+          <div key={app.id} className="py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? `Job #${app.jobId}`}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{app.companyName ?? '—'}</p>
+                {app.stageName && (
+                  <span className="inline-flex items-center gap-1 mt-1.5 text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full font-medium">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    {app.stageName}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
+                {/* Read/unread badge — only shown after candidate has been moved to a pipeline stage */}
+                {app.stageName && pipelineNotifs.length > 0 && (
+                  firstUnread
+                    ? <span className="text-xs px-2 py-0.5 font-medium rounded bg-red-100 text-red-700">Unread</span>
+                    : <span className="text-xs px-2 py-0.5 font-medium rounded bg-green-100 text-green-700">Read</span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
-              <span className={`text-xs px-2 py-0.5 font-medium ${badge.cls}`}>{badge.label}</span>
-              <Link to={`/job/${app.jobId}`} className="text-xs text-blue-600 hover:underline">View</Link>
+            <div className="flex gap-2 mt-2.5">
+              <Link
+                to={`/job/${app.jobId}`}
+                className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+              >
+                View Job
+              </Link>
+              <button
+                onClick={() => setNotesFor({ applicationId: app.id, jobTitle: app.jobTitle ?? `Job #${app.jobId}` })}
+                className="text-xs px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors"
+              >
+                Recruiter Notes
+              </button>
             </div>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+
+      {notesFor && (
+        <NotesModal
+          applicationId={notesFor.applicationId}
+          jobTitle={notesFor.jobTitle}
+          onClose={() => setNotesFor(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -560,13 +669,12 @@ export default function MyProfile() {
 
   useEffect(() => { load(); }, []);
 
-  // Deep-link from notification/email: ?tab=freelance auto-selects the Freelance tab.
-  // Depends on both data (initial load) and searchParams (when already mounted and URL changes).
+  // Deep-link: ?tab=applications or ?tab=freelance
   useEffect(() => {
     if (!data) return;
-    if (searchParams.get('tab')?.toLowerCase() === 'freelance' && data.freelanceActive) {
-      setTab('Freelance');
-    }
+    const t = searchParams.get('tab')?.toLowerCase();
+    if (t === 'applications') setTab('Applications');
+    else if (t === 'freelance' && data.freelanceActive) setTab('Freelance');
   }, [data, searchParams]);
 
   const handleSaveProfile   = async (form) => { await candidateService.updateProfile(form); await load(); };

@@ -1,4 +1,5 @@
 const CreatePipelineCommand       = require('../application/pipeline/commands/CreatePipeline.command');
+const EditPipelineCommand         = require('../application/pipeline/commands/EditPipeline.command');
 const MoveCandidateToStageCommand = require('../application/pipeline/commands/MoveCandidateToStage.command');
 const AddPipelineNoteCommand      = require('../application/pipeline/commands/AddPipelineNote.command');
 const GetCompanyPipelineQuery     = require('../application/pipeline/queries/GetCompanyPipeline.query');
@@ -6,6 +7,7 @@ const GetPipelineBoardQuery       = require('../application/pipeline/queries/Get
 const GetTransitionNotesQuery     = require('../application/pipeline/queries/GetTransitionNotes.query');
 
 const createPipelineHandler       = require('../application/pipeline/handlers/CreatePipelineHandler');
+const editPipelineHandler         = require('../application/pipeline/handlers/EditPipelineHandler');
 const getCompanyPipelineHandler   = require('../application/pipeline/handlers/GetCompanyPipelineHandler');
 const getPipelineBoardHandler     = require('../application/pipeline/handlers/GetPipelineBoardHandler');
 const getTransitionNotesHandler   = require('../application/pipeline/handlers/GetTransitionNotesHandler');
@@ -36,6 +38,18 @@ const createPipeline = async (req, res, next) => {
   }
 };
 
+// PUT /api/pipeline — edit (destructive: resets all candidate stages)
+const editPipeline = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'Company profile not set up yet' });
+    const result = await editPipelineHandler.handle(
+      new EditPipelineCommand({ companyId, stages: req.body.stages ?? [] })
+    );
+    res.json(result);
+  } catch (err) { next(err); }
+};
+
 // GET /api/pipeline/my — get the recruiter's pipeline + stages
 const getMyPipeline = async (req, res, next) => {
   try {
@@ -46,7 +60,7 @@ const getMyPipeline = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// GET /api/pipeline/board — Kanban data (stages + candidate cards)
+// GET /api/pipeline/board — Kanban data (stages + candidate cards with read status)
 const getPipelineBoard = async (req, res, next) => {
   try {
     const companyId = await resolveCompanyId(req);
@@ -67,16 +81,21 @@ const getTransitionNotes = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// POST /api/pipeline/move — move a candidate to a different stage
+// POST /api/pipeline/move — move a candidate to a different stage (note mandatory)
 const moveCandidate = async (req, res, next) => {
   try {
-    const { applicationId, toStageId, note } = req.body;
+    const { applicationId, toStageId, note, interviewDate } = req.body;
     if (!applicationId || !toStageId) return res.status(400).json({ message: 'applicationId and toStageId required' });
+    if (!note || !note.trim()) return res.status(400).json({ message: 'A transition note is required', code: 'NOTE_REQUIRED' });
     const result = await moveCandidateToStageHandler.handle(
-      new MoveCandidateToStageCommand({ applicationId, toStageId, note, recruiterId: req.user.id })
+      new MoveCandidateToStageCommand({ applicationId, toStageId, note, recruiterId: req.user.id, interviewDate })
     );
     res.json(result);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === 'NOTE_REQUIRED') return res.status(400).json({ message: err.message, code: err.code });
+    if (err.code === 'NOTIFICATION_NOT_READ') return res.status(403).json({ message: err.message, code: err.code });
+    next(err);
+  }
 };
 
 // POST /api/pipeline/note — add a stage note without moving
@@ -113,6 +132,7 @@ const addStage = async (req, res) => {
 const getStageHistory = (_req, res) => res.json([]);
 
 module.exports = {
-  createPipeline, getMyPipeline, getPipelineBoard, getTransitionNotes, moveCandidate, addNote,
+  createPipeline, editPipeline, getMyPipeline, getPipelineBoard, getTransitionNotes,
+  moveCandidate, addNote,
   getPipelineByJob, addStage, getStageHistory,
 };

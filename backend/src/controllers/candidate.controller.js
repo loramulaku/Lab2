@@ -33,6 +33,9 @@ const ApplicationDTO      = require('../dtos/application.dto');
 const SavedJob            = require('../models/sql/SavedJob');
 const Job                 = require('../models/sql/Job');
 const Company             = require('../models/sql/Company');
+const Application         = require('../models/sql/Application');
+const PipelineNote        = require('../models/sql/PipelineNote');
+const PipelineStage       = require('../models/sql/PipelineStage');
 
 const getProfile      = (req, res) => getCandidateProfileHandler.handle(new GetCandidateProfileQuery(req.user.id))
   .then(r => r ? res.json(CandidateProfileDTO.from(r)) : res.status(404).json({ message: 'Profile not found' }));
@@ -122,6 +125,35 @@ const getSavedJobIds = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// GET /api/candidate/applications/:applicationId/notes
+const getApplicationNotes = async (req, res, next) => {
+  try {
+    const applicationId = Number(req.params.applicationId);
+    const app = await Application.findByPk(applicationId, { attributes: ['id', 'userId'] });
+    if (!app || app.userId !== req.user.id) return res.status(404).json({ message: 'Not found' });
+
+    const notes = await PipelineNote.findAll({
+      where: { applicationId },
+      order: [['created_at', 'ASC']],
+    });
+
+    const stageIds = [...new Set(notes.map(n => n.stageId))];
+    const stages   = stageIds.length
+      ? await PipelineStage.findAll({ where: { id: stageIds }, attributes: ['id', 'name'] })
+      : [];
+    const stageMap = Object.fromEntries(stages.map(s => [s.id, s.name]));
+
+    res.json(notes.map(n => ({
+      id:          n.id,
+      note:        n.note,
+      stageId:     n.stageId,
+      stageName:   stageMap[n.stageId] ?? null,
+      interviewAt: n.interviewAt ?? null,
+      createdAt:   n.createdAt,
+    })));
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   getProfile, updateProfile, setFreelanceMode,
   applyToJob, getMyApplications, uploadCv,
@@ -129,4 +161,5 @@ module.exports = {
   addExperience, updateExperience, deleteExperience,
   addEducation, updateEducation, deleteEducation,
   getSavedJobs, saveJob, unsaveJob, getSavedJobIds,
+  getApplicationNotes,
 };
