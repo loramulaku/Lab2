@@ -6,6 +6,7 @@ const PipelineNote = sequelize.define('PipelineNote', {
   applicationId: { type: DataTypes.INTEGER, field: 'application_id', allowNull: false },
   stageId:       { type: DataTypes.INTEGER, field: 'stage_id',       allowNull: false },
   note:          { type: DataTypes.TEXT,    allowNull: false },
+  interviewAt:   { type: DataTypes.DATE,    field: 'interview_at',   allowNull: true,  defaultValue: null },
   createdBy:     { type: DataTypes.INTEGER, field: 'created_by',     allowNull: false },
   createdAt:     { type: DataTypes.DATE,    field: 'created_at' },
 }, {
