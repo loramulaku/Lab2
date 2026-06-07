@@ -34,7 +34,7 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
       const user = await login(form.email, form.password);
       const role = user.roles?.[0];
       if (role === 'admin')          navigate('/admin');
-      else if (role === 'recruiter') navigate('/recruiter/company');
+      else if (role === 'recruiter') navigate('/recruiter/dashboard');
       else                           navigate('/my-profile');
     } catch {
       // error already set in store

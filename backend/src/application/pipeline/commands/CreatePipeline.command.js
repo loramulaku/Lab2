@@ -1,7 +1,8 @@
 class CreatePipelineCommand {
   constructor({ companyId, stages = [] }) {
     this.companyId = companyId;
-    this.stages    = stages; // array of stage names (recruiter's custom stages; "Application" is always prepended)
+    // stages: array of { name, hasCalendar } objects (or bare strings for backward compat)
+    this.stages = stages;
   }
 }
 module.exports = CreatePipelineCommand;
