@@ -7,6 +7,7 @@ class ApplicationDTO {
     this.id                = data._id ?? data.id;
     this.jobId             = data.jobId;
     this.userId            = data.userId;
+    this.stageId           = data.stageId ?? null;
     this.status            = data.status;
     this.appliedAt         = data.appliedAt ?? null;
     this.interviewAt       = data.interviewAt ?? null;

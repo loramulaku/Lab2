@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import recruiterService from '../../services/recruiterService';
 import { subscriptionService } from '../../services/subscriptionService';
+import { useNotifications } from '../../context/NotificationContext';
 
 const STATUS_CLS = {
   pending:   'bg-yellow-100 text-yellow-800',
@@ -26,6 +27,7 @@ export default function RecruiterDashboard() {
   const [candidates, setCandidates] = useState([]);
   const [freelancers, setFreelancers] = useState([]);
   const [loading, setLoading]       = useState(true);
+  const { lastApplicationEvent }    = useNotifications();
 
   useEffect(() => {
     const load = async () => {
@@ -46,6 +48,14 @@ export default function RecruiterDashboard() {
     };
     load();
   }, []);
+
+  // Re-fetch candidates list whenever a new application arrives via socket.
+  useEffect(() => {
+    if (!lastApplicationEvent) return;
+    recruiterService.getApplicants({ limit: 5 })
+      .then(r => setCandidates(r.data ?? []))
+      .catch(() => {});
+  }, [lastApplicationEvent]);
 
   const open   = jobs.filter(j => j.status === 'open').length;
   const closed = jobs.filter(j => j.status === 'closed').length;

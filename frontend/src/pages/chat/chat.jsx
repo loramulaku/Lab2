@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -6,6 +7,7 @@ import api from '../../services/api';
 export default function Chat() {
   const { user } = useAuth();
   const socketRef = useSocket();
+  const location  = useLocation();
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -15,12 +17,21 @@ export default function Chat() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Load conversations on mount
+  // Load conversations on mount; auto-select if navigated with a conversationId.
   useEffect(() => {
+    const targetId = location.state?.conversationId;
     api.get('/conversations')
-      .then(res => setConversations(res.data))
+      .then(res => {
+        const convos = res.data ?? [];
+        setConversations(convos);
+        if (targetId) {
+          const match = convos.find(c => c.id === targetId);
+          if (match) setActiveConversation(match);
+        }
+      })
       .catch(err => console.error(err))
       .finally(() => setLoadingConvos(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // When active conversation changes, load messages and join socket room

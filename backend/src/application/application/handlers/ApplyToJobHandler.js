@@ -5,6 +5,7 @@ const PipelineStage    = require('../../../models/sql/PipelineStage');
 const CandidateProfile = require('../../../models/sql/CandidateProfile');
 const { syncApplicationSafe } = require('../../../sync/applicationSync');
 const { syncCandidateSafe }   = require('../../../sync/candidateSync');
+const { getIo }        = require('../../../socket/ioInstance');
 
 /**
  * Candidate applies to a STANDARD-employment job. The application enters the
@@ -95,6 +96,24 @@ class ApplyToJobHandler {
     }
 
     syncApplicationSafe(app.id);
+
+    // Push real-time update to recruiter so their dashboard count increments instantly.
+    if (job.recruiterId) {
+      try {
+        const io = getIo();
+        if (io) {
+          io.to(`user:${job.recruiterId}`).emit('application:new', {
+            applicationId:      app.id,
+            jobId:              app.jobId,
+            jobTitle:           job.title,
+            status:             'pending',
+            applicantFirstName: profile?.firstName ?? null,
+            applicantLastName:  profile?.lastName  ?? null,
+          });
+        }
+      } catch { /* socket emit is best-effort */ }
+    }
+
     return { id: app.id, jobId: app.jobId, status: 'in_review', message: 'Application submitted — In review' };
   }
 }
