@@ -9,12 +9,6 @@ const COLUMN_COLORS = [
   'border-t-orange-400', 'border-t-indigo-400',
 ];
 
-const BADGE_COLORS = [
-  'bg-blue-100 text-blue-700', 'bg-purple-100 text-purple-700',
-  'bg-amber-100 text-amber-700', 'bg-green-100 text-green-700',
-  'bg-rose-100 text-rose-700', 'bg-cyan-100 text-cyan-700',
-];
-
 function initials(first, last) {
   return `${(first ?? '')[0] ?? ''}${(last ?? '')[0] ?? ''}`.toUpperCase() || '?';
 }
@@ -65,8 +59,8 @@ export default function ShowPipeline() {
   };
 
   // ── Drag-and-drop ─────────────────────────────────────────────────────────
-  const onDragStart = (applicationId, fromStageId, firstName, lastName) =>
-    setDragCard({ applicationId, fromStageId, firstName, lastName });
+  const onDragStart = (applicationId, fromStageId, firstName, lastName, lastNotificationRead) =>
+    setDragCard({ applicationId, fromStageId, firstName, lastName, lastNotificationRead });
 
   const onDragOver = (e, stageId) => { e.preventDefault(); setOverStage(stageId); };
 
@@ -74,6 +68,8 @@ export default function ShowPipeline() {
     e.preventDefault();
     setOverStage(null);
     if (!dragCard || dragCard.fromStageId === toStage.id) { setDragCard(null); return; }
+    // Safety net — cards with unread notifications are non-draggable but just in case
+    if (dragCard.lastNotificationRead === false) { setDragCard(null); return; }
     const moved = { ...dragCard };
     setDragCard(null);
     // Open mandatory note + optional calendar modal — move only happens on confirm
@@ -121,7 +117,7 @@ export default function ShowPipeline() {
     <RecruiterLayout title="Pipeline Board">
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      <div className="mb-5 flex items-center gap-3">
+      <div className="mb-5 flex items-center gap-3 flex-wrap">
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
@@ -135,9 +131,18 @@ export default function ShowPipeline() {
             Clear
           </button>
         )}
-        <span className="text-xs text-gray-400 ml-auto">
-          Drag to move · Note required · Green = notification read · Red = unread
-        </span>
+        <div className="text-xs text-gray-400 ml-auto flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-400 inline-block" />
+            Read — can move
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />
+            Unread — move blocked
+          </span>
+          <span className="text-gray-300">|</span>
+          <span>Note required on every move</span>
+        </div>
       </div>
 
       {board && (
@@ -175,7 +180,6 @@ export default function ShowPipeline() {
                     key={c.applicationId}
                     candidate={c}
                     stageId={stage.id}
-                    stageIndex={si}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
                     onViewDetails={() => navigate(`/recruiter/pipeline/candidate/${c.applicationId}`)}
@@ -217,13 +221,14 @@ export default function ShowPipeline() {
   );
 }
 
-function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd, onViewDetails, onAddNote }) {
+function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetails, onAddNote }) {
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
-  const badge = BADGE_COLORS[stageIndex % BADGE_COLORS.length];
 
-  // read status: null = no notification yet; true = read; false = unread
+  // lastNotificationRead: null = no notification yet (first move); true = read; false = unread
+  const isBlocked = candidate.lastNotificationRead === false;
+
   const readDot =
     candidate.lastNotificationRead === null  ? null :
     candidate.lastNotificationRead === true  ? 'bg-green-400' :
@@ -231,24 +236,37 @@ function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd,
 
   return (
     <div
-      draggable
-      onDragStart={() => onDragStart(candidate.applicationId, stageId, candidate.firstName, candidate.lastName)}
+      draggable={!isBlocked}
+      onDragStart={!isBlocked ? () => onDragStart(candidate.applicationId, stageId, candidate.firstName, candidate.lastName, candidate.lastNotificationRead) : undefined}
       onDragEnd={onDragEnd}
-      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow select-none"
+      title={isBlocked ? 'Move blocked — candidate must read the notification first' : undefined}
+      className={`bg-white border rounded-lg p-3 shadow-sm transition-shadow select-none ${
+        isBlocked
+          ? 'border-amber-200 opacity-80 cursor-not-allowed'
+          : 'border-gray-200 cursor-grab active:cursor-grabbing hover:shadow-md'
+      }`}
     >
       <div className="flex items-start gap-2.5 mb-2.5">
         <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 relative`}>
           {ini}
           {readDot && (
-            <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${readDot} border border-white`}
-              title={candidate.lastNotificationRead ? 'Candidate read the notification' : 'Notification not yet read'} />
+            <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${readDot} border border-white`} />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{name}</p>
-          <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-0.5 ${badge}`}>
-            {candidate.status ?? 'pending'}
-          </span>
+          {isBlocked ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full mt-0.5">
+              <svg className="w-2.5 h-2.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              Awaiting read
+            </span>
+          ) : candidate.lastNotificationRead === true ? (
+            <span className="inline-block text-[10px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full mt-0.5">
+              Notification read
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -281,10 +299,6 @@ function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd,
   );
 }
 
-/**
- * Mandatory transition note modal — opens when a candidate is dragged to a new stage.
- * Note is required. Calendar date picker shown only if target stage has hasCalendar=true.
- */
 function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, hasCalendar, candidateName, onClose, onConfirm }) {
   const [note, setNote]           = useState('');
   const [interviewDate, setDate]  = useState('');
@@ -321,7 +335,7 @@ function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, h
               Transition note <span className="text-red-500">*</span>
             </label>
             <p className="text-xs text-gray-400 mb-1.5">
-              Required — this note is sent to the candidate as a real-time notification.
+              Required — sent to the candidate as a notification. They must mark it as read before you can move them further.
             </p>
             <textarea
               value={note} onChange={e => setNote(e.target.value)}
@@ -397,7 +411,7 @@ function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClos
         </div>
         <form onSubmit={submit} className="p-5 space-y-3">
           <p className="text-xs text-gray-500">
-            This note will be sent to the candidate as a notification and saved to their application.
+            This note will be saved to the candidate's application record.
           </p>
           <textarea value={note} onChange={e => setNote(e.target.value)} rows={4} autoFocus
             placeholder="e.g. Strong technical skills, moving to next round…"
@@ -406,7 +420,7 @@ function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClos
           <div className="flex gap-3">
             <button type="submit" disabled={saving}
               className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded">
-              {saving ? 'Saving…' : 'Save & Notify'}
+              {saving ? 'Saving…' : 'Save Note'}
             </button>
             <button type="button" onClick={onClose}
               className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
