@@ -144,11 +144,12 @@ const getApplicationNotes = async (req, res, next) => {
     const stageMap = Object.fromEntries(stages.map(s => [s.id, s.name]));
 
     res.json(notes.map(n => ({
-      id:        n.id,
-      note:      n.note,
-      stageId:   n.stageId,
-      stageName: stageMap[n.stageId] ?? null,
-      createdAt: n.createdAt,
+      id:          n.id,
+      note:        n.note,
+      stageId:     n.stageId,
+      stageName:   stageMap[n.stageId] ?? null,
+      interviewAt: n.interviewAt ?? null,
+      createdAt:   n.createdAt,
     })));
   } catch (err) { next(err); }
 };

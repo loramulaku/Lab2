@@ -37,6 +37,7 @@ class MoveCandidateToStageHandler {
       applicationId: command.applicationId,
       stageId:       command.toStageId,
       note:          command.note.trim(),
+      interviewAt:   command.interviewDate ? new Date(command.interviewDate) : null,
       createdBy:     command.recruiterId,
       createdAt:     new Date(),
     });

@@ -477,6 +477,14 @@ function NotesModal({ applicationId, jobTitle, onClose }) {
                     )}
                     <span className="text-xs text-gray-400 ml-auto">{new Date(n.createdAt).toLocaleString()}</span>
                   </div>
+                  {n.interviewAt && (
+                    <div className="flex items-center gap-1.5 mb-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded px-2 py-1">
+                      <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Interview scheduled: {new Date(n.interviewAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
                   <p className="text-sm text-gray-700 leading-relaxed">{n.note}</p>
                 </div>
               ))}
@@ -553,8 +561,8 @@ function ApplicationsTab() {
               </div>
               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                 <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
-                {/* Read/unread badge — only shown once the candidate has been moved at least once */}
-                {pipelineNotifs.length > 0 && (
+                {/* Read/unread badge — only shown after candidate has been moved to a pipeline stage */}
+                {app.stageName && pipelineNotifs.length > 0 && (
                   firstUnread
                     ? <span className="text-xs px-2 py-0.5 font-medium rounded bg-red-100 text-red-700">Unread</span>
                     : <span className="text-xs px-2 py-0.5 font-medium rounded bg-green-100 text-green-700">Read</span>
