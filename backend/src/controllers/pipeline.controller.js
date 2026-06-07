@@ -93,6 +93,7 @@ const moveCandidate = async (req, res, next) => {
     res.json(result);
   } catch (err) {
     if (err.code === 'NOTE_REQUIRED') return res.status(400).json({ message: err.message, code: err.code });
+    if (err.code === 'NOTIFICATION_NOT_READ') return res.status(403).json({ message: err.message, code: err.code });
     next(err);
   }
 };

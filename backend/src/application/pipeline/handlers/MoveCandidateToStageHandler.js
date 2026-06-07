@@ -1,6 +1,7 @@
 const Application   = require('../../../models/sql/Application');
 const PipelineStage = require('../../../models/sql/PipelineStage');
 const PipelineNote  = require('../../../models/sql/PipelineNote');
+const Notification  = require('../../../models/sql/Notification');
 const { syncApplicationSafe }    = require('../../../sync/applicationSync');
 const CreateNotificationCommand  = require('../../notification/commands/CreateNotification.command');
 const createNotificationHandler  = require('../../notification/handlers/CreateNotificationHandler');
@@ -14,6 +15,15 @@ class MoveCandidateToStageHandler {
 
     const app = await Application.findByPk(command.applicationId);
     if (!app) { const e = new Error('Application not found'); e.status = 404; throw e; }
+
+    // Gate: block the move if the candidate has an unread pipeline_stage_change notification
+    const unread = await Notification.findOne({
+      where: { userId: app.userId, type: 'pipeline_stage_change', isRead: false },
+    });
+    if (unread) {
+      const e = new Error('The candidate must read the previous notification before being moved to the next stage');
+      e.status = 403; e.code = 'NOTIFICATION_NOT_READ'; throw e;
+    }
 
     const stage = await PipelineStage.findByPk(command.toStageId);
     if (!stage) { const e = new Error('Stage not found'); e.status = 404; throw e; }
@@ -33,13 +43,13 @@ class MoveCandidateToStageHandler {
 
     syncApplicationSafe(app.id);
 
-    let msg = `Your application has been moved to "${stage.name}": ${command.note.trim()}`;
+    let msg = `Your application has been moved to the "${stage.name}" stage. Recruiter note: ${command.note.trim()}. Please mark this notification as read — the recruiter cannot move you to the next stage until you do.`;
     if (command.interviewDate) {
       const dateStr = new Date(command.interviewDate).toLocaleString('en-GB', {
         day: '2-digit', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit',
       });
-      msg += ` — Interview/meeting scheduled for ${dateStr}.`;
+      msg += ` Interview/meeting scheduled for ${dateStr}.`;
     }
 
     createNotificationHandler.handle(new CreateNotificationCommand({
