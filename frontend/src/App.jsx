@@ -42,6 +42,10 @@ const TeamMembers         = lazy(() => import('./pages/recruiter/TeamMembers'));
 const PaymentSuccess      = lazy(() => import('./pages/recruiter/PaymentSuccess'));
 const PaymentCancelled    = lazy(() => import('./pages/recruiter/PaymentCancelled'));
 const Chat                = lazy(() => import('./pages/chat/Chat'));
+const CreatePipeline      = lazy(() => import('./pages/recruiter/pipeline/CreatePipeline'));
+const ShowPipeline        = lazy(() => import('./pages/recruiter/pipeline/ShowPipeline'));
+const TransitionNotes     = lazy(() => import('./pages/recruiter/pipeline/TransitionNotes'));
+const CandidateInfo       = lazy(() => import('./pages/recruiter/pipeline/CandidateInfo'));
 
 
 // ── Suspense fallback ──────────────────────────────────────────────────────────
@@ -129,8 +133,12 @@ function AppShell() {
         ['/recruiter/billing/invoices',     <Invoices />],
         ['/recruiter/users',                <TeamMembers />],
         ['/recruiter/company',              <CompanySetup />],
-        ['/recruiter/payment/success',      <PaymentSuccess />],
+        ['/recruiter/payment/success',        <PaymentSuccess />],
         ['/recruiter/payment/cancelled',    <PaymentCancelled />],
+        ['/recruiter/pipeline/create',      <CreatePipeline />],
+        ['/recruiter/pipeline/board',       <ShowPipeline />],
+        ['/recruiter/pipeline/notes',       <TransitionNotes />],
+        ['/recruiter/pipeline/candidate/:applicationId', <CandidateInfo />],
       ].map(([path, element]) => (
         <Route key={path} path={path} element={
           <ProtectedRoute roles={['recruiter']}>{element}</ProtectedRoute>

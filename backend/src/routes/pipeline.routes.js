@@ -1,19 +1,22 @@
 const express = require('express');
-const router = express.Router();
-const auth = require('../middlewares/auth');
-const role = require('../middlewares/role');
-const {
-  createPipeline,
-  getPipelineByJob,
-  addStage,
-  moveCandidate,
-  getStageHistory,
-} = require('../controllers/pipeline.controller');
+const router  = express.Router();
+const auth    = require('../middlewares/auth');
+const role    = require('../middlewares/role');
+const c       = require('../controllers/pipeline.controller');
 
-router.post('/', auth, role(['recruiter', 'admin']), createPipeline);
-router.get('/job/:jobId', auth, role(['recruiter', 'admin']), getPipelineByJob);
-router.post('/:pipelineId/stages', auth, role(['recruiter', 'admin']), addStage);
-router.post('/move', auth, role(['recruiter', 'admin']), moveCandidate);
-router.get('/history/:applicationId', auth, role(['recruiter', 'admin']), getStageHistory);
+const recruiter = [auth, role(['recruiter', 'admin'])];
+
+// Pipeline management
+router.post('/',      ...recruiter, c.createPipeline);
+router.get('/my',     ...recruiter, c.getMyPipeline);
+router.get('/board',  ...recruiter, c.getPipelineBoard);
+router.get('/notes',  ...recruiter, c.getTransitionNotes);
+router.post('/move',  ...recruiter, c.moveCandidate);
+router.post('/note',  ...recruiter, c.addNote);
+
+// Legacy (kept for any old callers)
+router.get('/job/:jobId',              ...recruiter, c.getPipelineByJob);
+router.post('/:pipelineId/stages',     ...recruiter, c.addStage);
+router.get('/history/:applicationId',  ...recruiter, c.getStageHistory);
 
 module.exports = router;

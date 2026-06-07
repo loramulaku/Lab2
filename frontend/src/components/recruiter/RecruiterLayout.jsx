@@ -43,6 +43,14 @@ const NAV_GROUPS = [
     ],
   },
   {
+    title: 'Pipeline Management',
+    items: [
+      { name: 'Create Pipeline', href: '/recruiter/pipeline/create' },
+      { name: 'Show Pipeline',   href: '/recruiter/pipeline/board',  match: '/recruiter/pipeline/board' },
+      { name: 'Transition Notes', href: '/recruiter/pipeline/notes' },
+    ],
+  },
+  {
     title: 'User Management',
     items: [{ name: 'Team Members', href: '/recruiter/users' }],
   },
