@@ -3,24 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../../components/recruiter/RecruiterLayout';
 import pipelineService from '../../../services/pipelineService';
 
-const COLUMN_COLORS = [
-  'border-t-blue-400',
-  'border-t-purple-400',
-  'border-t-amber-400',
-  'border-t-green-400',
-  'border-t-rose-400',
-  'border-t-cyan-400',
-  'border-t-orange-400',
-  'border-t-indigo-400',
-];
-
-const BADGE_COLORS = [
-  'bg-blue-100 text-blue-700',
-  'bg-purple-100 text-purple-700',
-  'bg-amber-100 text-amber-700',
-  'bg-green-100 text-green-700',
-  'bg-rose-100 text-rose-700',
-  'bg-cyan-100 text-cyan-700',
+const STAGE_COLORS = [
+  { column: 'border-t-blue-400',   badge: 'bg-blue-100 text-blue-700'    },
+  { column: 'border-t-purple-400', badge: 'bg-purple-100 text-purple-700' },
+  { column: 'border-t-amber-400',  badge: 'bg-amber-100 text-amber-700'   },
+  { column: 'border-t-green-400',  badge: 'bg-green-100 text-green-700'   },
+  { column: 'border-t-rose-400',   badge: 'bg-rose-100 text-rose-700'     },
+  { column: 'border-t-cyan-400',   badge: 'bg-cyan-100 text-cyan-700'     },
 ];
 
 function initials(first, last) {
@@ -166,11 +155,11 @@ export default function ShowPipeline() {
               onDrop={e => onDrop(e, stage.id)}
               className={`flex-shrink-0 w-64 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col transition-all duration-150 ${
                 overStage === stage.id ? 'ring-2 ring-blue-400 bg-blue-50/30' : ''
-              } border-t-4 ${COLUMN_COLORS[si % COLUMN_COLORS.length]}`}
+              } border-t-4 ${STAGE_COLORS[si % STAGE_COLORS.length].column}`}
             >
               {/* Column header */}
               <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
-                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[140px]">
+                <h3 className="text-xs font-semibold text-gray-700 truncate max-w-[140px]">
                   {stage.name}
                 </h3>
                 <span className="text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2.5 py-0.5 ml-2 flex-shrink-0">
@@ -224,7 +213,7 @@ function CandidateCard({ candidate, stageId, stageIndex, onDragStart, onDragEnd,
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
-  const badge = BADGE_COLORS[stageIndex % BADGE_COLORS.length];
+  const badge = STAGE_COLORS[stageIndex % STAGE_COLORS.length].badge;
 
   return (
     <div
@@ -303,7 +292,7 @@ function NoteModal({ applicationId, stageId, stageName, candidateName, onClose, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
       <div className="bg-white w-full max-w-md border border-gray-200 shadow-xl rounded-xl overflow-hidden"
         onMouseDown={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">

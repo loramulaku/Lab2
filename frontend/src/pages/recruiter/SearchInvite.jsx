@@ -148,7 +148,7 @@ function InviteModal({ candidate, jobs, onClose, onSent }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
       <div className="bg-white w-full max-w-md border border-gray-200 shadow-xl" onMouseDown={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-gray-100">
           <h3 className="font-semibold text-gray-900">Invite {candidate.firstName} {candidate.lastName}</h3>

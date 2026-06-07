@@ -16,7 +16,8 @@ export default function Jobs() {
   const [total, setTotal]       = useState(0);
   const [page, setPage]         = useState(1);
   const [loading, setLoading]   = useState(true);
-  const [messaging, setMessaging] = useState(null); // jobId being messaged
+  const [messaging, setMessaging]   = useState(null);
+  const [msgError, setMsgError]     = useState('');
 
   const [filters, setFilters] = useState({
     status: 'active',
@@ -62,7 +63,7 @@ export default function Jobs() {
       navigate('/chat');
     } catch (err) {
       console.error(err);
-      alert('Could not start conversation. Try again.');
+      setMsgError('Could not start conversation. Try again.');
     } finally {
       setMessaging(null);
     }
@@ -84,8 +85,8 @@ export default function Jobs() {
 
         {/* Page title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gjej punë</h1>
-          <p className="text-sm text-gray-500 mt-1">{total} punë të disponueshme</p>
+          <h1 className="text-2xl font-bold text-gray-900">Find Jobs</h1>
+          <p className="text-sm text-gray-500 mt-1">{total} jobs available</p>
         </div>
 
         {/* Search + filters */}
@@ -93,7 +94,7 @@ export default function Jobs() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Kërko sipas titullit ose kompanisë..."
+            placeholder="Search by title or company..."
             className="flex-1 min-w-[200px] border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none"
           />
           <select
@@ -101,7 +102,7 @@ export default function Jobs() {
             onChange={e => setFilter('workMode', e.target.value)}
             className="border border-gray-200 px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Të gjitha mënyrat</option>
+            <option value="">All work modes</option>
             {WORK_MODES.filter(Boolean).map(m => (
               <option key={m} value={m}>{m}</option>
             ))}
@@ -111,7 +112,7 @@ export default function Jobs() {
             onChange={e => setFilter('employmentType', e.target.value)}
             className="border border-gray-200 px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Të gjitha llojet</option>
+            <option value="">All types</option>
             {EMPLOYMENT_TYPES.filter(Boolean).map(t => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -120,15 +121,17 @@ export default function Jobs() {
             onClick={() => { setFilters({ status: 'active', workMode: '', employmentType: '', skill: '' }); setSearch(''); setPage(1); }}
             className={BTN_OUTLINE}
           >
-            Pastro
+            Clear
           </button>
         </div>
 
+        {msgError && <p className="text-sm text-red-600 mb-3">{msgError}</p>}
+
         {/* Job list */}
-        {loading && <p className="text-gray-400 text-sm py-8 text-center">Duke ngarkuar...</p>}
+        {loading && <p className="text-gray-400 text-sm py-8 text-center">Loading…</p>}
 
         {!loading && filtered.length === 0 && (
-          <p className="text-gray-400 text-sm py-8 text-center">Nuk u gjet asnjë punë.</p>
+          <p className="text-gray-400 text-sm py-8 text-center">No jobs found.</p>
         )}
 
         <div className="space-y-3">
@@ -165,14 +168,14 @@ export default function Jobs() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <button className={BTN_PRIMARY}>Apliko</button>
+                  <button className={BTN_PRIMARY}>Apply</button>
                   {job.recruiterId && (
                     <button
                       onClick={() => handleMessageRecruiter(job)}
                       disabled={messaging === job.id}
                       className={BTN_OUTLINE}
                     >
-                      {messaging === job.id ? 'Duke hapur...' : 'Mesazho'}
+                      {messaging === job.id ? 'Opening…' : 'Message'}
                     </button>
                   )}
                 </div>
@@ -192,7 +195,7 @@ export default function Jobs() {
               disabled={page === 1}
               className={BTN_OUTLINE}
             >
-              ← Para
+              ← Previous
             </button>
             <span className="px-4 py-2 text-sm text-gray-500">
               {page} / {totalPages}
@@ -202,7 +205,7 @@ export default function Jobs() {
               disabled={page === totalPages}
               className={BTN_OUTLINE}
             >
-              Pas →
+              Next →
             </button>
           </div>
         )}

@@ -7,7 +7,7 @@ function Row({ label, value }) {
   if (!value && value !== 0 && value !== false) return null;
   return (
     <div className="flex gap-4 py-3 border-b border-gray-100 last:border-0">
-      <span className="w-40 flex-shrink-0 text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">{label}</span>
+      <span className="w-40 flex-shrink-0 text-xs font-semibold text-gray-400 pt-0.5">{label}</span>
       <span className="text-sm text-gray-800 flex-1">{value}</span>
     </div>
   );

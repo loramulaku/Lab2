@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recruiterService from '../../services/recruiterService';
-import { PageShell, PageCard, PageAlert } from '../../components/layout';
+import { PageCard, PageAlert } from '../../components/layout';
+import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import CompanySetupForm from '../../components/recruiter/CompanySetupForm';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
@@ -74,11 +75,19 @@ export default function CompanySetup() {
     }
   };
 
+  if (loading) {
+    return (
+      <RecruiterLayout title="Company Setup">
+        <p className="text-sm text-gray-400">Loading…</p>
+      </RecruiterLayout>
+    );
+  }
+
   return (
-    <PageShell title="Company Setup" subtitle="Complete your company profile to start posting jobs." loading={loading}>
+    <RecruiterLayout title="Company Setup">
       <PageAlert>{error}</PageAlert>
       <form onSubmit={onSubmit}>
-        <PageCard className="p-6 sm:p-8">
+        <div className="bg-white border border-gray-200 p-6 sm:p-8">
           <CompanySetupForm
             company={company}
             recruiter={recruiter}
@@ -94,13 +103,13 @@ export default function CompanySetup() {
             }}
             onPhotoUpload={setPhotoFile}
           />
-        </PageCard>
+        </div>
         <div className="mt-6 flex justify-end">
-          <button type="submit" disabled={saving} className="page-shell-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 text-sm rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-            {saving ? 'Saving…' : 'Create & Continue'}
+          <button type="submit" disabled={saving} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition disabled:opacity-60 disabled:cursor-not-allowed">
+            {saving ? 'Saving…' : 'Save & Continue'}
           </button>
         </div>
       </form>
-    </PageShell>
+    </RecruiterLayout>
   );
 }

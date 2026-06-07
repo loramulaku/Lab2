@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { PageBackground } from '../layout';
 
 /**
  * Recruiter dashboard shell — full sidebar navigation (FEATURE 2).
@@ -70,7 +71,7 @@ export default function RecruiterLayout({ children, title }) {
   const handleLogout = async () => { await logout(); navigate('/login', { replace: true }); };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 overflow-y-auto">
         <div className="flex items-center h-16 px-6 bg-gray-800 sticky top-0">
           <span className="text-xl font-bold text-white">HireWire</span>
@@ -110,7 +111,10 @@ export default function RecruiterLayout({ children, title }) {
             <button onClick={handleLogout} className="text-sm text-red-600 hover:text-red-700">Logout</button>
           </div>
         </div>
-        <main className="p-8">{children}</main>
+        <main className="relative isolate p-8">
+          <PageBackground scoped />
+          <div className="relative z-10">{children}</div>
+        </main>
       </div>
     </div>
   );

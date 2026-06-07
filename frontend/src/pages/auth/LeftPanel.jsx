@@ -4,12 +4,12 @@ export default function LeftPanel({ sectionId = 'login-left' }) {
   const s = usePageSection('login', 'login-left');
 
   const bgColor = s.bgColor ?? '#2B3FE7';
-  const heading = s.heading ?? 'Join 50,000+ professionals\nalready on HireWire';
-  const subtext = s.subtext ?? "Whether you're looking for your next role or building a world-class team, HireWire gives you the tools to succeed.";
+  const heading = s.heading ?? 'Find work.\nHire better.\nAll in one place.';
+  const subtext = s.subtext ?? 'Browse listings, apply with one click, post roles, and manage your entire hiring pipeline — all from a single account.';
 
   const features = [
     'Free account forever',
-    'AI-powered job matching',
+    'One-click job applications',
     'Real-time pipeline tracking',
     'Integrated messaging',
     'Freelance bidding system',
@@ -53,14 +53,11 @@ export default function LeftPanel({ sectionId = 'login-left' }) {
         </ul>
       </div>
 
-      <div className="bg-blue-700/40 rounded-2xl p-4 flex items-start gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/>
-        </svg>
-        <div>
-          <p className="text-white font-semibold text-sm">Secure &amp; Private</p>
-          <p className="text-blue-200 text-xs mt-0.5">Your data is encrypted and never sold. We take privacy seriously.</p>
-        </div>
+      <div className="border-t border-blue-500/40 pt-4">
+        <p className="text-blue-200 text-xs">
+          Already have an account?{' '}
+          <a href="/login" className="text-white font-medium hover:underline">Sign in here</a>
+        </p>
       </div>
     </aside>
   );

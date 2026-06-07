@@ -4,6 +4,8 @@ import DataTable from '../../components/admin/DataTable';
 import Pagination from '../../components/admin/Pagination';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import { AdminPage } from '../../components/layout';
 
 const LIMIT = 10;
 
@@ -15,6 +17,8 @@ const Jobs = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [showModal, setShowModal]     = useState(false);
+  const [deletingJob, setDeletingJob] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => { loadJobs(); }, []);
 
@@ -50,12 +54,11 @@ const Jobs = () => {
   const handleRowClick = (job) => { setSelectedJob(job); setShowModal(true); };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this job?')) return;
     try {
-      await adminApi.deleteJob(selectedJob.id);
-      setShowModal(false);
+      await adminApi.deleteJob(deletingJob.id);
+      setDeletingJob(null);
       loadJobs();
-    } catch { alert('Failed to delete job'); }
+    } catch { setDeletingJob(null); setDeleteError('Failed to delete job'); }
   };
 
   const columns = [
@@ -77,10 +80,7 @@ const Jobs = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Job Management</h2>
-      </div>
+    <AdminPage title="Job Management" error={deleteError}>
 
       <div className="flex space-x-4 mb-6">
         <div className="flex-1">
@@ -121,11 +121,18 @@ const Jobs = () => {
             </div>
           </div>
           <div className="flex space-x-3 pt-4">
-            <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Job</button>
+            <button onClick={() => { setShowModal(false); setDeletingJob(selectedJob); }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Job</button>
           </div>
         </div>
       </Modal>
-    </div>
+      {deletingJob && (
+        <ConfirmDeleteModal
+          message={`Delete job "${deletingJob.title}"? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingJob(null)}
+        />
+      )}
+    </AdminPage>
   );
 };
 

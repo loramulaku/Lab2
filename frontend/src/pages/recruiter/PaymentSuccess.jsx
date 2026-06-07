@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { subscriptionService } from '../../services/subscriptionService';
+import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -41,19 +42,24 @@ const PaymentSuccess = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
+      <RecruiterLayout title="Payment Confirmation">
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-gray-600">Confirming your payment…</p>
         </div>
-      </div>
+      </RecruiterLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <div className="bg-white border border-gray-200 p-10 max-w-md w-full text-center">
-        <div className="text-5xl mb-4">✅</div>
+    <RecruiterLayout title="Payment Successful">
+      <div className="max-w-md">
+      <div className="bg-white border border-gray-200 p-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
         <p className="text-gray-600 mb-6">
           Your <strong>{subscription?.planName ?? 'subscription'}</strong> plan is now active. You can start posting jobs right away.
@@ -78,7 +84,8 @@ const PaymentSuccess = () => {
           Start Posting Jobs
         </button>
       </div>
-    </div>
+      </div>
+    </RecruiterLayout>
   );
 };
 

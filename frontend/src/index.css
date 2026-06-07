@@ -52,7 +52,7 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
 
 @layer components {
   .page-shell-bg {
-    background: linear-gradient(160deg, #bfdbfe 0%, #e2e8f0 30%, #c7d2fe 65%, #dbeafe 100%);
+    background: linear-gradient(160deg, #eff6ff 0%, #e2e8f0 30%, #c7d2fe 65%, #dbeafe 100%);
   }
 
   /* Frosted cards — softest edge in the hierarchy */
@@ -106,16 +106,15 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
     border-bottom: 1px solid rgba(147, 197, 253, 0.4);
   }
 
-  /* Jobs hero — same glass language, slightly richer blue (flows from header) */
+  /* Jobs hero — matches header, fades into page background below */
   .page-shell-hero-band {
     background: linear-gradient(
       180deg,
-      rgba(219, 234, 254, 0.82) 0%,
-      rgba(191, 219, 254, 0.5) 100%
+      rgba(239, 246, 255, 0.72) 0%,
+      rgba(239, 246, 255, 0.0) 100%
     );
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(96, 165, 250, 0.35);
   }
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePageSection } from '../../context/ThemeContext';
 import LeftPanel from './LeftPanel';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 export default function Register() {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
+  const s = usePageSection('login', 'login-left');
 
   const [step, setStep]             = useState(1);
   const [role, setRole]             = useState(null);   // 'candidate' | 'recruiter'
@@ -92,7 +94,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#2B3FE7]">
+    <div className="min-h-screen flex" style={{ backgroundColor: s.bgColor ?? '#2B3FE7' }}>
       <LeftPanel />
 
       {/* Right panel */}
@@ -106,36 +108,36 @@ export default function Register() {
               <h2 className="text-2xl font-bold text-gray-900 mb-1">I am a...</h2>
               <p className="text-sm text-gray-500 mb-6">Choose your role to get started</p>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 {/* Job Seeker */}
                 <button
                   onClick={() => pickRole('candidate')}
-                  className="flex items-center gap-4 rounded-2xl p-5 border-2 border-blue-600 bg-blue-600 text-left cursor-pointer transition-all duration-200 hover:bg-blue-700 hover:border-blue-700 w-full"
+                  className="flex items-center gap-4 rounded-xl p-5 border-2 border-gray-100 bg-white text-left cursor-pointer transition-all duration-150 hover:border-blue-400 hover:bg-blue-50/50 w-full group"
                 >
-                  <div className="bg-blue-500 rounded-xl p-2.5 flex-shrink-0 text-white">
+                  <div className="bg-blue-100 rounded-xl p-2.5 flex-shrink-0 text-blue-600 group-hover:bg-blue-200 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-white">Job Seeker / Freelancer</p>
-                    <p className="text-sm text-blue-200 mt-0.5">Find jobs, bid on projects, track applications</p>
+                    <p className="font-semibold text-gray-900">Job Seeker / Freelancer</p>
+                    <p className="text-sm text-gray-500 mt-0.5">Find jobs, bid on projects, track applications</p>
                   </div>
                 </button>
 
                 {/* Recruiter */}
                 <button
                   onClick={() => pickRole('recruiter')}
-                  className="flex items-center gap-4 rounded-2xl p-5 border-2 border-green-500 bg-green-50 text-left cursor-pointer transition-all duration-200 hover:bg-green-100 w-full"
+                  className="flex items-center gap-4 rounded-xl p-5 border-2 border-gray-100 bg-white text-left cursor-pointer transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50/50 w-full group"
                 >
-                  <div className="bg-green-100 rounded-xl p-2.5 flex-shrink-0 text-green-600">
+                  <div className="bg-indigo-100 rounded-xl p-2.5 flex-shrink-0 text-indigo-600 group-hover:bg-indigo-200 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zM7 19H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5v-2h2v2zm4 4H9v-2h2v2zm0-4H9v-2h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V5h2v2zm4 12h-2v-2h2v2zm0-4h-2v-2h2v2z"/>
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-green-800">Recruiter / Employer</p>
-                    <p className="text-sm text-green-600 mt-0.5">Post jobs, manage pipeline, hire top talent</p>
+                    <p className="font-semibold text-gray-900">Recruiter / Employer</p>
+                    <p className="text-sm text-gray-500 mt-0.5">Post jobs, manage pipeline, hire top talent</p>
                   </div>
                 </button>
               </div>

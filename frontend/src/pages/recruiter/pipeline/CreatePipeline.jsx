@@ -78,7 +78,7 @@ export default function CreatePipeline() {
             <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-3">
               {/* Locked first stage */}
               <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-semibold text-gray-400 mb-1">
                   Stage 1 (locked)
                 </label>
                 <input
@@ -89,7 +89,7 @@ export default function CreatePipeline() {
 
               {stageNames.map((name, i) => (
                 <div key={i}>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
                     Stage {i + 2}
                   </label>
                   <input

@@ -4,6 +4,8 @@ import DataTable from '../../components/admin/DataTable';
 import Pagination from '../../components/admin/Pagination';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import { AdminPage } from '../../components/layout';
 
 const LIMIT = 10;
 
@@ -17,6 +19,9 @@ const Users = () => {
   const [modalMode, setModalMode]   = useState('view');
   const [formData, setFormData]     = useState({});
   const [roles, setRoles]           = useState([]);
+  const [deletingUser, setDeletingUser] = useState(null);
+  const [deleteError, setDeleteError]   = useState('');
+  const [saveError, setSaveError]       = useState('');
 
   useEffect(() => { loadUsers(); loadRoles(); }, []);
 
@@ -56,20 +61,20 @@ const Users = () => {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
     try {
-      await adminApi.deleteUser(selectedUser.id);
-      setShowModal(false);
+      await adminApi.deleteUser(deletingUser.id);
+      setDeletingUser(null);
       loadUsers();
-    } catch { alert('Failed to delete user'); }
+    } catch { setDeletingUser(null); setDeleteError('Failed to delete user'); }
   };
 
   const handleSave = async () => {
+    setSaveError('');
     try {
       await adminApi.updateUser(selectedUser.id, formData);
       setShowModal(false);
       loadUsers();
-    } catch { alert('Failed to update user'); }
+    } catch { setSaveError('Failed to update user'); }
   };
 
   const columns = [
@@ -88,10 +93,7 @@ const Users = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-      </div>
+    <AdminPage title="User Management" error={deleteError}>
 
       <div className="mb-6">
         <SearchBar onSearch={handleSearch} placeholder="Search by name, email or status…" />
@@ -121,7 +123,7 @@ const Users = () => {
             </div>
             <div className="flex space-x-3 pt-4">
               <button onClick={() => setModalMode('edit')} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Edit</button>
-              <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+              <button onClick={() => { setShowModal(false); setDeletingUser(selectedUser); }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
             </div>
           </div>
         ) : (
@@ -148,14 +150,22 @@ const Users = () => {
                 <span className="ml-2 text-sm text-gray-700">Active</span>
               </label>
             </div>
+            {saveError && <p className="text-sm text-red-600">{saveError}</p>}
             <div className="flex space-x-3 pt-4">
               <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
-              <button onClick={() => setModalMode('view')} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+              <button onClick={() => { setSaveError(''); setModalMode('view'); }} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
             </div>
           </div>
         )}
       </Modal>
-    </div>
+      {deletingUser && (
+        <ConfirmDeleteModal
+          message={`Delete user "${deletingUser.firstName} ${deletingUser.lastName}"? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingUser(null)}
+        />
+      )}
+    </AdminPage>
   );
 };
 

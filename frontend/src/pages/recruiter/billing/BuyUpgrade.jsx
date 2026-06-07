@@ -60,10 +60,10 @@ export default function BuyUpgrade() {
             return (
               <div key={plan.id} className={`bg-white border p-6 flex flex-col ${borderClass}`}>
                 {isSuggested && !isCurrent && (
-                  <span className="text-xs font-medium text-green-600 uppercase tracking-wide mb-2">Recommended</span>
+                  <span className="text-xs font-medium text-green-600 mb-2">Recommended</span>
                 )}
                 {isCurrent && (
-                  <span className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-2">Current Plan</span>
+                  <span className="text-xs font-medium text-blue-600 mb-2">Current Plan</span>
                 )}
                 <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">${Number(plan.price).toFixed(2)}<span className="text-sm font-normal text-gray-500">/{plan.billingInterval === 'year' ? 'yr' : 'mo'}</span></p>

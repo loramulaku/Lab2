@@ -27,7 +27,7 @@ export default function TeamMembers() {
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
         <div className="space-y-4 max-w-2xl">
           <div className="bg-white border border-gray-200 p-5">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Company</p>
+            <p className="text-xs text-gray-500 mb-2">Company</p>
             <p className="font-medium text-gray-900">{company?.name ?? 'Your company'}</p>
           </div>
           <div className="bg-white border border-gray-200">

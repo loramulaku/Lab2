@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import exportService from '../../services/exportService';
+import { AdminPage } from '../../components/layout';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
@@ -54,20 +55,7 @@ export default function Reports() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Reports &amp; Exports</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Download platform data as CSV, Excel, or JSON files.
-        </p>
-      </div>
-
-      {error && (
-        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
+    <AdminPage title="Reports & Exports" subtitle="Download platform data as CSV, Excel, or JSON files." error={error}>
       {/* ── Export cards ───────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {ENTITIES.map(entity => (
@@ -120,19 +108,19 @@ export default function Reports() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-200">
                 {history.map(exp => {
                   const parts  = (exp.type ?? '').split('_');
                   const entity = parts.slice(0, -1).join('_');
                   const fmt    = parts[parts.length - 1];
                   return (
                     <tr key={exp.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3 capitalize font-medium text-gray-800">{entity}</td>
-                      <td className="px-5 py-3 uppercase text-gray-600">{fmt}</td>
-                      <td className="px-5 py-3 text-gray-400 text-xs">
+                      <td className="px-6 py-4 capitalize font-medium text-gray-800">{entity}</td>
+                      <td className="px-6 py-4 uppercase text-gray-600">{fmt}</td>
+                      <td className="px-6 py-4 text-gray-400 text-xs">
                         {exp.createdAt ? new Date(exp.createdAt).toLocaleString() : '—'}
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         {exp.filePath ? (
                           <a
                             href={`${API_BASE}${exp.filePath}`}
@@ -151,6 +139,6 @@ export default function Reports() {
           </div>
         )}
       </div>
-    </div>
+    </AdminPage>
   );
 }

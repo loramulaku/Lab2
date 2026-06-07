@@ -4,6 +4,8 @@ import DataTable from '../../components/admin/DataTable';
 import Pagination from '../../components/admin/Pagination';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import { AdminPage } from '../../components/layout';
 
 const LIMIT = 10;
 
@@ -14,6 +16,8 @@ const Companies = () => {
   const [search, setSearch]             = useState('');
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [showModal, setShowModal]       = useState(false);
+  const [deletingCompany, setDeletingCompany] = useState(null);
+  const [deleteError, setDeleteError]   = useState('');
 
   useEffect(() => { loadCompanies(); }, []);
 
@@ -46,12 +50,11 @@ const Companies = () => {
   const handleRowClick = (company) => { setSelectedCompany(company); setShowModal(true); };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this company?')) return;
     try {
-      await adminApi.deleteCompany(selectedCompany.id);
-      setShowModal(false);
+      await adminApi.deleteCompany(deletingCompany.id);
+      setDeletingCompany(null);
       loadCompanies();
-    } catch { alert('Failed to delete company'); }
+    } catch { setDeletingCompany(null); setDeleteError('Failed to delete company'); }
   };
 
   const columns = [
@@ -63,10 +66,7 @@ const Companies = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Company Management</h2>
-      </div>
+    <AdminPage title="Company Management" error={deleteError}>
 
       <div className="mb-6">
         <SearchBar onSearch={handleSearch} placeholder="Search by name, industry, size or location…" />
@@ -103,11 +103,18 @@ const Companies = () => {
             <p className="mt-1 text-sm text-gray-900">{selectedCompany?.location}</p>
           </div>
           <div className="flex space-x-3 pt-4">
-            <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Company</button>
+            <button onClick={() => { setShowModal(false); setDeletingCompany(selectedCompany); }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Company</button>
           </div>
         </div>
       </Modal>
-    </div>
+      {deletingCompany && (
+        <ConfirmDeleteModal
+          message={`Delete company "${deletingCompany.name}"? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingCompany(null)}
+        />
+      )}
+    </AdminPage>
   );
 };
 

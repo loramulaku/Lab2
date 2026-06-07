@@ -183,7 +183,7 @@ export default function JobFormModal({
   // ── Step 0 ─────────────────────────────────────────────────────────────────
   if (step === 0) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
         <div className="bg-white w-full max-w-lg border border-gray-200 shadow-xl" onMouseDown={e => e.stopPropagation()}>
           <div className="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
@@ -234,7 +234,7 @@ export default function JobFormModal({
   const showSchedule  = !isFreelance && form.employmentType === 'internship';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
       <div className="bg-white w-full max-w-2xl border border-gray-200 shadow-xl flex flex-col max-h-[88vh]"
         onMouseDown={e => e.stopPropagation()}>
 

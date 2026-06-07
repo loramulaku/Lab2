@@ -11,7 +11,7 @@ export default function ThemeEditor() {
   const iframePath = pageInfo?.path ?? '/';
 
   return (
-    <div className="flex -m-8" style={{ height: 'calc(100vh - 4rem)' }}>
+    <div className="flex -m-6 sm:-m-8" style={{ height: 'calc(100vh - 4rem)' }}>
       <ThemePageSidebar
         pages={THEME_EDITOR_PAGES}
         activePage={editor.activePage}

@@ -32,8 +32,9 @@ export function normalizeThemeConfig(raw = {}) {
         return {
           ...defaultSection,
           ...match,
-          visible: match.visible ?? defaultSection.visible,
-          order:   match.order   ?? defaultSection.order,
+          // Always use default order and visibility so new sections are never hidden/reordered by stale DB data
+          visible: defaultSection.visible,
+          order:   defaultSection.order,
           settings: {
             ...defaultSection.settings,
             ...(match.settings && typeof match.settings === 'object' ? match.settings : {}),

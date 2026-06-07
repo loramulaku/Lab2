@@ -4,6 +4,7 @@ import DataTable from '../../components/admin/DataTable';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import { AdminPage } from '../../components/layout';
 
 export default function Categories() {
   const [all,       setAll]       = useState([]);
@@ -15,6 +16,7 @@ export default function Categories() {
   const [name,      setName]      = useState('');
   const [formError, setFormError] = useState('');
   const [saving,    setSaving]    = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => { load(); }, []);
 
@@ -52,7 +54,7 @@ export default function Categories() {
 
   const handleDelete = async () => {
     try { await adminApi.deleteCategory(deleting.id); setDeleting(null); load(); }
-    catch { alert('Failed to delete category'); }
+    catch { setDeleting(null); setDeleteError('Failed to delete category'); }
   };
 
   const columns = [
@@ -70,9 +72,8 @@ export default function Categories() {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Job Categories</h2>
+    <AdminPage title="Job Categories" error={deleteError}>
+      <div className="flex justify-end mb-6">
         <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">+ Add Category</button>
       </div>
       <p className="text-sm text-gray-500 mb-6">
@@ -113,6 +114,6 @@ export default function Categories() {
           onCancel={() => setDeleting(null)}
         />
       )}
-    </div>
+    </AdminPage>
   );
 }

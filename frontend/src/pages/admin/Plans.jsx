@@ -4,6 +4,7 @@ import DataTable from '../../components/admin/DataTable';
 import SearchBar from '../../components/admin/SearchBar';
 import Modal from '../../components/admin/Modal';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteModal';
+import { AdminPage } from '../../components/layout';
 
 const Plans = () => {
   const [allPlans, setAllPlans]       = useState([]);
@@ -15,6 +16,7 @@ const Plans = () => {
   const [formData, setFormData]       = useState({ name: '', price: '', jobLimit: '' });
   const [formError, setFormError]     = useState('');
   const [submitting, setSubmitting]   = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => { loadPlans(); }, []);
 
@@ -76,7 +78,7 @@ const Plans = () => {
 
   const handleDelete = async () => {
     try { await adminApi.deletePlan(deletingPlan.id); setDeletingPlan(null); loadPlans(); }
-    catch { alert('Failed to deactivate plan'); }
+    catch { setDeletingPlan(null); setDeleteError('Failed to deactivate plan'); }
   };
 
   const columns = [
@@ -106,9 +108,8 @@ const Plans = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Subscription Plans</h2>
+    <AdminPage title="Subscription Plans" error={deleteError}>
+      <div className="flex justify-end mb-6">
         <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">+ Add Plan</button>
       </div>
 
@@ -160,7 +161,7 @@ const Plans = () => {
           onCancel={() => setDeletingPlan(null)}
         />
       )}
-    </div>
+    </AdminPage>
   );
 };
 

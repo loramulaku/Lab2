@@ -12,6 +12,7 @@ export default function JobSeekers() {
   const [error, setError]               = useState('');
   const [scheduleFor, setScheduleFor]   = useState(null);
   const [movingId, setMovingId]         = useState(null);
+  const [moveError, setMoveError]       = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,7 +47,7 @@ export default function JobSeekers() {
       await pipelineService.moveCandidate(a.id, firstStage.id, null);
       navigate('/recruiter/pipeline/board');
     } catch {
-      alert('Could not move candidate to pipeline. Please try again.');
+      setMoveError('Could not move candidate to pipeline. Please try again.');
     } finally {
       setMovingId(null);
     }
@@ -54,7 +55,8 @@ export default function JobSeekers() {
 
   return (
     <RecruiterLayout title="Job Seekers">
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+      {error     && <p className="text-sm text-red-600 mb-4">{error}</p>}
+      {moveError && <p className="text-sm text-red-600 mb-4">{moveError}</p>}
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : applicants.length === 0 ? (
           <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
@@ -132,7 +134,7 @@ function ScheduleModal({ applicant, onClose, onScheduled }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
       <div className="bg-white w-full max-w-sm border border-gray-200 shadow-xl" onMouseDown={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-gray-100">
           <h3 className="font-semibold text-gray-900">Schedule Interview</h3>

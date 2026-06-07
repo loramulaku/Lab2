@@ -3,6 +3,7 @@ import { adminApi } from '../../services/adminApi';
 import DataTable from '../../components/admin/DataTable';
 import Pagination from '../../components/admin/Pagination';
 import SearchBar from '../../components/admin/SearchBar';
+import { AdminPage } from '../../components/layout';
 
 const LIMIT = 10;
 
@@ -68,10 +69,7 @@ const Applications = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Application Monitoring</h2>
-      </div>
+    <AdminPage title="Application Monitoring">
 
       <div className="flex space-x-4 mb-6">
         <div className="flex-1">
@@ -92,7 +90,7 @@ const Applications = () => {
       {!loading && totalPages > 1 && (
         <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
       )}
-    </div>
+    </AdminPage>
   );
 };
 
