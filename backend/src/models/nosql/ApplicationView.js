@@ -11,6 +11,7 @@ const ApplicationViewSchema = new mongoose.Schema(
     jobId:                { type: Number },
     userId:               { type: Number },
     stageId:              { type: Number },
+    stageName:            { type: String, default: null },
     status:               { type: String },
     appliedAt:            { type: Date },
     interviewAt:          { type: Date, default: null },

@@ -450,9 +450,63 @@ const statusBadge = (s) => APP_STATUS[s] ?? { label: s, cls: 'bg-gray-100 text-g
 const fmtApplied  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
 
 // ── Applications Tab ──────────────────────────────────────────────────────────
+function NotesModal({ applicationId, jobTitle, onClose }) {
+  const [notes, setNotes] = useState(null);
+  const [err, setErr]     = useState('');
+
+  useEffect(() => {
+    candidateService.getApplicationNotes(applicationId)
+      .then(setNotes)
+      .catch(() => setErr('Failed to load notes.'));
+  }, [applicationId]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div className="bg-white w-full max-w-lg rounded-xl border border-gray-200 shadow-2xl overflow-hidden"
+        onMouseDown={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <div>
+            <h3 className="font-semibold text-gray-900">Recruiter Notes</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{jobTitle}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <div className="p-5 max-h-96 overflow-y-auto">
+          {err && <p className="text-sm text-red-500">{err}</p>}
+          {!notes && !err && <p className="text-sm text-gray-400">Loading…</p>}
+          {notes && notes.length === 0 && <p className="text-sm text-gray-400">No notes yet.</p>}
+          {notes && notes.length > 0 && (
+            <div className="space-y-3">
+              {notes.map(n => (
+                <div key={n.id} className="border border-gray-100 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    {n.stageName && (
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">
+                        {n.stageName}
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400 ml-auto">{new Date(n.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{n.note}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="px-5 py-3 border-t border-gray-100 text-right">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ApplicationsTab() {
-  const [apps, setApps]     = useState(null);
-  const [error, setError]   = useState('');
+  const [apps, setApps]         = useState(null);
+  const [error, setError]       = useState('');
+  const [notesFor, setNotesFor] = useState(null);  // { applicationId, jobTitle }
 
   useEffect(() => {
     candidateService.myApplications({ limit: 100 })
@@ -468,24 +522,59 @@ function ApplicationsTab() {
   );
 
   return (
-    <div className="divide-y divide-gray-100">
-      {apps.map(app => {
-        const badge = statusBadge(app.status);
-        return (
-          <div key={app.id} className="flex items-center gap-4 py-3">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? `Job #${app.jobId}`}</p>
-              <p className="text-xs text-gray-500">{app.companyName ?? '—'}</p>
+    <>
+      <div className="divide-y divide-gray-100">
+        {apps.map(app => {
+          const badge = statusBadge(app.status);
+          return (
+            <div key={app.id} className="py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? `Job #${app.jobId}`}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{app.companyName ?? '—'}</p>
+                  {/* Pipeline stage */}
+                  {app.stageName && (
+                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full font-medium">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      {app.stageName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
+                  <span className={`text-xs px-2 py-0.5 font-medium rounded ${badge.cls}`}>{badge.label}</span>
+                </div>
+              </div>
+              {/* Action buttons */}
+              <div className="flex gap-2 mt-2.5">
+                <Link
+                  to={`/job/${app.jobId}`}
+                  className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                >
+                  View Job
+                </Link>
+                <button
+                  onClick={() => setNotesFor({ applicationId: app.id, jobTitle: app.jobTitle ?? `Job #${app.jobId}` })}
+                  className="text-xs px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors"
+                >
+                  Recruiter Notes
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
-              <span className={`text-xs px-2 py-0.5 font-medium ${badge.cls}`}>{badge.label}</span>
-              <Link to={`/job/${app.jobId}`} className="text-xs text-blue-600 hover:underline">View</Link>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+
+      {notesFor && (
+        <NotesModal
+          applicationId={notesFor.applicationId}
+          jobTitle={notesFor.jobTitle}
+          onClose={() => setNotesFor(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -560,13 +649,12 @@ export default function MyProfile() {
 
   useEffect(() => { load(); }, []);
 
-  // Deep-link from notification/email: ?tab=freelance auto-selects the Freelance tab.
-  // Depends on both data (initial load) and searchParams (when already mounted and URL changes).
+  // Deep-link: ?tab=applications or ?tab=freelance
   useEffect(() => {
     if (!data) return;
-    if (searchParams.get('tab')?.toLowerCase() === 'freelance' && data.freelanceActive) {
-      setTab('Freelance');
-    }
+    const t = searchParams.get('tab')?.toLowerCase();
+    if (t === 'applications') setTab('Applications');
+    else if (t === 'freelance' && data.freelanceActive) setTab('Freelance');
   }, [data, searchParams]);
 
   const handleSaveProfile   = async (form) => { await candidateService.updateProfile(form); await load(); };

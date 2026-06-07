@@ -15,7 +15,8 @@ const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'ht
 
 export function NotificationProvider({ children }) {
   const { token, user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications]       = useState([]);
+  const [lastApplicationEvent, setLastAppEvent] = useState(null);
   const socketRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -51,6 +52,10 @@ export function NotificationProvider({ children }) {
       setNotifications(prev => [n, ...prev]);
     });
 
+    socket.on('application:new', (data) => {
+      setLastAppEvent({ ...data, _ts: Date.now() });
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -70,7 +75,7 @@ export function NotificationProvider({ children }) {
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent }}>
       {children}
     </NotificationContext.Provider>
   );

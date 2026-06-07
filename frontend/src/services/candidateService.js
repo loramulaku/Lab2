@@ -6,7 +6,8 @@ const candidateService = {
   setFreelanceMode: (active)     => api.put('/candidate/freelance', { active }).then(r => r.data),
 
   applyToJob:       (jobId, data = {}) => api.post('/candidate/applications', { jobId, ...data }).then(r => r.data),
-  myApplications:   (params)     => api.get('/candidate/applications', { params }).then(r => r.data),
+  myApplications:       (params) => api.get('/candidate/applications', { params }).then(r => r.data),
+  getApplicationNotes: (applicationId) => api.get(`/candidate/applications/${applicationId}/notes`).then(r => r.data),
 
   uploadCv: (file) => {
     const form = new FormData();

@@ -31,22 +31,18 @@ export default function JobSeekers() {
   const handleMoveToPipeline = async (a) => {
     setMovingId(a.id);
     try {
-      // Fetch pipeline to get first stage
       const pipeline = await pipelineService.getMyPipeline().catch(err => {
         if (err?.response?.status === 404) return null;
         throw err;
       });
-
       if (!pipeline || !pipeline.stages?.length) {
         navigate('/recruiter/pipeline/create');
         return;
       }
-
-      const firstStage = pipeline.stages[0];
-      await pipelineService.moveCandidate(a.id, firstStage.id, null);
+      // Navigate to board — recruiter drags the candidate and fills mandatory note there
       navigate('/recruiter/pipeline/board');
     } catch {
-      alert('Could not move candidate to pipeline. Please try again.');
+      alert('Could not open pipeline. Please try again.');
     } finally {
       setMovingId(null);
     }
