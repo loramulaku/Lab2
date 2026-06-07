@@ -147,11 +147,24 @@ export default function Jobs() {
   };
 
   const submitBid = async (data) => {
-    await freelanceService.submitBid(bidJob.id, data);
     const jobId = bidJob.id;
-    setBidJobIds(s => new Set([...s, jobId]));
-    setFeedback((f) => ({ ...f, [jobId]: { ok: true, msg: 'Bid submitted ✓' } }));
-    setBidJob(null);
+    try {
+      await freelanceService.submitBid(jobId, data);
+      setBidJobIds(s => new Set([...s, jobId]));
+      setFeedback((f) => ({ ...f, [jobId]: { ok: true, msg: 'Bid submitted ✓' } }));
+      setBidJob(null);
+    } catch (err) {
+      const status = err?.response?.status;
+      const code   = err?.response?.data?.code;
+      if (status === 409 && code === 'ALREADY_BID') {
+        // Bid exists in DB but wasn't in the local state (sync gap) — update UI.
+        setBidJobIds(s => new Set([...s, jobId]));
+        setFeedback((f) => ({ ...f, [jobId]: { ok: false, msg: 'You already have an active bid on this job' } }));
+        setBidJob(null);
+        return;
+      }
+      throw err; // Let BidModal display all other errors.
+    }
   };
 
   const hasFilter = jobType || workMode || expLevel || minSalary || maxSalary || category || activeQ || activeLoc;

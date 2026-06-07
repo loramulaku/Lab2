@@ -20,6 +20,8 @@ const JobSkill    = require('../models/sql/JobSkill');
 const Skill       = require('../models/sql/Skill');
 const JobCategory = require('../models/sql/JobCategory');
 const Category    = require('../models/sql/Category');
+const Application = require('../models/sql/Application');
+const Bid         = require('../models/sql/Bid');
 const FailedSync  = require('../models/sql/FailedSync');
 const jobViewRepo = require('../repositories/mongodb/jobView.repo');
 
@@ -61,7 +63,13 @@ async function syncJob(jobId) {
     categories = catRows.map(c => c.name);
   }
 
-  // 5. Upsert MongoDB projection  (_id = MySQL job.id)
+  // 5. Live counts from MySQL
+  const [applicationCount, bidCount] = await Promise.all([
+    Application.count({ where: { jobId } }),
+    Bid.count({ where: { jobId } }),
+  ]);
+
+  // 6. Upsert MongoDB projection  (_id = MySQL job.id)
   await jobViewRepo.upsert({
     id:              job.id,
     recruiterId:     job.recruiterId,
@@ -94,6 +102,8 @@ async function syncJob(jobId) {
     schedule: job.schedule ?? null,
     skills,
     categories,
+    applicationCount,
+    bidCount,
   });
 
   // Sync succeeded — clear any previous failure record

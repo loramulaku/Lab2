@@ -16,6 +16,7 @@ const BidViewSchema = new mongoose.Schema(
     milestones: { type: mongoose.Schema.Types.Mixed, default: null },
     portfolioLinks: { type: mongoose.Schema.Types.Mixed, default: null },
     skillsSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
+    companyId: { type: Number, default: null },
     jobTitle: { type: String },
     companyName: { type: String },
     freelancerFirstName: { type: String },
@@ -26,6 +27,7 @@ const BidViewSchema = new mongoose.Schema(
 
 BidViewSchema.index({ jobId: 1 });
 BidViewSchema.index({ freelancerId: 1 });
+BidViewSchema.index({ companyId: 1 });
 BidViewSchema.index({ status: 1 });
 
 module.exports = mongoose.model('BidView', BidViewSchema);

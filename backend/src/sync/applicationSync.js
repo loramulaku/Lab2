@@ -15,6 +15,7 @@ const Company     = require('../models/sql/Company');
 const User        = require('../models/sql/User');
 const FailedSync  = require('../models/sql/FailedSync');
 const applicationRepo = require('../repositories/mongodb/application.repo');
+const JobView     = require('../models/nosql/JobView');
 
 async function syncApplication(applicationId) {
   const app = await Application.findByPk(applicationId);
@@ -54,6 +55,11 @@ async function syncApplication(applicationId) {
     applicantLastName:  user?.lastName ?? null,
     applicantEmail:     user?.email ?? null,
   });
+
+  if (app.jobId) {
+    const count = await Application.count({ where: { jobId: app.jobId } });
+    await JobView.updateOne({ _id: app.jobId }, { $set: { applicationCount: count } });
+  }
 
   await FailedSync.destroy({ where: { entityType: 'application', entityId: applicationId } });
 }

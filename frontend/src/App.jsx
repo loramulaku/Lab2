@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemePreviewBridge from './components/admin/ThemePreviewBridge';
 import { AdminShell } from './components/layout';
@@ -217,11 +218,13 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider>
-          {/* Activates click-to-select and highlight when running inside the ThemeEditor iframe */}
-          <ThemePreviewBridge />
-          <AppShell />
-        </ThemeProvider>
+        <NotificationProvider>
+          <ThemeProvider>
+            {/* Activates click-to-select and highlight when running inside the ThemeEditor iframe */}
+            <ThemePreviewBridge />
+            <AppShell />
+          </ThemeProvider>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );

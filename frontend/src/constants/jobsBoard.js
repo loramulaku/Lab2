@@ -6,12 +6,14 @@ export const JOB_TYPES = [
 ];
 
 export const WORK_MODES = [
+  { value: '',        label: 'Any'     },
   { value: 'remote',  label: 'Remote'  },
   { value: 'on-site', label: 'On-site' },
   { value: 'hybrid',  label: 'Hybrid'  },
 ];
 
 export const EXP_LEVELS = [
+  { value: '',       label: 'Any'      },
   { value: 'junior', label: 'Junior'    },
   { value: 'mid',    label: 'Mid-level' },
   { value: 'senior', label: 'Senior'    },
