@@ -1,18 +1,20 @@
-const CreatePipelineCommand       = require('../application/pipeline/commands/CreatePipeline.command');
-const EditPipelineCommand         = require('../application/pipeline/commands/EditPipeline.command');
-const MoveCandidateToStageCommand = require('../application/pipeline/commands/MoveCandidateToStage.command');
-const AddPipelineNoteCommand      = require('../application/pipeline/commands/AddPipelineNote.command');
-const GetCompanyPipelineQuery     = require('../application/pipeline/queries/GetCompanyPipeline.query');
-const GetPipelineBoardQuery       = require('../application/pipeline/queries/GetPipelineBoard.query');
-const GetTransitionNotesQuery     = require('../application/pipeline/queries/GetTransitionNotes.query');
+const CreatePipelineCommand        = require('../application/pipeline/commands/CreatePipeline.command');
+const EditPipelineCommand          = require('../application/pipeline/commands/EditPipeline.command');
+const MoveCandidateToStageCommand  = require('../application/pipeline/commands/MoveCandidateToStage.command');
+const AddPipelineNoteCommand       = require('../application/pipeline/commands/AddPipelineNote.command');
+const RejectApplicationCommand     = require('../application/pipeline/commands/RejectApplication.command');
+const GetCompanyPipelineQuery      = require('../application/pipeline/queries/GetCompanyPipeline.query');
+const GetPipelineBoardQuery        = require('../application/pipeline/queries/GetPipelineBoard.query');
+const GetTransitionNotesQuery      = require('../application/pipeline/queries/GetTransitionNotes.query');
 
-const createPipelineHandler       = require('../application/pipeline/handlers/CreatePipelineHandler');
-const editPipelineHandler         = require('../application/pipeline/handlers/EditPipelineHandler');
-const getCompanyPipelineHandler   = require('../application/pipeline/handlers/GetCompanyPipelineHandler');
-const getPipelineBoardHandler     = require('../application/pipeline/handlers/GetPipelineBoardHandler');
-const getTransitionNotesHandler   = require('../application/pipeline/handlers/GetTransitionNotesHandler');
-const moveCandidateToStageHandler = require('../application/pipeline/handlers/MoveCandidateToStageHandler');
-const addPipelineNoteHandler      = require('../application/pipeline/handlers/AddPipelineNoteHandler');
+const createPipelineHandler        = require('../application/pipeline/handlers/CreatePipelineHandler');
+const editPipelineHandler          = require('../application/pipeline/handlers/EditPipelineHandler');
+const getCompanyPipelineHandler    = require('../application/pipeline/handlers/GetCompanyPipelineHandler');
+const getPipelineBoardHandler      = require('../application/pipeline/handlers/GetPipelineBoardHandler');
+const getTransitionNotesHandler    = require('../application/pipeline/handlers/GetTransitionNotesHandler');
+const moveCandidateToStageHandler  = require('../application/pipeline/handlers/MoveCandidateToStageHandler');
+const addPipelineNoteHandler       = require('../application/pipeline/handlers/AddPipelineNoteHandler');
+const rejectApplicationHandler     = require('../application/pipeline/handlers/RejectApplicationHandler');
 
 const pipelineRepo     = require('../repositories/mysql/pipeline.repo');
 const RecruiterProfile = require('../models/sql/RecruiterProfile');
@@ -131,8 +133,25 @@ const addStage = async (req, res) => {
 
 const getStageHistory = (_req, res) => res.json([]);
 
+// POST /api/pipeline/reject — recruiter rejects a candidate on the last stage.
+const rejectApplication = async (req, res, next) => {
+  try {
+    const { applicationId } = req.body;
+    if (!applicationId) return res.status(400).json({ message: 'applicationId required' });
+    const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'Company profile not set up yet' });
+    const result = await rejectApplicationHandler.handle(
+      new RejectApplicationCommand({ applicationId: Number(applicationId), companyId })
+    );
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  }
+};
+
 module.exports = {
   createPipeline, editPipeline, getMyPipeline, getPipelineBoard, getTransitionNotes,
-  moveCandidate, addNote,
+  moveCandidate, addNote, rejectApplication,
   getPipelineByJob, addStage, getStageHistory,
 };

@@ -16,8 +16,8 @@ async function syncContract(contractId) {
     return;
   }
 
-  const job        = c.jobId ? await Job.findByPk(c.jobId) : null;
-  const company    = c.companyId ? await Company.findByPk(c.companyId) : null;
+  const job        = c.jobId       ? await Job.findByPk(c.jobId)       : null;
+  const company    = c.companyId   ? await Company.findByPk(c.companyId) : null;
   const freelancer = c.freelancerId ? await User.findByPk(c.freelancerId) : null;
 
   await contractViewRepo.upsert({
@@ -25,16 +25,20 @@ async function syncContract(contractId) {
     jobId:               c.jobId,
     freelancerId:        c.freelancerId,
     companyId:           c.companyId,
-    bidId:               c.bidId,
+    bidId:               c.bidId        ?? null,
+    invitationId:        c.invitationId  ?? null,
+    applicationId:       c.applicationId ?? null,
+    source:              c.source        ?? null,
     agreedPrice:         c.agreedPrice ? Number(c.agreedPrice) : null,
     startDate:           c.startDate,
     endDate:             c.endDate,
     status:              c.status,
+    approvedAt:          c.approvedAt    ?? null,
     price:               c.price ? Number(c.price) : null,
-    jobTitle:            job?.title ?? null,
-    companyName:         company?.name ?? null,
+    jobTitle:            job?.title       ?? null,
+    companyName:         company?.name    ?? null,
     freelancerFirstName: freelancer?.firstName ?? null,
-    freelancerLastName:  freelancer?.lastName ?? null,
+    freelancerLastName:  freelancer?.lastName  ?? null,
   });
 
   await FailedSync.destroy({ where: { entityType: 'contract', entityId: contractId } });

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import recruiterService from '../../services/recruiterService';
 import { subscriptionService } from '../../services/subscriptionService';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const STATUS_CLS = {
   pending:   'bg-yellow-100 text-yellow-800',
@@ -27,25 +28,39 @@ export default function RecruiterDashboard() {
   const [freelancers, setFreelancers] = useState([]);
   const [loading, setLoading]       = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [jobsRes, subRes, candRes, freRes] = await Promise.allSettled([
-          recruiterService.listJobs({ limit: 100 }),
-          subscriptionService.getMySubscription(),
-          recruiterService.getApplicants({ limit: 5 }),
-          recruiterService.getFreelancers({ limit: 5 }),
-        ]);
-        if (jobsRes.status === 'fulfilled') setJobs(jobsRes.value.data ?? []);
-        if (subRes.status  === 'fulfilled') setSub(subRes.value);
-        if (candRes.status === 'fulfilled') setCandidates(candRes.value.data ?? []);
-        if (freRes.status  === 'fulfilled') setFreelancers(freRes.value.data ?? []);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+  const { notifications } = useNotifications();
+  const prevNotifLenRef   = useRef(0);
+
+  const load = useCallback(async () => {
+    try {
+      const [jobsRes, subRes, candRes, freRes] = await Promise.allSettled([
+        recruiterService.listJobs({ limit: 100 }),
+        subscriptionService.getMySubscription(),
+        recruiterService.getApplicants({ limit: 5 }),
+        recruiterService.getFreelancers({ limit: 5 }),
+      ]);
+      if (jobsRes.status === 'fulfilled') setJobs(jobsRes.value.data ?? []);
+      if (subRes.status  === 'fulfilled') setSub(subRes.value);
+      if (candRes.status === 'fulfilled') setCandidates(candRes.value.data ?? []);
+      if (freRes.status  === 'fulfilled') setFreelancers(freRes.value.data ?? []);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Re-fetch counts when a new application or bid notification arrives
+  useEffect(() => {
+    const len = notifications.length;
+    if (len > prevNotifLenRef.current) {
+      const latest = notifications[0];
+      if (latest?.type === 'application_received' || latest?.type === 'bid_received') {
+        load();
+      }
+    }
+    prevNotifLenRef.current = len;
+  }, [notifications, load]);
 
   const open   = jobs.filter(j => j.status === 'open').length;
   const closed = jobs.filter(j => j.status === 'closed').length;

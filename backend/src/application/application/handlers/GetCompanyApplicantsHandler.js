@@ -8,7 +8,7 @@ class GetCompanyApplicantsHandler {
       status:            query.status,
       page:              query.page,
       limit:             query.limit,
-      jobEmploymentType: 'standard-employment',
+      jobEmploymentType: { $ne: 'freelance' },
     });
   }
 }

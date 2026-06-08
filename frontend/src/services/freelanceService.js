@@ -32,6 +32,7 @@ const freelanceService = {
   myBids:          (params)        => api.get(`/me/bids${qs(params)}`).then(r => r.data),
   withdrawBid:     (bidId)         => api.patch(`/bids/${bidId}/withdraw`).then(r => r.data),
   myInvitations:   (params)        => api.get(`/me/invitations${qs(params)}`).then(r => r.data),
+  confirmInvitation:(id)           => api.post(`/invitations/${id}/confirm`).then(r => r.data),
   acceptInvitation:(id)            => api.post(`/invitations/${id}/accept`).then(r => r.data),
   rejectInvitation:(id)            => api.post(`/invitations/${id}/reject`).then(r => r.data),
 
@@ -47,6 +48,9 @@ const freelanceService = {
   // ── Contracts (both sides) ───────────────────────────────────────────────
   myContracts:     (params)        => api.get(`/contracts${qs(params)}`).then(r => r.data),
   getContract:     (id)            => api.get(`/contracts/${id}`).then(r => r.data),
+  createContract:  (data)          => api.post('/contracts', data).then(r => r.data),
+  approveContract: (id)            => api.post(`/contracts/${id}/approve`).then(r => r.data),
+  hiredRecords:    (params)        => api.get(`/contracts${qs({ ...params, status: 'active' })}`).then(r => r.data),
 };
 
 export default freelanceService;

@@ -14,6 +14,8 @@ const pipelineService = {
     api.post('/pipeline/move', { applicationId, toStageId, note, interviewDate }).then(r => r.data),
   addNote: (applicationId, stageId, note) =>
     api.post('/pipeline/note', { applicationId, stageId, note }).then(r => r.data),
+  rejectApplication: (applicationId) =>
+    api.post('/pipeline/reject', { applicationId }).then(r => r.data),
 };
 
 export default pipelineService;

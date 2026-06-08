@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../../components/recruiter/RecruiterLayout';
+import ContractModal from '../../../components/recruiter/ContractModal';
 import pipelineService from '../../../services/pipelineService';
 
 const COLUMN_COLORS = [
@@ -210,6 +211,7 @@ export default function ShowPipeline() {
   const [dragCard, setDragCard]         = useState(null);
   const [overStage, setOverStage]       = useState(null);
   const [showSetup, setShowSetup]       = useState(false);
+  const [contractTarget, setContractTarget] = useState(null); // candidate being offered a contract
   const debounceRef                     = useRef(null);
 
   const load = useCallback(async (q = search) => {
@@ -265,6 +267,15 @@ export default function ShowPipeline() {
 
   const onDragEnd = () => { setOverStage(null); setDragCard(null); };
 
+  const rejectCandidate = async (applicationId) => {
+    try {
+      await pipelineService.rejectApplication(applicationId);
+      load();
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to reject candidate.');
+    }
+  };
+
   const handleTransitionConfirmed = async ({ applicationId, toStageId, note, interviewDate }) => {
     setTransModal(null);
     setBoard(prev => {
@@ -298,8 +309,10 @@ export default function ShowPipeline() {
 
   if (loading && !board) return (
     <RecruiterLayout title="Hiring Pipeline">
-      <div className="flex gap-4">
-        {[1,2,3,4].map(i => <div key={i} className="flex-shrink-0 w-64 bg-gray-100 rounded-lg h-96 animate-pulse" />)}
+      <div className="w-full overflow-x-auto pb-2">
+        <div className="flex gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="flex-shrink-0 w-64 bg-gray-100 rounded-lg h-96 animate-pulse" />)}
+        </div>
       </div>
     </RecruiterLayout>
   );
@@ -356,8 +369,11 @@ export default function ShowPipeline() {
 
       {/* Board */}
       {board && (
-        <div className="flex gap-4 overflow-x-auto pb-6 min-h-[70vh] items-start">
-          {board.stages.map((stage, si) => (
+        <div className="w-full overflow-x-auto board-scrollbar pb-3">
+          <div className="flex gap-4 min-h-[70vh] items-start">
+            {board.stages.map((stage, si) => {
+            const isLastStage = si === board.stages.length - 1;
+            return (
             <div
               key={stage.id}
               onDragOver={e => onDragOver(e, stage.id)}
@@ -381,6 +397,7 @@ export default function ShowPipeline() {
                     key={c.applicationId}
                     candidate={c}
                     stageId={stage.id}
+                    isLastStage={isLastStage}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
                     onViewDetails={() => navigate(`/recruiter/pipeline/candidate/${c.applicationId}`)}
@@ -390,6 +407,8 @@ export default function ShowPipeline() {
                       stageName:     stage.name,
                       candidateName: `${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || `Candidate #${c.applicationId}`,
                     })}
+                    onReject={() => rejectCandidate(c.applicationId)}
+                    onHire={() => setContractTarget(c)}
                   />
                 ))}
                 {stage.candidates.length === 0 && (
@@ -399,8 +418,27 @@ export default function ShowPipeline() {
                 )}
               </div>
             </div>
-          ))}
+            );
+            })}
+          </div>
         </div>
+      )}
+
+      {contractTarget && (
+        <ContractModal
+          source="pipeline"
+          sourceId={contractTarget.applicationId}
+          personName={`${contractTarget.firstName ?? ''} ${contractTarget.lastName ?? ''}`.trim() || `Candidate #${contractTarget.applicationId}`}
+          context={{
+            job: { title: contractTarget.jobTitle },
+            candidate: {
+              phone: contractTarget.phone,
+              email: contractTarget.email,
+            },
+          }}
+          onClose={() => setContractTarget(null)}
+          onCreated={() => { setContractTarget(null); load(); }}
+        />
       )}
 
       {transModal && (
@@ -422,7 +460,7 @@ export default function ShowPipeline() {
   );
 }
 
-function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetails, onAddNote }) {
+function CandidateCard({ candidate, stageId, isLastStage, onDragStart, onDragEnd, onViewDetails, onAddNote, onReject, onHire }) {
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
@@ -492,6 +530,23 @@ function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetai
           Add Note
         </button>
       </div>
+
+      {isLastStage && (
+        <div className="flex gap-1.5 mt-1.5 pt-1.5 border-t border-gray-100">
+          <button
+            onClick={onReject}
+            className="flex-1 text-[11px] font-medium py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded transition-colors"
+          >
+            Rejected
+          </button>
+          <button
+            onClick={onHire}
+            className="flex-1 text-[11px] font-medium py-1.5 bg-green-600 text-white hover:bg-green-700 rounded transition-colors"
+          >
+            Hired
+          </button>
+        </div>
+      )}
     </div>
   );
 }

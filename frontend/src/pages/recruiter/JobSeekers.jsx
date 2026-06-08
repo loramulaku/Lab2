@@ -105,6 +105,27 @@ function ApplicationDetailModal({ app, onClose }) {
         </div>
 
         <div className="p-5 overflow-y-auto space-y-5">
+
+          {/* ── Job section ─────────────────────────────────────────── */}
+          <div className="border border-blue-100 bg-blue-50 rounded-lg px-4 py-3">
+            <p className="text-[11px] font-semibold text-blue-400 uppercase tracking-wide mb-2">Job Applied For</p>
+            <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? '—'}</p>
+            <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-gray-500">
+              {app.companyName && <span>{app.companyName}</span>}
+              {app.jobEmploymentType && (
+                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium capitalize">
+                  {app.jobEmploymentType.replace(/-/g, ' ')}
+                </span>
+              )}
+              {app.stageName && (
+                <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
+                  Pipeline: {app.stageName}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* ── Applicant details ─────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Applied" value={app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'} />
             <Field label="Phone" value={app.phone ?? '—'} />

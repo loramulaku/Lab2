@@ -12,8 +12,9 @@ router.put('/',       ...recruiter, c.editPipeline);   // destructive edit — r
 router.get('/my',     ...recruiter, c.getMyPipeline);
 router.get('/board',  ...recruiter, c.getPipelineBoard);
 router.get('/notes',  ...recruiter, c.getTransitionNotes);
-router.post('/move',  ...recruiter, c.moveCandidate);
-router.post('/note',  ...recruiter, c.addNote);
+router.post('/move',   ...recruiter, c.moveCandidate);
+router.post('/note',   ...recruiter, c.addNote);
+router.post('/reject', ...recruiter, c.rejectApplication);
 
 // Legacy (kept for any old callers)
 router.get('/job/:jobId',              ...recruiter, c.getPipelineByJob);

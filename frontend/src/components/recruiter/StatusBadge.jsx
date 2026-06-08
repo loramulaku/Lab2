@@ -4,6 +4,7 @@ const CLS = {
   closed:    'bg-gray-200 text-gray-700',
   archived:  'bg-gray-100 text-gray-400',
   pending:   'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-teal-100 text-teal-700',
   accepted:  'bg-green-100 text-green-800',
   rejected:  'bg-red-100 text-red-700',
   withdrawn: 'bg-gray-100 text-gray-500',

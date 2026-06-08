@@ -119,6 +119,45 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
   }
 }
 
+/* ── Board scrollbar — light grey, horizontal, matches the board surface ────── */
+.board-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+.board-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.board-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+.board-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.board-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Sidebar scrollbar — blends into dark navy #0c1322 ─────────────────────── */
+.sidebar-scrollbar {
+  scrollbar-width: thin;                      /* Firefox */
+  scrollbar-color: #1e2d47 #0c1322;           /* Firefox: thumb track */
+}
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #0c1322;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e2d47;
+  border-radius: 2px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2a3d5c;
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.15s ease-out;
