@@ -2,8 +2,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
-  Plus, List, Archive,
-  Users, KanbanSquare, Calendar, StickyNote,
+  List, Archive,
+  Users, KanbanSquare, StickyNote,
   Gavel, Send, UserCheck, FileText,
   MessageCircle, Bell,
   CreditCard, ArrowUpCircle, Receipt,
@@ -26,7 +26,6 @@ const NAV_GROUPS = [
   {
     title: 'JOBS',
     items: [
-      { label: 'Post a job',      to: '/recruiter/jobs?post=1', match: '__never__', icon: Plus },
       { label: 'My job listings', to: '/recruiter/jobs',        match: '/recruiter/jobs', icon: List },
       { label: 'Archived jobs',   to: '/recruiter/jobs/archived',                         icon: Archive },
     ],
@@ -36,7 +35,6 @@ const NAV_GROUPS = [
     items: [
       { label: 'Applicants',       to: '/recruiter/applicants/job-seekers', icon: Users },
       { label: 'Hiring pipeline',  to: '/recruiter/pipeline/board',         icon: KanbanSquare },
-      { label: 'Interviews',       to: '/recruiter/pipeline/interviews',     icon: Calendar },
       { label: 'Transition notes', to: '/recruiter/pipeline/notes',         icon: StickyNote },
     ],
   },

@@ -42,10 +42,10 @@ const TeamMembers         = lazy(() => import('./pages/recruiter/TeamMembers'));
 const PaymentSuccess      = lazy(() => import('./pages/recruiter/PaymentSuccess'));
 const PaymentCancelled    = lazy(() => import('./pages/recruiter/PaymentCancelled'));
 const Chat                = lazy(() => import('./pages/chat/Chat'));
-const CreatePipeline      = lazy(() => import('./pages/recruiter/pipeline/CreatePipeline'));
-const ShowPipeline        = lazy(() => import('./pages/recruiter/pipeline/ShowPipeline'));
-const TransitionNotes     = lazy(() => import('./pages/recruiter/pipeline/TransitionNotes'));
-const CandidateInfo       = lazy(() => import('./pages/recruiter/pipeline/CandidateInfo'));
+const ShowPipeline           = lazy(() => import('./pages/recruiter/pipeline/ShowPipeline'));
+const TransitionNotes        = lazy(() => import('./pages/recruiter/pipeline/TransitionNotes'));
+const CandidateInfo          = lazy(() => import('./pages/recruiter/pipeline/CandidateInfo'));
+const RecruiterNotifications = lazy(() => import('./pages/recruiter/RecruiterNotifications'));
 
 
 // ── Suspense fallback ──────────────────────────────────────────────────────────
@@ -135,15 +135,19 @@ function AppShell() {
         ['/recruiter/company',              <CompanySetup />],
         ['/recruiter/payment/success',        <PaymentSuccess />],
         ['/recruiter/payment/cancelled',    <PaymentCancelled />],
-        ['/recruiter/pipeline/create',      <CreatePipeline />],
         ['/recruiter/pipeline/board',       <ShowPipeline />],
         ['/recruiter/pipeline/notes',       <TransitionNotes />],
         ['/recruiter/pipeline/candidate/:applicationId', <CandidateInfo />],
+        ['/recruiter/notifications',        <RecruiterNotifications />],
       ].map(([path, element]) => (
         <Route key={path} path={path} element={
           <ProtectedRoute roles={['recruiter']}>{element}</ProtectedRoute>
         } />
       ))}
+      {/* Back-compat: pipeline create merged into board */}
+      <Route path="/recruiter/pipeline/create" element={
+        <ProtectedRoute roles={['recruiter']}><Navigate to="/recruiter/pipeline/board" replace /></ProtectedRoute>
+      } />
       {/* Back-compat: old subscription link → current plan */}
       <Route path="/recruiter/subscription" element={
         <ProtectedRoute roles={['recruiter']}><Navigate to="/recruiter/billing/plan" replace /></ProtectedRoute>
