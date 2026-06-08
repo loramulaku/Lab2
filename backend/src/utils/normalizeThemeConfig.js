@@ -3,6 +3,10 @@ const { DEFAULT_THEME_CONFIG } = require('../constants/themeDefaults');
 function normalizeThemeConfig(raw = {}) {
   const result = JSON.parse(JSON.stringify(DEFAULT_THEME_CONFIG));
 
+  // Ignore saved section settings from configs that predate the current schema (_version: 3).
+  // Stale DB records will fall through to defaults automatically; new saves carry _version: 3.
+  if (raw._version !== 3) return result;
+
   if (raw.colors && typeof raw.colors === 'object') {
     result.colors = { ...result.colors, ...raw.colors };
   }

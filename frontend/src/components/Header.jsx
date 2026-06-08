@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { usePageSection } from '../context/ThemeContext';
 import candidateService from '../services/candidateService';
 import FreelanceToggle from './freelance/FreelanceToggle';
 
@@ -117,6 +118,7 @@ function Avatar({ src, firstName, lastName, size = 'md' }) {
 export default function Header() {
   const { user, logout }  = useAuth();
   const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+  const siteS             = usePageSection('global', 'site-identity');
   const navigate          = useNavigate();
   const location          = useLocation();
 
@@ -181,13 +183,19 @@ export default function Header() {
             <BriefcaseIcon />
           </div>
           <span className="text-gray-900 font-bold text-lg tracking-tight">
-            Hire<span className="text-blue-600">Wire</span>
+            {siteS.siteName || (
+              <>Hire<span className="text-blue-600">Wire</span></>
+            )}
           </span>
         </Link>
 
         {/* Nav */}
         <nav className="hidden md:flex items-center justify-center gap-6">
-          {NAV_LINKS.map(({ label, href }) => {
+          {[
+            { label: siteS.nav1Label || NAV_LINKS[0].label, href: NAV_LINKS[0].href },
+            { label: siteS.nav2Label || NAV_LINKS[1].label, href: NAV_LINKS[1].href },
+            { label: siteS.nav3Label || NAV_LINKS[2].label, href: NAV_LINKS[2].href },
+          ].map(({ label, href }) => {
             const active = location.pathname === href;
             return (
               <Link

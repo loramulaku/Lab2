@@ -1,18 +1,24 @@
 import { usePageSection } from '../../context/ThemeContext';
 
-export default function LeftPanel({ sectionId = 'login-left' }) {
-  const s = usePageSection('login', 'login-left');
+export default function LeftPanel({
+  sectionId = 'login-left',
+  pageName  = 'login',
+  bgColor:  bgColorProp,
+  heading:  headingProp,
+  subtext:  subtextProp,
+}) {
+  const s = usePageSection(pageName, sectionId);
 
-  const bgColor = s.bgColor ?? '#2B3FE7';
-  const heading = s.heading ?? 'Find work.\nHire better.\nAll in one place.';
-  const subtext = s.subtext ?? 'Browse listings, apply with one click, post roles, and manage your entire hiring pipeline — all from a single account.';
+  const bgColor = bgColorProp ?? s.bgColor ?? '#2B3FE7';
+  const heading = headingProp ?? s.heading ?? 'Find work.\nHire better.\nAll in one place.';
+  const subtext = subtextProp ?? s.subtext ?? 'Browse listings, apply with one click, post roles, and manage your entire hiring pipeline — all from a single account.';
 
   const features = [
-    'Free account forever',
-    'One-click job applications',
-    'Real-time pipeline tracking',
-    'Integrated messaging',
-    'Freelance bidding system',
+    s.feat1 || 'Free account forever',
+    s.feat2 || 'One-click job applications',
+    s.feat3 || 'Real-time pipeline tracking',
+    s.feat4 || 'Integrated messaging',
+    s.feat5 || 'Freelance bidding system',
   ];
 
   return (

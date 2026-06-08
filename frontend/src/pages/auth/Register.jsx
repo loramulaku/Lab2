@@ -23,14 +23,14 @@ const EyeIcon = ({ open }) => open ? (
 );
 
 // ── Stepper ───────────────────────────────────────────────────────────────────
-function Stepper({ step }) {
+function Stepper({ step, step1Label = 'Choose Role', step2Label = 'Create Account' }) {
   return (
     <div className="flex items-center mb-8">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
           {step > 1 ? <CheckIcon className="w-4 h-4 text-white" /> : '1'}
         </div>
-        <span className="text-sm font-medium text-blue-600">Choose Role</span>
+        <span className="text-sm font-medium text-blue-600">{step1Label}</span>
       </div>
 
       <div className={`flex-1 h-0.5 mx-3 ${step > 1 ? 'bg-blue-600' : 'bg-gray-200'}`} />
@@ -42,7 +42,7 @@ function Stepper({ step }) {
           2
         </div>
         <span className={`text-sm font-medium ${step === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-          Create Account
+          {step2Label}
         </span>
       </div>
     </div>
@@ -55,7 +55,8 @@ const INPUT = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-g
 export default function Register() {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
-  const s = usePageSection('login', 'login-left');
+  const leftS = usePageSection('register', 'register-left');
+  const formS = usePageSection('register', 'register-form');
 
   const [step, setStep]             = useState(1);
   const [role, setRole]             = useState(null);   // 'candidate' | 'recruiter'
@@ -94,19 +95,25 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: s.bgColor ?? '#2B3FE7' }}>
-      <LeftPanel />
+    <div className="min-h-screen flex" style={{ backgroundColor: leftS.bgColor ?? '#2B3FE7' }}>
+      <LeftPanel
+        sectionId="register-left"
+        pageName="register"
+        bgColor={leftS.bgColor}
+        heading={leftS.heading}
+        subtext={leftS.subtext}
+      />
 
       {/* Right panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
-          <Stepper step={step} />
+          <Stepper step={step} step1Label={formS.step1Label ?? 'Choose Role'} step2Label={formS.step2Label ?? 'Create Account'} />
 
           {/* ── Step 1 — Choose Role ── */}
           {step === 1 && (
             <>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">I am a...</h2>
-              <p className="text-sm text-gray-500 mb-6">Choose your role to get started</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{formS.roleStepTitle ?? 'I am a...'}</h2>
+              <p className="text-sm text-gray-500 mb-6">{formS.roleStepSubtitle ?? 'Choose your role to get started'}</p>
 
               <div className="flex flex-col gap-3">
                 {/* Job Seeker */}
@@ -120,8 +127,8 @@ export default function Register() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Job Seeker / Freelancer</p>
-                    <p className="text-sm text-gray-500 mt-0.5">Find jobs, bid on projects, track applications</p>
+                    <p className="font-semibold text-gray-900">{formS.candRoleTitle ?? 'Job Seeker / Freelancer'}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formS.candRoleDesc ?? 'Find jobs, bid on projects, track applications'}</p>
                   </div>
                 </button>
 
@@ -136,15 +143,21 @@ export default function Register() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Recruiter / Employer</p>
-                    <p className="text-sm text-gray-500 mt-0.5">Post jobs, manage pipeline, hire top talent</p>
+                    <p className="font-semibold text-gray-900">{formS.recRoleTitle ?? 'Recruiter / Employer'}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formS.recRoleDesc ?? 'Post jobs, manage pipeline, hire top talent'}</p>
                   </div>
                 </button>
               </div>
 
               <p className="mt-6 text-center text-sm text-gray-500">
-                Already have an account?{' '}
-                <Link to="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
+                {formS.subheading ?? 'Already have an account?'}{' '}
+                <Link
+                  to="/login"
+                  className="font-medium hover:underline"
+                  style={{ color: formS.linkColor ?? '#2563eb' }}
+                >
+                  {formS.ctaText ?? 'Sign in'}
+                </Link>
               </p>
             </>
           )}
@@ -153,10 +166,10 @@ export default function Register() {
           {step === 2 && (
             <>
               <button onClick={goBack} className="text-blue-600 text-sm font-medium mb-4 hover:underline">
-                ← Back
+                {formS.backText ?? '← Back'}
               </button>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Create Account</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{formS.heading ?? 'Create an account'}</h2>
               <p className="text-sm text-gray-500 mb-6">
                 Signing up as{' '}
                 <span className="text-blue-600 font-semibold">{roleLabel}</span>
@@ -170,28 +183,28 @@ export default function Register() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{formS.fullNameLabel ?? 'Full Name'}</label>
                   <input
-                    name="fullName" type="text" placeholder="Your full name"
+                    name="fullName" type="text" placeholder={formS.fullNamePlaceholder ?? 'Your full name'}
                     value={form.fullName} onChange={handleChange} required
                     className={INPUT}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{formS.emailLabel ?? 'Email Address'}</label>
                   <input
-                    name="email" type="email" placeholder="you@example.com"
+                    name="email" type="email" placeholder={formS.emailPlaceholder ?? 'you@example.com'}
                     value={form.email} onChange={handleChange} required autoComplete="email"
                     className={INPUT}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{formS.passwordLabel ?? 'Password'}</label>
                   <div className="relative">
                     <input
-                      name="password" type={showPw ? 'text' : 'password'} placeholder="Min. 6 characters"
+                      name="password" type={showPw ? 'text' : 'password'} placeholder={formS.passwordPlaceholder ?? 'Min. 6 characters'}
                       value={form.password} onChange={handleChange} required minLength={6} autoComplete="new-password"
                       className={INPUT}
                     />
@@ -203,10 +216,10 @@ export default function Register() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{formS.confirmLabel ?? 'Confirm Password'}</label>
                   <div className="relative">
                     <input
-                      name="confirm" type={showCfm ? 'text' : 'password'} placeholder="Repeat password"
+                      name="confirm" type={showCfm ? 'text' : 'password'} placeholder={formS.confirmPlaceholder ?? 'Repeat password'}
                       value={form.confirm} onChange={handleChange} required autoComplete="new-password"
                       className={`${INPUT} ${confirmErr ? 'border-red-400 focus:ring-red-300' : ''}`}
                     />
@@ -220,9 +233,13 @@ export default function Register() {
 
                 <button
                   type="submit" disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-4 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full font-semibold rounded-xl py-4 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: formS.btnBgColor ?? '#2563eb',
+                    color: formS.btnTextColor ?? '#ffffff',
+                  }}
                 >
-                  {loading ? 'Creating account…' : 'Create Account'}
+                  {loading ? 'Creating account…' : (formS.btnText ?? 'Create account')}
                 </button>
               </form>
 

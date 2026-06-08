@@ -2,11 +2,13 @@ import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from '../../../constants/themeEditorMet
 import SectionRow from './SectionRow';
 
 export default function ThemePageSidebar({
-  pages, activePage, onPageChange,
+  pages, activePage, selectedPage, onPageChange,
   sections, selectedSectionId, onSelectSection, onSelectGlobal,
   dragId, onDragStart, onDragOver, onDrop, onDragEnd,
   onMoveSection, onToggleVisible,
 }) {
+  const isGlobalPage = selectedPage?.key === 'global';
+
   return (
     <div className="w-60 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
       <div className="p-4 border-b border-gray-100">
@@ -23,9 +25,15 @@ export default function ThemePageSidebar({
 
       <div className="flex-1 overflow-y-auto p-3">
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 px-1">Sections</p>
-        <p className="text-[10px] text-gray-400 mb-3 px-1 leading-relaxed">
-          Drag to reorder · click preview to select
-        </p>
+        {isGlobalPage ? (
+          <p className="text-[10px] text-gray-400 mb-3 px-1 leading-relaxed">
+            Click a section to edit its settings
+          </p>
+        ) : (
+          <p className="text-[10px] text-gray-400 mb-3 px-1 leading-relaxed">
+            Drag to reorder · click preview to select
+          </p>
+        )}
 
         <div className="space-y-0.5">
           {sections.map((section, index) => (
@@ -43,6 +51,7 @@ export default function ThemePageSidebar({
               onDragOver={e => e.preventDefault()}
               onDrop={() => onDrop(section.id)}
               onDragEnd={onDragEnd}
+              disableReorderAndVisibility={isGlobalPage}
             />
           ))}
         </div>

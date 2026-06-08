@@ -8,13 +8,14 @@ export default function ThemeEditor() {
   const editor = useThemeEditor();
 
   const pageInfo   = THEME_EDITOR_PAGES.find(p => p.key === editor.activePage);
-  const iframePath = pageInfo?.path ?? '/';
+  const iframePath = pageInfo?.path ?? null;
 
   return (
     <div className="flex -m-6 sm:-m-8" style={{ height: 'calc(100vh - 4rem)' }}>
       <ThemePageSidebar
         pages={THEME_EDITOR_PAGES}
         activePage={editor.activePage}
+        selectedPage={pageInfo}
         onPageChange={editor.handlePageChange}
         sections={editor.currentSections}
         selectedSectionId={editor.selectedSectionId}

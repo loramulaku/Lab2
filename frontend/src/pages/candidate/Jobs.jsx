@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import Header from '../../components/Header';
+import { usePageSection, useTheme } from '../../context/ThemeContext';
+import JobsHeroSection from '../../components/cms/JobsHeroSection';
 
 const BTN_PRIMARY = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition rounded-none';
 const BTN_OUTLINE = 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 text-sm transition rounded-none';
@@ -11,6 +13,12 @@ const EMPLOYMENT_TYPES  = ['', 'full-time', 'part-time', 'contract', 'freelance'
 
 export default function Jobs() {
   const navigate = useNavigate();
+  const { config } = useTheme();
+  const heroSection = config?.pages?.jobs?.sections?.find(s => s.type === 'jobs-hero');
+  const heroS  = heroSection?.settings ?? {};
+  const showHero = heroSection?.visible === true;
+  const emptyS   = usePageSection('jobs', 'jobs-empty');
+  const filtersS = usePageSection('jobs', 'jobs-filters');
 
   const [jobs, setJobs]         = useState([]);
   const [total, setTotal]       = useState(0);
@@ -81,11 +89,16 @@ export default function Jobs() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      {showHero && (
+        <div className="pt-16">
+          <JobsHeroSection settings={heroS} />
+        </div>
+      )}
       <div className="max-w-4xl mx-auto pt-24 pb-8 px-4">
 
         {/* Page title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Find Jobs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{filtersS.pageTitle || 'Find Jobs'}</h1>
           <p className="text-sm text-gray-500 mt-1">{total} jobs available</p>
         </div>
 
@@ -94,7 +107,7 @@ export default function Jobs() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by title or company..."
+            placeholder={filtersS.searchPlaceholder || 'Search by title or company...'}
             className="flex-1 min-w-[200px] border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none"
           />
           <select
@@ -102,7 +115,7 @@ export default function Jobs() {
             onChange={e => setFilter('workMode', e.target.value)}
             className="border border-gray-200 px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All work modes</option>
+            <option value="">{filtersS.workModeDefault || 'All work modes'}</option>
             {WORK_MODES.filter(Boolean).map(m => (
               <option key={m} value={m}>{m}</option>
             ))}
@@ -112,7 +125,7 @@ export default function Jobs() {
             onChange={e => setFilter('employmentType', e.target.value)}
             className="border border-gray-200 px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All types</option>
+            <option value="">{filtersS.typeDefault || 'All types'}</option>
             {EMPLOYMENT_TYPES.filter(Boolean).map(t => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -121,7 +134,7 @@ export default function Jobs() {
             onClick={() => { setFilters({ status: 'active', workMode: '', employmentType: '', skill: '' }); setSearch(''); setPage(1); }}
             className={BTN_OUTLINE}
           >
-            Clear
+            {filtersS.clearText || 'Clear'}
           </button>
         </div>
 
@@ -131,7 +144,14 @@ export default function Jobs() {
         {loading && <p className="text-gray-400 text-sm py-8 text-center">Loading…</p>}
 
         {!loading && filtered.length === 0 && (
-          <p className="text-gray-400 text-sm py-8 text-center">No jobs found.</p>
+          <div className="py-12 text-center">
+            <p className="text-gray-700 font-medium text-base">
+              {emptyS.emptyTitle ?? 'No jobs found'}
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              {emptyS.emptySubtitle ?? 'Try adjusting your search or clearing your filters.'}
+            </p>
+          </div>
         )}
 
         <div className="space-y-3">
@@ -168,14 +188,14 @@ export default function Jobs() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <button className={BTN_PRIMARY}>Apply</button>
+                  <button className={BTN_PRIMARY}>{filtersS.applyText || 'Apply'}</button>
                   {job.recruiterId && (
                     <button
                       onClick={() => handleMessageRecruiter(job)}
                       disabled={messaging === job.id}
                       className={BTN_OUTLINE}
                     >
-                      {messaging === job.id ? 'Opening…' : 'Message'}
+                      {messaging === job.id ? 'Opening…' : (filtersS.messageText || 'Message')}
                     </button>
                   )}
                 </div>
@@ -195,7 +215,7 @@ export default function Jobs() {
               disabled={page === 1}
               className={BTN_OUTLINE}
             >
-              ← Previous
+              {filtersS.prevText || '← Previous'}
             </button>
             <span className="px-4 py-2 text-sm text-gray-500">
               {page} / {totalPages}
@@ -205,7 +225,7 @@ export default function Jobs() {
               disabled={page === totalPages}
               className={BTN_OUTLINE}
             >
-              Next →
+              {filtersS.nextText || 'Next →'}
             </button>
           </div>
         )}

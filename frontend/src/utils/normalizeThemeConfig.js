@@ -7,6 +7,11 @@ import { DEFAULT_THEME_CONFIG } from '../constants/themeDefaults';
 export function normalizeThemeConfig(raw = {}) {
   const result = structuredClone(DEFAULT_THEME_CONFIG);
 
+  // If saved config is from an older schema version, skip section-settings merge entirely.
+  // This prevents stale DB values (old bad defaults) from overriding the correct new defaults.
+  // Any save from ThemeEditor will write _version: 3 and be merged normally going forward.
+  if (raw._version !== 3) return result;
+
   if (raw.colors && typeof raw.colors === 'object') {
     result.colors = { ...result.colors, ...raw.colors };
   }
@@ -32,7 +37,6 @@ export function normalizeThemeConfig(raw = {}) {
         return {
           ...defaultSection,
           ...match,
-          // Always use default order and visibility so new sections are never hidden/reordered by stale DB data
           visible: defaultSection.visible,
           order:   defaultSection.order,
           settings: {

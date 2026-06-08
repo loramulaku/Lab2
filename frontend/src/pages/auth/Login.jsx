@@ -70,19 +70,19 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{s.emailLabel ?? 'Email Address'}</label>
             <input
-              name="email" type="email" placeholder="you@example.com"
+              name="email" type="email" placeholder={s.emailPlaceholder ?? 'you@example.com'}
               value={form.email} onChange={handleChange} required autoComplete="email"
               className={INPUT}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{s.passwordLabel ?? 'Password'}</label>
             <div className="relative">
               <input
-                name="password" type={showPw ? 'text' : 'password'} placeholder="Your password"
+                name="password" type={showPw ? 'text' : 'password'} placeholder={s.passwordPlaceholder ?? 'Your password'}
                 value={form.password} onChange={handleChange} required autoComplete="current-password"
                 className={INPUT}
               />
@@ -104,9 +104,9 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          Don&apos;t have an account?{' '}
+          {s.noAccountText ?? "Don't have an account?"}{' '}
           <Link to="/register" className="font-medium hover:underline" style={{ color: s.linkColor ?? '#2563eb' }}>
-            Create one
+            {s.createOneText ?? 'Create one'}
           </Link>
         </p>
       </div>

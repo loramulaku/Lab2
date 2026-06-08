@@ -1,46 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageCard } from '../layout';
 
-// What candidates get
-const CANDIDATE_FEATURES = [
-  {
-    title: 'One profile, every job',
-    desc: 'Upload your CV, list your skills and experience, and apply to any listing in one click — your profile does the talking.',
-  },
-  {
-    title: 'Filter by what matters',
-    desc: 'Sort by job type, work mode (remote, hybrid, on-site), salary, experience level, or category.',
-  },
-  {
-    title: 'Save & track applications',
-    desc: 'Bookmark roles you\'re eyeing. See the status of every application you\'ve submitted in one dashboard.',
-  },
-  {
-    title: 'Freelance mode',
-    desc: 'Toggle on freelance availability. Submit bids on project-based roles or accept direct invitations from recruiters.',
-  },
-];
-
-// What recruiters get
-const RECRUITER_FEATURES = [
-  {
-    title: 'Post full-time or freelance roles',
-    desc: 'Create listings for employment and project-based work. Set budgets, hiring mode, and visibility in minutes.',
-  },
-  {
-    title: 'Two ways to hire freelancers',
-    desc: 'Open your role to public bids, or search and invite specific freelancers directly — or do both.',
-  },
-  {
-    title: 'Manage applicants & schedule interviews',
-    desc: 'Review applications, update statuses, and schedule interview times straight from your dashboard.',
-  },
-  {
-    title: 'Contracts & billing',
-    desc: 'Accepted bids and invitations become tracked contracts. Subscription plans control how many roles you can post.',
-  },
-];
-
 function FeatureItem({ title, desc }) {
   return (
     <div className="flex gap-3">
@@ -57,16 +17,51 @@ function FeatureItem({ title, desc }) {
   );
 }
 
-export default function HomeStatsSection({ sectionId }) {
+export default function HomeStatsSection({ sectionId, settings: s = {} }) {
+  const hasStats = s.stat1Value || s.stat2Value || s.stat3Value || s.stat4Value;
+  const stats = [
+    { value: s.stat1Value ?? '—', label: s.stat1Label ?? '' },
+    { value: s.stat2Value ?? '—', label: s.stat2Label ?? '' },
+    { value: s.stat3Value ?? '—', label: s.stat3Label ?? '' },
+    { value: s.stat4Value ?? '—', label: s.stat4Label ?? '' },
+  ];
+
+  const candidateFeatures = [
+    { title: s.cand1Title || 'One profile, every job',       desc: s.cand1Desc || 'Upload your CV, list your skills and experience, and apply to any listing in one click — your profile does the talking.' },
+    { title: s.cand2Title || 'Filter by what matters',       desc: s.cand2Desc || 'Sort by job type, work mode (remote, hybrid, on-site), salary, experience level, or category.' },
+    { title: s.cand3Title || 'Save & track applications',    desc: s.cand3Desc || "Bookmark roles you're eyeing. See the status of every application you've submitted in one dashboard." },
+    { title: s.cand4Title || 'Freelance mode',               desc: s.cand4Desc || 'Toggle on freelance availability. Submit bids on project-based roles or accept direct invitations from recruiters.' },
+  ];
+
+  const recruiterFeatures = [
+    { title: s.rec1Title || 'Post full-time or freelance roles',        desc: s.rec1Desc || 'Create listings for employment and project-based work. Set budgets, hiring mode, and visibility in minutes.' },
+    { title: s.rec2Title || 'Two ways to hire freelancers',             desc: s.rec2Desc || 'Open your role to public bids, or search and invite specific freelancers directly — or do both.' },
+    { title: s.rec3Title || 'Manage applicants & schedule interviews',  desc: s.rec3Desc || 'Review applications, update statuses, and schedule interview times straight from your dashboard.' },
+    { title: s.rec4Title || 'Contracts & billing',                      desc: s.rec4Desc || 'Accepted bids and invitations become tracked contracts. Subscription plans control how many roles you can post.' },
+  ];
+
   return (
     <section data-theme-section={sectionId} data-theme-label="Features" className="px-4 py-24">
       <div className="max-w-5xl mx-auto">
 
+        {hasStats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-16">
+            {stats.map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-4xl font-black text-blue-600">{stat.value}</p>
+                <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Built for candidates.<br className="sm:hidden" /> Built for recruiters.
+            {s.title || 'Built for candidates. Built for recruiters.'}
           </h2>
-          <p className="text-gray-500 text-sm mt-3">Everything you need on whichever side of hiring you're on.</p>
+          <p className="text-gray-500 text-sm mt-3">
+            {s.subtitle || "Everything you need on whichever side of hiring you're on."}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -79,15 +74,15 @@ export default function HomeStatsSection({ sectionId }) {
                 </svg>
               </div>
               <div>
-                <p className="font-bold text-gray-900">For Candidates</p>
-                <p className="text-xs text-gray-400">Looking for your next role</p>
+                <p className="font-bold text-gray-900">{s.candCardTitle || 'For Candidates'}</p>
+                <p className="text-xs text-gray-400">{s.candCardSub || 'Looking for your next role'}</p>
               </div>
               <Link to="/register" className="ml-auto text-xs text-blue-600 font-medium hover:underline whitespace-nowrap">
-                Sign up free →
+                {s.candCtaText || 'Sign up free →'}
               </Link>
             </div>
             <div className="flex flex-col gap-5">
-              {CANDIDATE_FEATURES.map((f, i) => <FeatureItem key={i} {...f} />)}
+              {candidateFeatures.map((f, i) => <FeatureItem key={i} {...f} />)}
             </div>
           </PageCard>
 
@@ -100,15 +95,15 @@ export default function HomeStatsSection({ sectionId }) {
                 </svg>
               </div>
               <div>
-                <p className="font-bold text-gray-900">For Recruiters</p>
-                <p className="text-xs text-gray-400">Building your team</p>
+                <p className="font-bold text-gray-900">{s.recCardTitle || 'For Recruiters'}</p>
+                <p className="text-xs text-gray-400">{s.recCardSub || 'Building your team'}</p>
               </div>
               <Link to="/register" className="ml-auto text-xs text-indigo-600 font-medium hover:underline whitespace-nowrap">
-                Start posting →
+                {s.recCtaText || 'Start posting →'}
               </Link>
             </div>
             <div className="flex flex-col gap-5">
-              {RECRUITER_FEATURES.map((f, i) => <FeatureItem key={i} {...f} />)}
+              {recruiterFeatures.map((f, i) => <FeatureItem key={i} {...f} />)}
             </div>
           </PageCard>
         </div>

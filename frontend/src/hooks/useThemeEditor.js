@@ -183,10 +183,25 @@ export function useThemeEditor() {
     setSelectedSectionId(null);
   };
 
-  const handleResetToDefault = () => {
-    setLiveConfig(DEFAULT_THEME_CONFIG);
-    setHasChanges(true);
-    setSelectedSectionId(null);
+  const handleResetToDefault = async () => {
+    if (!window.confirm('Reset everything to factory defaults? This will overwrite the saved theme.')) return;
+    try {
+      setSaving(true);
+      const saved = await themeService.update(themeId, DEFAULT_THEME_CONFIG);
+      setThemeId(saved.id);
+      if (!saved.isActive) await themeService.setActive(saved.id);
+      const resolved = normalizeThemeConfig(DEFAULT_THEME_CONFIG);
+      setLiveConfig(resolved);
+      setSavedConfig(resolved);
+      setHasChanges(false);
+      setSelectedSectionId(null);
+      setMessage({ type: 'success', text: 'Reset to factory defaults and saved.' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to reset theme' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return {
