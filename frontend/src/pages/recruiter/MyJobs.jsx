@@ -16,6 +16,12 @@ export default function MyJobs() {
   const [jobs, setJobs]             = useState([]);
   const [loading, setLoading]       = useState(true);
   const [modalOpen, setModalOpen]   = useState(false);
+
+  // ── Search state ──────────────────────────────────────────────────────────
+  const [titleInput, setTitleInput] = useState('');
+  const [titleQ,     setTitleQ]     = useState('');
+  const [statusQ,    setStatusQ]    = useState('');
+  const [typeQ,      setTypeQ]      = useState('');
   const [editing, setEditing]       = useState(null);      // null = new job, obj = edit
   const [invitees, setInvitees]     = useState([]);        // selected from FreelancerPicker
   const [submitting, setSubmitting] = useState(false);
@@ -32,14 +38,19 @@ export default function MyJobs() {
       const cid = profile?.company?.id ?? null;
       setCompanyId(cid);
       setHasSub(!!sub);
-      const res = await recruiterService.listJobs({ limit: 100 });
-      setJobs((res.data ?? []).filter(j => j.status !== 'archived'));
+      const res = await recruiterService.listJobs({
+        limit: 100,
+        ...(titleQ       && { q: titleQ }),
+        ...(statusQ      && { status: statusQ }),
+        ...(typeQ        && { employmentType: typeQ }),
+      });
+      setJobs(res.data ?? []);
     } catch {
       setNotice('Failed to load jobs.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [titleQ, statusQ, typeQ]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -156,10 +167,50 @@ export default function MyJobs() {
 
   return (
     <RecruiterLayout title="My Job Listings">
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-gray-500">{jobs.length} active listing{jobs.length === 1 ? '' : 's'}</p>
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-sm text-gray-500">{jobs.length} listing{jobs.length === 1 ? '' : 's'}</p>
         <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
           + Post a Job
+        </button>
+      </div>
+
+      {/* ── Search bar ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 p-4 mb-4 grid md:grid-cols-4 gap-3">
+        <input
+          type="text"
+          value={titleInput}
+          onChange={e => setTitleInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') setTitleQ(titleInput.trim()); }}
+          placeholder="Search by title…"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={statusQ}
+          onChange={e => setStatusQ(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="">All Statuses</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+          <option value="archived">Archived</option>
+          <option value="draft">Draft</option>
+        </select>
+        <select
+          value={typeQ}
+          onChange={e => setTypeQ(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="">All Types</option>
+          <option value="full-time">Full-time</option>
+          <option value="part-time">Part-time</option>
+          <option value="contract">Contract</option>
+          <option value="freelance">Freelance</option>
+        </select>
+        <button
+          onClick={() => setTitleQ(titleInput.trim())}
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+        >
+          Search
         </button>
       </div>
 
