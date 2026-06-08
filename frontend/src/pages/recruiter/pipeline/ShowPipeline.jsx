@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../../components/recruiter/RecruiterLayout';
 import pipelineService from '../../../services/pipelineService';
 
@@ -11,15 +12,6 @@ const COLUMN_COLORS = [
   'border-t-cyan-400',
   'border-t-orange-400',
   'border-t-indigo-400',
-];
-
-const BADGE_COLORS = [
-  'bg-blue-100 text-blue-700',
-  'bg-purple-100 text-purple-700',
-  'bg-amber-100 text-amber-700',
-  'bg-green-100 text-green-700',
-  'bg-rose-100 text-rose-700',
-  'bg-cyan-100 text-cyan-700',
 ];
 
 function initials(first, last) {
@@ -63,11 +55,16 @@ function PipelineSetupPanel({ existing, onSaved }) {
       } else {
         await pipelineService.createPipeline(validStages());
       }
+      // Reset local state before calling onSaved which may unmount this component
+      setSaving(false);
+      setConfirmEdit(false);
       onSaved();
     } catch (err) {
+      setSaving(false);
+      setConfirmEdit(false);
       if (err?.response?.data?.code === 'PIPELINE_EXISTS') { onSaved(); return; }
       setError(err?.response?.data?.message || 'Failed to save pipeline.');
-    } finally { setSaving(false); setConfirmEdit(false); }
+    }
   };
 
   const handleSubmit = (e) => {
@@ -201,6 +198,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
 // ── Main Kanban Board ─────────────────────────────────────────────────────────
 
 export default function ShowPipeline() {
+  const navigate = useNavigate();
   const [board, setBoard]               = useState(null);
   const [loading, setLoading]           = useState(true);
   const [noPipeline, setNoPipeline]     = useState(false);
@@ -385,6 +383,7 @@ export default function ShowPipeline() {
                     stageId={stage.id}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
+                    onViewDetails={() => navigate(`/recruiter/pipeline/candidate/${c.applicationId}`)}
                     onAddNote={() => setAddNoteModal({
                       applicationId: c.applicationId,
                       stageId:       stage.id,
@@ -423,11 +422,10 @@ export default function ShowPipeline() {
   );
 }
 
-function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onAddNote }) {
+function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetails, onAddNote }) {
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
-  const badge = BADGE_COLORS[stageId % BADGE_COLORS.length]; // eslint-disable-line no-unused-vars
   const isBlocked = candidate.lastNotificationRead === false;
   const readDot   = candidate.lastNotificationRead === true  ? 'bg-green-400'
                   : candidate.lastNotificationRead === false ? 'bg-red-400'
@@ -486,8 +484,11 @@ function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onAddNote }
         </div>
       )}
 
-      <div className="mt-3">
-        <button onClick={onAddNote} className="w-full text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors">
+      <div className="flex gap-1.5 mt-3">
+        <button onClick={onViewDetails} className="flex-1 text-[11px] font-medium py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors">
+          View Details
+        </button>
+        <button onClick={onAddNote} className="flex-1 text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors">
           Add Note
         </button>
       </div>
