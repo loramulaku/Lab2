@@ -11,10 +11,12 @@ class GetRecruiterJobsHandler {
   async handle(query) {
     if (!query.companyId) return { data: [], total: 0, page: 1, limit: query.limit };
     return jobViewRepo.findAll({
-      companyId: query.companyId,
-      status:    query.status,
-      page:      query.page,
-      limit:     query.limit,
+      companyId:      query.companyId,
+      q:              query.q,
+      status:         query.status,
+      employmentType: query.employmentType,
+      page:           query.page,
+      limit:          query.limit,
     });
   }
 }
