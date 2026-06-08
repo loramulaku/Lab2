@@ -5,6 +5,20 @@ import recruiterService from '../../services/recruiterService';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
+const STATUS_OPTIONS = [
+  { value: '',            label: 'All Statuses' },
+  { value: 'pending',     label: 'Pending' },
+  { value: 'in_review',   label: 'In Review' },
+  { value: 'shortlisted', label: 'Shortlisted' },
+  { value: 'interview',   label: 'Interview' },
+  { value: 'offer',       label: 'Offer' },
+  { value: 'accepted',    label: 'Accepted' },
+  { value: 'rejected',    label: 'Rejected' },
+  { value: 'withdrawn',   label: 'Withdrawn' },
+];
+
+const lc = (s) => (s ?? '').toLowerCase();
+
 export default function JobSeekers() {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState([]);
@@ -12,6 +26,22 @@ export default function JobSeekers() {
   const [error, setError]           = useState('');
   const [showApp, setShowApp]       = useState(null);
 
+  // ── Search state ──────────────────────────────────────────────────────────
+  const [nameQ,   setNameQ]   = useState('');
+  const [titleQ,  setTitleQ]  = useState('');
+  const [statusQ, setStatusQ] = useState('');
+
+  const visible = applicants.filter(a => {
+    const fullName = `${lc(a.applicant?.firstName)} ${lc(a.applicant?.lastName)}`;
+    if (nameQ   && !fullName.includes(lc(nameQ)))                             return false;
+    if (titleQ  && !lc(a.jobTitle).includes(lc(titleQ)))                      return false;
+    if (statusQ && a.status !== statusQ)                                       return false;
+    return true;
+  });
+
+  const hasFilter = nameQ || titleQ || statusQ;
+
+  // ── Data loading ──────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -29,16 +59,60 @@ export default function JobSeekers() {
 
   return (
     <RecruiterLayout title="Job Seekers">
+
+      {/* ── Search bar ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 p-4 mb-6 grid md:grid-cols-3 gap-3">
+        <input
+          type="text"
+          value={nameQ}
+          onChange={e => setNameQ(e.target.value)}
+          placeholder="Candidate name…"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="text"
+          value={titleQ}
+          onChange={e => setTitleQ(e.target.value)}
+          placeholder="Job title…"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={statusQ}
+          onChange={e => setStatusQ(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-      {loading ? <p className="text-sm text-gray-400">Loading…</p>
-        : applicants.length === 0 ? (
-          <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
-            <p className="text-lg">No applicants yet</p>
-            <p className="text-sm mt-1">Candidates who apply to your standard-employment jobs appear here.</p>
-          </div>
-        ) : (
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : applicants.length === 0 ? (
+        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+          <p className="text-lg">No applicants yet</p>
+          <p className="text-sm mt-1">Candidates who apply to your standard-employment jobs appear here.</p>
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="bg-white border border-gray-200 text-center py-10 text-gray-400">
+          <p className="text-base">No results match your search</p>
+          {hasFilter && (
+            <button
+              onClick={() => { setNameQ(''); setTitleQ(''); setStatusQ(''); }}
+              className="mt-3 text-sm text-blue-600 hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-gray-400 mb-3">
+            {visible.length} of {applicants.length} applicant{applicants.length !== 1 ? 's' : ''}
+          </p>
           <div className="space-y-3">
-            {applicants.map(a => (
+            {visible.map(a => (
               <div key={a.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900">
@@ -67,7 +141,8 @@ export default function JobSeekers() {
               </div>
             ))}
           </div>
-        )}
+        </>
+      )}
 
       {showApp && (
         <ApplicationDetailModal app={showApp} onClose={() => setShowApp(null)} />
