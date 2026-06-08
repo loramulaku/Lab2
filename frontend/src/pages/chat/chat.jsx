@@ -3,6 +3,29 @@ import { useLocation } from 'react-router-dom';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import Header from '../../components/Header';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getOtherName(conv, currentUserId) {
+  const others = (conv.participants ?? []).filter(p => {
+    const uid = p.userId ?? p.id;
+    return uid !== currentUserId;
+  });
+  if (others.length === 0) return `Bisedë #${conv.id}`;
+  const other = others[0];
+  const firstName = other.firstName ?? other.user?.firstName;
+  const lastName  = other.lastName  ?? other.user?.lastName;
+  if (firstName || lastName) return [firstName, lastName].filter(Boolean).join(' ');
+  return `Bisedë #${conv.id}`;
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Chat() {
   const { user } = useAuth();
@@ -88,113 +111,125 @@ export default function Chat() {
   }
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', background: 'var(--color-background-tertiary)' }}>
+    <>
+      <Header />
 
-      {/* Sidebar — conversation list */}
-      <div style={{
-        width: '300px', borderRight: '0.5px solid var(--color-border-tertiary)',
-        background: 'var(--color-background-primary)', overflowY: 'auto'
-      }}>
-        <div style={{ padding: '1rem', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 500 }}>Bisedat</h2>
+      {/* Full-height chat layout sitting directly below the fixed header */}
+      <div className="flex mt-16 h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
+
+        {/* ── Sidebar — conversation list ───────────────────────────────── */}
+        <div className="w-72 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+            <h2 className="text-sm font-semibold text-gray-900">Bisedat</h2>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {loadingConvos && (
+              <p className="px-4 py-3 text-sm text-gray-400">Duke ngarkuar...</p>
+            )}
+
+            {!loadingConvos && conversations.length === 0 && (
+              <p className="px-4 py-3 text-sm text-gray-400">Nuk ka biseda ende.</p>
+            )}
+
+            {conversations.map(conv => {
+              const isActive = activeConversation?.id === conv.id;
+              const name     = getOtherName(conv, user?.id);
+              return (
+                <button
+                  key={conv.id}
+                  onClick={() => setActiveConversation(conv)}
+                  className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 border-l-2 border-l-blue-600'
+                      : 'border-l-2 border-l-transparent'
+                  }`}
+                >
+                  <p className={`text-sm font-medium truncate ${isActive ? 'text-blue-700' : 'text-gray-900'}`}>
+                    {name}
+                  </p>
+                  {conv.lastMessage && (
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">
+                      {conv.lastMessage.message}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {loadingConvos && <p style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '14px' }}>Duke ngarkuar...</p>}
+        {/* ── Main chat area ────────────────────────────────────────────── */}
+        <div className="flex-1 flex flex-col overflow-hidden">
 
-        {!loadingConvos && conversations.length === 0 && (
-          <p style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '14px' }}>Nuk ka biseda ende.</p>
-        )}
-
-        {conversations.map(conv => (
-          <div
-            key={conv.id}
-            onClick={() => setActiveConversation(conv)}
-            style={{
-              padding: '0.75rem 1rem',
-              cursor: 'pointer',
-              borderBottom: '0.5px solid var(--color-border-tertiary)',
-              background: activeConversation?.id === conv.id ? 'var(--color-background-secondary)' : 'transparent'
-            }}
-          >
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 500 }}>
-              Biseda #{conv.id}
-            </p>
-            {conv.lastMessage && (
-              <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                {conv.lastMessage.message?.slice(0, 40)}...
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Main chat area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-
-        {!activeConversation ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: 'var(--color-text-secondary)' }}>Zgjidh një bisedë për të filluar</p>
-          </div>
-        ) : (
-          <>
-            {/* Header */}
-            <div style={{
-              padding: '1rem 1.25rem',
-              borderBottom: '0.5px solid var(--color-border-tertiary)',
-              background: 'var(--color-background-primary)'
-            }}>
-              <p style={{ margin: 0, fontWeight: 500 }}>Biseda #{activeConversation.id}</p>
+          {!activeConversation ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm text-gray-400">Zgjidh një bisedë për të filluar</p>
             </div>
+          ) : (
+            <>
+              {/* Conversation header */}
+              <div className="px-5 py-3 border-b border-gray-200 bg-white flex-shrink-0">
+                <p className="text-sm font-semibold text-gray-900">
+                  {getOtherName(activeConversation, user?.id)}
+                </p>
+              </div>
 
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {loadingMessages && <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Duke ngarkuar mesazhet...</p>}
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                {loadingMessages && (
+                  <p className="text-sm text-gray-400">Duke ngarkuar mesazhet...</p>
+                )}
 
-              {messages.map((msg, i) => {
-                const isOwn = msg.senderId === user?.id;
-                return (
-                  <div key={msg.id ?? i} style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
-                    <div style={{
-                      maxWidth: '60%',
-                      padding: '8px 12px',
-                      borderRadius: '12px',
-                      background: isOwn ? '#3266ad' : 'var(--color-background-secondary)',
-                      color: isOwn ? '#fff' : 'var(--color-text-primary)',
-                      fontSize: '14px'
-                    }}>
-                      {msg.message}
+                {messages.map((msg, i) => {
+                  const isOwn = Number(msg.senderId) === Number(user?.id);
+                  return (
+                    <div
+                      key={msg.id ?? i}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`flex flex-col gap-0.5 max-w-[60%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                        <div className={`px-3 py-2 text-sm leading-relaxed ${
+                          isOwn
+                            ? 'bg-blue-600 text-white rounded-t-2xl rounded-bl-2xl rounded-br-sm'
+                            : 'bg-white border border-gray-200 text-gray-900 rounded-t-2xl rounded-br-2xl rounded-bl-sm'
+                        }`}>
+                          {msg.message}
+                        </div>
+                        {msg.createdAt && (
+                          <span className="text-xs text-gray-400 px-1">
+                            {formatTime(msg.createdAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
+                  );
+                })}
 
-            {/* Input */}
-            <div style={{
-              padding: '0.75rem 1rem',
-              borderTop: '0.5px solid var(--color-border-tertiary)',
-              background: 'var(--color-background-primary)',
-              display: 'flex', gap: '8px'
-            }}>
-              <input
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Shkruaj një mesazh..."
-                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', fontSize: '14px' }}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={!input.trim()}
-                style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '14px' }}
-              >
-                Dërgo
-              </button>
-            </div>
-          </>
-        )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input bar */}
+              <div className="border-t border-gray-200 bg-white px-4 py-3 flex gap-2 flex-shrink-0">
+                <input
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Shkruaj një mesazh..."
+                  className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Dërgo
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
