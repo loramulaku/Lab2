@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import recruiterService from '../../services/recruiterService';
+import api from '../../services/api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
@@ -24,7 +25,8 @@ export default function JobSeekers() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState('');
-  const [showApp, setShowApp]       = useState(null);
+  const [showApp,   setShowApp]   = useState(null);
+  const [chatBusy,  setChatBusy]  = useState(null);
 
   // ── Search state ──────────────────────────────────────────────────────────
   const [nameQ,   setNameQ]   = useState('');
@@ -56,6 +58,17 @@ export default function JobSeekers() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const openChat = async (a) => {
+    setChatBusy(a.id);
+    try {
+      const { data } = await api.post('/conversations', { recipientId: a.userId });
+      navigate('/chat', { state: { conversationId: data.id } });
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Could not open chat.');
+      setChatBusy(null);
+    }
+  };
 
   return (
     <RecruiterLayout title="Job Seekers">
@@ -133,9 +146,10 @@ export default function JobSeekers() {
                     View Application
                   </button>
                   <button
-                    onClick={() => navigate(`/chat?userId=${a.userId}`)}
-                    className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 whitespace-nowrap">
-                    Live Chat
+                    disabled={chatBusy === a.id}
+                    onClick={() => openChat(a)}
+                    className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 whitespace-nowrap disabled:opacity-50">
+                    {chatBusy === a.id ? '…' : 'Live Chat'}
                   </button>
                 </div>
               </div>

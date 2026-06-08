@@ -5,6 +5,7 @@ import StatusBadge from '../../components/recruiter/StatusBadge';
 import ContractModal from '../../components/recruiter/ContractModal';
 import recruiterService from '../../services/recruiterService';
 import freelanceService from '../../services/freelanceService';
+import api from '../../services/api';
 
 const STATUS_OPTIONS = [
   { value: '',           label: 'All Statuses' },
@@ -25,7 +26,8 @@ export default function BidsReceived() {
   const [bids,    setBids]    = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
-  const [busy,    setBusy]    = useState(null);
+  const [busy,     setBusy]     = useState(null);
+  const [chatBusy, setChatBusy] = useState(null);
   const [contractTarget, setContractTarget] = useState(null);
 
   // ── Search state ──────────────────────────────────────────────────────────
@@ -84,6 +86,17 @@ export default function BidsReceived() {
     try { await freelanceService.rejectBid(bidId); await load(); }
     catch (e) { setError(e?.response?.data?.message || 'Action failed.'); }
     finally { setBusy(null); }
+  };
+
+  const openChat = async (b) => {
+    setChatBusy(b.id);
+    try {
+      const { data } = await api.post('/conversations', { recipientId: b.freelancerId });
+      navigate('/chat', { state: { conversationId: data.id } });
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Could not open chat.');
+      setChatBusy(null);
+    }
   };
 
   const handleContractCreated = () => {
@@ -172,10 +185,11 @@ export default function BidsReceived() {
                     Rejected
                   </button>
                   <button
-                    onClick={() => navigate('/chat')}
-                    className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-50"
+                    disabled={chatBusy === b.id}
+                    onClick={() => openChat(b)}
+                    className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-50 disabled:opacity-50"
                   >
-                    Live Chat
+                    {chatBusy === b.id ? '…' : 'Live Chat'}
                   </button>
                   <button
                     onClick={() => setContractTarget(b)}

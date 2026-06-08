@@ -5,6 +5,7 @@ import StatusBadge from '../../components/recruiter/StatusBadge';
 import ContractModal from '../../components/recruiter/ContractModal';
 import recruiterService from '../../services/recruiterService';
 import freelanceService from '../../services/freelanceService';
+import api from '../../services/api';
 
 /**
  * Invited Freelancers — direct invitations sent by the recruiter (Mode B).
@@ -15,7 +16,8 @@ export default function InvitedFreelancers() {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
-  const [busy,    setBusy]    = useState(null);
+  const [busy,     setBusy]     = useState(null);
+  const [chatBusy, setChatBusy] = useState(null);
   const [contractTarget, setContractTarget] = useState(null); // invitation row for modal
 
   const load = useCallback(async () => {
@@ -56,6 +58,17 @@ export default function InvitedFreelancers() {
     try { await freelanceService.revokeInvitation(id); await load(); }
     catch (e) { setError(e?.response?.data?.message || 'Action failed.'); }
     finally { setBusy(null); }
+  };
+
+  const openChat = async (inv) => {
+    setChatBusy(inv.id);
+    try {
+      const { data } = await api.post('/conversations', { recipientId: inv.freelancerId });
+      navigate('/chat', { state: { conversationId: data.id } });
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Could not open chat.');
+      setChatBusy(null);
+    }
   };
 
   const handleContractCreated = () => {
@@ -107,10 +120,11 @@ export default function InvitedFreelancers() {
                         Rejected
                       </button>
                       <button
-                        onClick={() => navigate('/chat')}
-                        className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-50"
+                        disabled={chatBusy === inv.id}
+                        onClick={() => openChat(inv)}
+                        className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-50 disabled:opacity-50"
                       >
-                        Live Chat
+                        {chatBusy === inv.id ? '…' : 'Live Chat'}
                       </button>
                       <button
                         onClick={() => setContractTarget(inv)}

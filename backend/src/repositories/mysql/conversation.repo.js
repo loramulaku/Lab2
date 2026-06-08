@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const Conversation = require('../../models/sql/Conversation');
 const ConversationParticipant = require('../../models/sql/ConversationParticipant');
 const Message = require('../../models/sql/Message');
+const User = require('../../models/sql/User');
 const createMysqlRepo = require('./_factory');
 
 const base = createMysqlRepo(Conversation);
@@ -46,11 +47,18 @@ module.exports = {
       where: { id: { [Op.in]: conversationIds } }
     });
 
-    // Attach participants and last message to each conversation
+    // Attach participants (with names) and last message to each conversation
     const result = await Promise.all(conversations.map(async (conv) => {
-      const participants = await ConversationParticipant.findAll({
+      const participantRows = await ConversationParticipant.findAll({
         where: { conversationId: conv.id }
       });
+      const userIds = participantRows.map(p => p.userId);
+      const users = await User.findAll({
+        where: { id: userIds },
+        attributes: ['id', 'firstName', 'lastName']
+      });
+      const userMap = Object.fromEntries(users.map(u => [u.id, u]));
+
       const lastMessage = await Message.findOne({
         where: { conversationId: conv.id },
         order: [['created_at', 'DESC']]
@@ -58,7 +66,11 @@ module.exports = {
       return {
         id: conv.id,
         createdAt: conv.createdAt,
-        participants: participants.map(p => p.userId),
+        participants: participantRows.map(p => ({
+          userId:    p.userId,
+          firstName: userMap[p.userId]?.firstName ?? null,
+          lastName:  userMap[p.userId]?.lastName  ?? null,
+        })),
         lastMessage: lastMessage || null
       };
     }));

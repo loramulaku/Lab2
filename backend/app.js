@@ -23,6 +23,7 @@ const bidRoutes          = require('./src/routes/bid.routes');
 const invitationRoutes   = require('./src/routes/invitation.routes');
 const contractRoutes     = require('./src/routes/contract.routes');
 const conversationRoutes = require('./src/routes/conversation.routes');
+const exportRoutes       = require('./src/routes/export.routes');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -37,6 +38,7 @@ app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }))
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/exports', express.static(path.join(__dirname, 'public/exports')));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/admin', adminRoutes);
@@ -55,6 +57,7 @@ app.use('/api', bidRoutes);
 app.use('/api', invitationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.use('/api/exports',      exportRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

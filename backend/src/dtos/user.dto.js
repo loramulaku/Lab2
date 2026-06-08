@@ -4,7 +4,7 @@
  */
 class UserDTO {
   constructor(user) {
-    this.id         = user.id ?? user.userId;
+    this.id         = user._id ?? user.id ?? user.userId;
     this.firstName  = user.firstName;
     this.lastName   = user.lastName;
     this.email      = user.email;
