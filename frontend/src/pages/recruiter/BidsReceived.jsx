@@ -5,17 +5,45 @@ import StatusBadge from '../../components/recruiter/StatusBadge';
 import recruiterService from '../../services/recruiterService';
 import freelanceService from '../../services/freelanceService';
 
+const STATUS_OPTIONS = [
+  { value: '',           label: 'All Statuses' },
+  { value: 'pending',    label: 'Pending' },
+  { value: 'accepted',   label: 'Accepted' },
+  { value: 'rejected',   label: 'Rejected' },
+  { value: 'withdrawn',  label: 'Withdrawn' },
+];
+
+const lc = (s) => (s ?? '').toLowerCase();
+
 /**
  * All bids submitted on the recruiter's public freelance jobs (Mode A).
  * Aggregated across every job that accepts bids (jobMode public|both).
  */
 export default function BidsReceived() {
   const navigate = useNavigate();
-  const [bids, setBids] = useState([]);
+  const [bids, setBids]       = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(null);
+  const [error, setError]     = useState('');
+  const [busy, setBusy]       = useState(null);
 
+  // ── Search state ──────────────────────────────────────────────────────────
+  const [nameQ,   setNameQ]   = useState('');
+  const [titleQ,  setTitleQ]  = useState('');
+  const [statusQ, setStatusQ] = useState('');
+
+  const visible = bids.filter(b => {
+    const name = b.freelancer
+      ? `${lc(b.freelancer.firstName)} ${lc(b.freelancer.lastName)}`
+      : lc(`freelancer #${b.freelancerId}`);
+    if (nameQ   && !name.includes(lc(nameQ)))                         return false;
+    if (titleQ  && !lc(b.jobTitle).includes(lc(titleQ)))              return false;
+    if (statusQ && b.status !== statusQ)                              return false;
+    return true;
+  });
+
+  const hasFilter = nameQ || titleQ || statusQ;
+
+  // ── Data loading ──────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -48,16 +76,60 @@ export default function BidsReceived() {
 
   return (
     <RecruiterLayout title="Bids Received">
+
+      {/* ── Search bar ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 p-4 mb-6 grid md:grid-cols-3 gap-3">
+        <input
+          type="text"
+          value={nameQ}
+          onChange={e => setNameQ(e.target.value)}
+          placeholder="Freelancer name…"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="text"
+          value={titleQ}
+          onChange={e => setTitleQ(e.target.value)}
+          placeholder="Job title…"
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={statusQ}
+          onChange={e => setStatusQ(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-      {loading ? <p className="text-sm text-gray-400">Loading…</p>
-        : bids.length === 0 ? (
-          <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
-            <p className="text-lg">No bids yet</p>
-            <p className="text-sm mt-1">Bids on your public freelance jobs will appear here.</p>
-          </div>
-        ) : (
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : bids.length === 0 ? (
+        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+          <p className="text-lg">No bids yet</p>
+          <p className="text-sm mt-1">Bids on your public freelance jobs will appear here.</p>
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="bg-white border border-gray-200 text-center py-10 text-gray-400">
+          <p className="text-base">No results match your search</p>
+          {hasFilter && (
+            <button
+              onClick={() => { setNameQ(''); setTitleQ(''); setStatusQ(''); }}
+              className="mt-3 text-sm text-blue-600 hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-gray-400 mb-3">
+            {visible.length} of {bids.length} bid{bids.length !== 1 ? 's' : ''}
+          </p>
           <div className="space-y-3">
-            {bids.map(b => (
+            {visible.map(b => (
               <div key={b.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -86,7 +158,8 @@ export default function BidsReceived() {
               </div>
             ))}
           </div>
-        )}
+        </>
+      )}
     </RecruiterLayout>
   );
 }
