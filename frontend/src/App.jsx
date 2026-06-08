@@ -46,6 +46,8 @@ const ShowPipeline           = lazy(() => import('./pages/recruiter/pipeline/Sho
 const TransitionNotes        = lazy(() => import('./pages/recruiter/pipeline/TransitionNotes'));
 const CandidateInfo          = lazy(() => import('./pages/recruiter/pipeline/CandidateInfo'));
 const RecruiterNotifications = lazy(() => import('./pages/recruiter/RecruiterNotifications'));
+const Reports                = lazy(() => import('./pages/admin/Reports'));
+const AuditLogs              = lazy(() => import('./pages/admin/AuditLogs'));
 
 
 // ── Suspense fallback ──────────────────────────────────────────────────────────
@@ -197,6 +199,16 @@ function AppShell() {
       <Route path="/admin/categories" element={
         <ProtectedRoute roles={['admin']}>
           <AdminShell><Categories /></AdminShell>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminShell><Reports /></AdminShell>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/audit-logs" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminShell><AuditLogs /></AdminShell>
         </ProtectedRoute>
       } />
 
