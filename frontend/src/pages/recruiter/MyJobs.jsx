@@ -175,7 +175,7 @@ export default function MyJobs() {
       </div>
 
       {/* ── Search bar ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 p-4 mb-4 grid md:grid-cols-4 gap-3">
+      <div className="page-shell-card rounded-xl p-4 mb-4 grid md:grid-cols-4 gap-3">
         <input
           type="text"
           value={titleInput}
@@ -218,7 +218,7 @@ export default function MyJobs() {
 
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : jobs.length === 0 ? (
-          <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+          <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
             <p className="text-lg">No active job listings</p>
             <p className="text-sm mt-1">Click "Post a Job" to create your first listing.</p>
           </div>
@@ -229,7 +229,7 @@ export default function MyJobs() {
               const acceptsBids    = isFreelance && ['public', 'both'].includes(job.jobMode);
               const acceptsInvites = isFreelance && ['invite', 'both'].includes(job.jobMode);
               return (
-                <div key={job.id} className="bg-white border border-gray-200 px-5 py-4">
+                <div key={job.id} className="page-shell-card rounded-xl px-5 py-4">
                   <div className="flex justify-between items-start gap-4">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">

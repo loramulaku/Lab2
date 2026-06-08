@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { PageBackground } from '../layout';
 import {
   LayoutDashboard,
   List, Archive,
@@ -99,23 +100,24 @@ export default function RecruiterLayout({ children, title }) {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="min-h-screen flex relative">
+      <PageBackground />
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-[#0c1322] flex flex-col select-none">
+      <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white/60 backdrop-blur-xl border-r border-blue-200/50 flex flex-col select-none">
 
         {/* Brand */}
         <div className="flex items-center gap-2 px-4 pt-5 pb-3 flex-shrink-0">
-          <span className="text-[20px] font-semibold text-white leading-none">HireWire</span>
-          <span className="text-[13px] text-[#85b7eb] leading-none">Recruiter</span>
+          <span className="text-[20px] font-semibold text-gray-900 leading-none">HireWire</span>
+          <span className="text-[13px] text-blue-500 leading-none">Recruiter</span>
         </div>
 
         {/* Scrollable nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-2 sidebar-scrollbar">
+        <nav className="flex-1 overflow-y-auto px-3 py-2 sidebar-scrollbar-light">
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi} className={gi > 0 ? 'mt-3' : ''}>
               {group.title && (
-                <p className="px-2.5 mb-1 mt-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-[#5f7494]">
+                <p className="px-2.5 mb-1 mt-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400">
                   {group.title}
                 </p>
               )}
@@ -130,16 +132,16 @@ export default function RecruiterLayout({ children, title }) {
                       className={[
                         'flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[14px] font-[450] transition-colors duration-100',
                         active
-                          ? 'bg-[#378add] text-white'
+                          ? 'bg-blue-600 text-white shadow-sm'
                           : item.teal
-                            ? 'text-[#9fe1cb] hover:bg-white/5 hover:text-white'
-                            : 'text-[#cfe0f5] hover:bg-white/5 hover:text-white',
+                            ? 'text-teal-600 hover:bg-teal-100/60 hover:text-teal-700'
+                            : 'text-gray-600 hover:bg-blue-100/60 hover:text-blue-700',
                       ].join(' ')}
                     >
                       <Icon size={17} className="flex-shrink-0" aria-hidden="true" />
                       <span className="truncate">{item.label}</span>
                       {item.badge > 0 && (
-                        <span className="ml-auto bg-[#1d9e75] text-white text-[11px] font-semibold px-[7px] py-px rounded-full leading-[1.4] flex-shrink-0">
+                        <span className="ml-auto bg-emerald-100 text-emerald-700 text-[11px] font-semibold px-[7px] py-px rounded-full leading-[1.4] flex-shrink-0">
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
@@ -152,7 +154,7 @@ export default function RecruiterLayout({ children, title }) {
         </nav>
 
         {/* Bottom: Settings + Log out */}
-        <div className="flex-shrink-0 border-t border-[#28324a] px-3 py-3 space-y-0.5">
+        <div className="flex-shrink-0 border-t border-blue-200/50 px-3 py-3 space-y-0.5">
           {BOTTOM_ITEMS.map(item => {
             const active = isActive(item);
             const Icon   = item.icon;
@@ -163,8 +165,8 @@ export default function RecruiterLayout({ children, title }) {
                 className={[
                   'flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[14px] font-[450] transition-colors duration-100',
                   active
-                    ? 'bg-[#378add] text-white'
-                    : 'text-[#8aa0c0] hover:bg-white/5 hover:text-white',
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-blue-100/60 hover:text-blue-700',
                 ].join(' ')}
               >
                 <Icon size={17} className="flex-shrink-0" aria-hidden="true" />
@@ -174,7 +176,7 @@ export default function RecruiterLayout({ children, title }) {
           })}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[14px] font-[450] text-[#8aa0c0] hover:bg-white/5 hover:text-white transition-colors duration-100"
+            className="w-full flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[14px] font-[450] text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors duration-100"
           >
             <LogOut size={17} className="flex-shrink-0" aria-hidden="true" />
             <span>Log out</span>
@@ -183,9 +185,9 @@ export default function RecruiterLayout({ children, title }) {
       </aside>
 
       {/* ── Main area ────────────────────────────────────────────────────── */}
-      <div className="pl-64 flex-1 flex flex-col min-h-screen min-w-0">
+      <div className="pl-64 flex-1 flex flex-col min-h-screen min-w-0 relative z-10">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-14 bg-white shadow-sm items-center justify-between px-8 border-b border-gray-100">
+        <div className="sticky top-0 z-40 flex h-14 page-shell-bar items-center justify-between px-8">
           <h1 className="text-lg font-semibold text-gray-800">{title ?? 'Recruiter Dashboard'}</h1>
           <div className="flex items-center gap-5">
             <Link

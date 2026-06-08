@@ -87,7 +87,7 @@ export default function CompanySetup() {
     <RecruiterLayout title="Company Setup">
       <PageAlert>{error}</PageAlert>
       <form onSubmit={onSubmit}>
-        <div className="bg-white border border-gray-200 p-6 sm:p-8">
+        <div className="page-shell-card rounded-xl p-6 sm:p-8">
           <CompanySetupForm
             company={company}
             recruiter={recruiter}

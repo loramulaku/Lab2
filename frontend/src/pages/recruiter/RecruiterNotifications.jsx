@@ -48,7 +48,7 @@ export default function RecruiterNotifications() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg font-medium">No notifications yet</p>
           <p className="text-sm mt-1">Notifications will appear here as activity happens.</p>
         </div>

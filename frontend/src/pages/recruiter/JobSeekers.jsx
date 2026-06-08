@@ -61,7 +61,7 @@ export default function JobSeekers() {
     <RecruiterLayout title="Job Seekers">
 
       {/* ── Search bar ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 p-4 mb-6 grid md:grid-cols-3 gap-3">
+      <div className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-3 gap-3">
         <input
           type="text"
           value={nameQ}
@@ -90,12 +90,12 @@ export default function JobSeekers() {
       {loading ? (
         <p className="text-sm text-gray-400">Loading…</p>
       ) : applicants.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg">No applicants yet</p>
           <p className="text-sm mt-1">Candidates who apply to your standard-employment jobs appear here.</p>
         </div>
       ) : visible.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-10 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
           <p className="text-base">No results match your search</p>
           {hasFilter && (
             <button
@@ -113,7 +113,7 @@ export default function JobSeekers() {
           </p>
           <div className="space-y-3">
             {visible.map(a => (
-              <div key={a.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
+              <div key={a.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900">
                     {a.applicant?.firstName} {a.applicant?.lastName}

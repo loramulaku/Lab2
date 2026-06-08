@@ -98,7 +98,7 @@ export default function BidsReceived() {
     <RecruiterLayout title="Bids Received">
 
       {/* ── Search bar ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 p-4 mb-6 grid md:grid-cols-3 gap-3">
+      <div className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-3 gap-3">
         <input
           type="text"
           value={nameQ}
@@ -127,12 +127,12 @@ export default function BidsReceived() {
       {loading ? (
         <p className="text-sm text-gray-400">Loading…</p>
       ) : bids.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg">No bids yet</p>
           <p className="text-sm mt-1">Bids on your public freelance jobs will appear here.</p>
         </div>
       ) : visible.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-10 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
           <p className="text-base">No results match your search</p>
           {hasFilter && (
             <button
@@ -150,7 +150,7 @@ export default function BidsReceived() {
           </p>
           <div className="space-y-3">
             {visible.map(b => (
-              <div key={b.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
+              <div key={b.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-900">{freelancerName(b)}</h3>

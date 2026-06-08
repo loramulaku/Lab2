@@ -32,12 +32,12 @@ export default function CurrentPlan() {
     <RecruiterLayout title="My Current Plan">
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : !sub ? (
-          <div className="bg-white border border-gray-200 p-8 text-center">
+          <div className="page-shell-card rounded-xl p-8 text-center">
             <p className="text-gray-600">You don't have an active subscription.</p>
             <Link to="/recruiter/billing/upgrade" className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700">Choose a plan</Link>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 p-6 max-w-2xl">
+          <div className="page-shell-card rounded-xl p-6 max-w-2xl">
             <div className="flex flex-wrap gap-8">
               <div>
                 <p className="text-xs text-gray-500 font-medium">Plan</p>

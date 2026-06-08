@@ -50,7 +50,7 @@ export default function CandidateInfo() {
       {app && (
         <div className="max-w-2xl space-y-5">
           {/* Header card */}
-          <div className="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-sm">
+          <div className="page-shell-card rounded-xl px-6 py-5 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xl font-bold">
                 {`${(app.applicant?.firstName ?? '')[0] ?? ''}${(app.applicant?.lastName ?? '')[0] ?? ''}`.toUpperCase() || '?'}
@@ -72,7 +72,7 @@ export default function CandidateInfo() {
           </div>
 
           {/* Application details */}
-          <div className="bg-white border border-gray-200 rounded-xl px-6 py-2 shadow-sm">
+          <div className="page-shell-card rounded-xl px-6 py-2 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-700 py-3 border-b border-gray-100">Application Details</h3>
             <Row label="Applied On"          value={app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : null} />
             <Row label="Phone"               value={app.applicant?.phone ?? app.phone} />
@@ -87,7 +87,7 @@ export default function CandidateInfo() {
 
           {/* Cover letter */}
           {app.coverLetter && (
-            <div className="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-sm">
+            <div className="page-shell-card rounded-xl px-6 py-5 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Cover Letter</h3>
               <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed bg-gray-50 border border-gray-100 rounded-lg p-4">
                 {app.coverLetter}
@@ -97,7 +97,7 @@ export default function CandidateInfo() {
 
           {/* CV */}
           {app.cvPath && (
-            <div className="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-sm flex items-center justify-between">
+            <div className="page-shell-card rounded-xl px-6 py-5 shadow-sm flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-700">CV / Resume</h3>
                 <p className="text-xs text-gray-400 mt-0.5">Click to download or view</p>

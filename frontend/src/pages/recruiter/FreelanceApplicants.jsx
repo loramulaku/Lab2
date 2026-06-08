@@ -52,14 +52,14 @@ export default function FreelanceApplicants() {
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : bids.length === 0 ? (
-          <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+          <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
             <p className="text-lg">No freelance applicants yet</p>
             <p className="text-sm mt-1">Freelancers who bid on your public freelance jobs appear here.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {bids.map(b => (
-              <div key={b.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
+              <div key={b.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-900">

@@ -8,7 +8,7 @@ import { subscriptionService } from '../../services/subscriptionService';
 
 const Stat = ({ label, value, to }) => {
   const body = (
-    <div className="bg-white border border-gray-200 p-5">
+    <div className="page-shell-card rounded-xl p-5">
       <p className="text-3xl font-bold text-gray-900">{value}</p>
       <p className="text-sm text-gray-500 mt-1">{label}</p>
     </div>
@@ -52,7 +52,7 @@ export default function Overview() {
     <RecruiterLayout title="Overview">
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
         <div className="space-y-6">
-          <div className="bg-white border border-gray-200 px-5 py-4 flex flex-wrap items-center gap-4">
+          <div className="page-shell-card rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
             {sub ? (
               <>
                 <span className="text-sm text-gray-700">Plan: <strong>{sub.planName}</strong></span>
@@ -75,7 +75,7 @@ export default function Overview() {
             <Stat label="Contracts" value={counts.contracts} to="/recruiter/contracts" />
           </div>
 
-          <div className="bg-white border border-gray-200 p-5">
+          <div className="page-shell-card rounded-xl p-5">
             <h3 className="font-semibold text-gray-900 mb-3">Quick actions</h3>
             <div className="flex flex-wrap gap-3">
               <Link to="/recruiter/jobs?post=1" className="px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700">+ Post a Job</Link>

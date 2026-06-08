@@ -111,7 +111,7 @@ export default function CreatePipeline() {
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
         {/* Step 1 — how many stages */}
-        <div className="bg-white border border-gray-200 px-6 py-5 mb-4">
+        <div className="page-shell-card rounded-xl px-6 py-5 mb-4">
           <label className="block text-sm font-semibold text-gray-800 mb-2">
             How many additional stages? (e.g. 4)
           </label>
@@ -136,7 +136,7 @@ export default function CreatePipeline() {
         {/* Step 2 — fill in names + calendar toggle */}
         {stages.length > 0 && (
           <form onSubmit={handleSubmit}>
-            <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-4">
+            <div className="page-shell-card rounded-xl px-6 py-5 mb-4 space-y-4">
               {/* Locked first stage */}
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1">

@@ -73,14 +73,14 @@ export default function TransitionNotes() {
       {loading && <p className="text-sm text-gray-400">Loading…</p>}
 
       {!loading && entries.length === 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg font-medium">No transition notes yet</p>
           <p className="text-sm mt-1">Notes added via the pipeline board will appear here.</p>
         </div>
       )}
 
       {!loading && entries.length > 0 && visible.length === 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl text-center py-12 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-12 text-gray-400">
           <p className="text-sm">No notes match your search.</p>
         </div>
       )}
@@ -94,7 +94,7 @@ export default function TransitionNotes() {
             : entry.notes;
 
           return (
-            <div key={entry.applicationId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div key={entry.applicationId} className="page-shell-card rounded-xl overflow-hidden shadow-sm">
               {/* Candidate header */}
               <div className="flex items-center gap-3 px-5 py-4 bg-gray-50 border-b border-gray-100">
                 <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">

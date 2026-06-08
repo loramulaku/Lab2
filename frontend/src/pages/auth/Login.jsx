@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePageSection, useTheme } from '../../context/ThemeContext';
+import { PageBackground } from '../../components/layout';
 import LeftPanel from './LeftPanel';
 
 const EyeIcon = ({ open }) => open ? (
@@ -47,9 +48,9 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
     <div
       data-theme-section={sectionId}
       data-theme-label="Sign In Form"
-      className="auth-form-panel w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-[#2B3FE7] lg:bg-transparent"
+      className="auth-form-panel w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative"
     >
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
+      <div className="page-shell-card rounded-3xl w-full max-w-md p-8 lg:p-10">
         <div className="flex items-center gap-3 mb-8">
           <div className="rounded-xl p-2" style={{ backgroundColor: s.btnBgColor ?? '#2563eb' }}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -121,7 +122,8 @@ export default function Login() {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   return (
-    <div className="auth-page-shell min-h-screen flex">
+    <div className="auth-page-shell min-h-screen flex relative">
+      <PageBackground />
       {sections.map((section) => {
         if (section.type === 'login-left') {
           return <LeftPanel key={section.id} sectionId={section.id} />;

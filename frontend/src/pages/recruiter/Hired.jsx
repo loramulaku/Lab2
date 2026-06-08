@@ -91,7 +91,7 @@ export default function Hired() {
 function StandardSection({ records, fmt, fmtMoney, personName }) {
   if (records.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl text-center py-16 text-gray-400">
+      <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
         <p className="text-lg font-medium">No standard hires yet</p>
         <p className="text-sm mt-1">Candidates appear here after their employment contract is approved.</p>
       </div>
@@ -101,7 +101,7 @@ function StandardSection({ records, fmt, fmtMoney, personName }) {
   return (
     <div className="space-y-3">
       {records.map(c => (
-        <div key={c.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-start justify-between gap-4">
+        <div key={c.id} className="page-shell-card rounded-xl px-5 py-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
@@ -124,7 +124,7 @@ function StandardSection({ records, fmt, fmtMoney, personName }) {
 function FreelanceSection({ records, fmt, fmtMoney, personName }) {
   if (records.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl text-center py-16 text-gray-400">
+      <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
         <p className="text-lg font-medium">No freelance hires yet</p>
         <p className="text-sm mt-1">Freelancers appear here after they approve their contract.</p>
       </div>
@@ -134,7 +134,7 @@ function FreelanceSection({ records, fmt, fmtMoney, personName }) {
   return (
     <div className="space-y-3">
       {records.map(c => (
-        <div key={c.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-start justify-between gap-4">
+        <div key={c.id} className="page-shell-card rounded-xl px-5 py-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="inline-block w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />

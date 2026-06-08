@@ -22,14 +22,14 @@ export default function Contracts() {
     <RecruiterLayout title="Contracts">
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : contracts.length === 0 ? (
-          <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+          <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
             <p className="text-lg">No contracts yet</p>
             <p className="text-sm mt-1">Accept a bid or have a freelancer accept an invitation to create one.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {contracts.map(c => (
-              <div key={c.id} className="bg-white border border-gray-200 px-5 py-4 flex justify-between items-start gap-4">
+              <div key={c.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-900">{c.jobTitle ?? `Job #${c.jobId}`}</h3>

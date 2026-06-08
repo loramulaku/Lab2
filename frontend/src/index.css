@@ -158,6 +158,25 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
   background: #2a3d5c;
 }
 
+/* ── Light sidebar scrollbar — blends into frosted glass panels ────────────── */
+.sidebar-scrollbar-light {
+  scrollbar-width: thin;                          /* Firefox */
+  scrollbar-color: #bfdbfe transparent;           /* Firefox: thumb track */
+}
+.sidebar-scrollbar-light::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scrollbar-light::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scrollbar-light::-webkit-scrollbar-thumb {
+  background: #bfdbfe;
+  border-radius: 2px;
+}
+.sidebar-scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: #93c5fd;
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.15s ease-out;

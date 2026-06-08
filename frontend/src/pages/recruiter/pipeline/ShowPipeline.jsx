@@ -96,7 +96,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
 
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      <div className="bg-white border border-gray-200 px-6 py-5 mb-4">
+      <div className="page-shell-card rounded-xl px-6 py-5 mb-4">
         <label className="block text-sm font-semibold text-gray-800 mb-2">
           How many additional stages? (e.g. 4)
         </label>
@@ -117,7 +117,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
 
       {stages.length > 0 && (
         <form onSubmit={handleSubmit}>
-          <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-4">
+          <div className="page-shell-card rounded-xl px-6 py-5 mb-4 space-y-4">
             <div>
               <label className="block text-xs font-semibold text-gray-400 mb-1">Stage 1 (locked)</label>
               <input disabled value="Application"

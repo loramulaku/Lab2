@@ -30,7 +30,7 @@ export default function Invoices() {
 
       {loading ? <p className="text-sm text-gray-400">Loading…</p>
         : !sub ? (
-          <div className="bg-white border border-gray-200 p-8 text-center text-gray-500">
+          <div className="page-shell-card rounded-xl p-8 text-center text-gray-500">
             No billing records yet.{' '}
             <Link to="/recruiter/billing/upgrade" className="text-blue-600 hover:underline">Choose a plan</Link>{' '}
             to get started.
@@ -38,7 +38,7 @@ export default function Invoices() {
         ) : (
           <div className="space-y-4">
             {/* Invoice record header */}
-            <div className="bg-white border border-gray-200">
+            <div className="page-shell-card rounded-xl">
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold text-gray-800">Active Billing Record</span>

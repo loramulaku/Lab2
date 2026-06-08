@@ -26,11 +26,11 @@ export default function TeamMembers() {
     <RecruiterLayout title="Team Members">
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
         <div className="space-y-4 max-w-2xl">
-          <div className="bg-white border border-gray-200 p-5">
+          <div className="page-shell-card rounded-xl p-5">
             <p className="text-xs text-gray-500 mb-2">Company</p>
             <p className="font-medium text-gray-900">{company?.name ?? 'Your company'}</p>
           </div>
-          <div className="bg-white border border-gray-200">
+          <div className="page-shell-card rounded-xl">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500 border-b border-gray-100">

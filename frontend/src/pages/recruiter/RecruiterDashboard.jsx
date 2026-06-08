@@ -16,7 +16,7 @@ const STATUS_CLS = {
   closed:    'bg-gray-100 text-gray-500',
 };
 const Badge = ({ status }) => (
-  <span className={`text-xs px-2 py-0.5 font-medium rounded ${STATUS_CLS[status] ?? 'bg-gray-100 text-gray-600'}`}>
+  <span className={`text-xs px-2.5 py-0.5 font-medium rounded-full ${STATUS_CLS[status] ?? 'bg-gray-100 text-gray-600'}`}>
     {status}
   </span>
 );
@@ -72,9 +72,9 @@ export default function RecruiterDashboard() {
         <div className="space-y-6">
           {/* Subscription bar */}
           {sub && (
-            <div className="bg-white border border-gray-200 px-5 py-4 flex flex-wrap gap-6 items-center text-sm text-gray-700">
+            <div className="page-shell-card rounded-xl px-5 py-4 flex flex-wrap gap-6 items-center text-sm text-gray-700">
               <span>Plan: <strong>{sub.planName ?? 'Unknown'}</strong></span>
-              <span className={`px-2 py-0.5 text-xs font-medium rounded ${sub.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${sub.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                 {sub.status}
               </span>
               <span>Job limit: <strong>{sub.jobLimit == null ? 'Unlimited' : sub.jobLimit}</strong></span>
@@ -85,9 +85,9 @@ export default function RecruiterDashboard() {
           )}
 
           {!sub && (
-            <div className="bg-yellow-50 border border-yellow-300 px-5 py-4 flex items-center justify-between">
+            <div className="bg-yellow-50 border border-yellow-300 rounded-xl px-5 py-4 flex items-center justify-between">
               <p className="text-sm font-medium text-yellow-800">No active subscription — you cannot post jobs.</p>
-              <Link to="/recruiter/billing/upgrade" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              <Link to="/recruiter/billing/upgrade" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
                 View Plans
               </Link>
             </div>
@@ -102,7 +102,7 @@ export default function RecruiterDashboard() {
               { label: 'Freelancers',    value: freelancers.length, href: '/recruiter/applicants/freelance' },
             ].map(({ label, value, href }) => (
               <Link key={label} to={href}
-                className="bg-white border border-gray-200 px-5 py-4 hover:border-blue-300 transition-colors">
+                className="page-shell-card rounded-xl px-5 py-4 hover:border-blue-300 transition-colors">
                 <p className="text-2xl font-bold text-gray-900">{value}</p>
                 <p className="text-xs text-gray-500 mt-1">{label}</p>
               </Link>
@@ -111,7 +111,7 @@ export default function RecruiterDashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Candidates */}
-            <div className="bg-white border border-gray-200 px-5 py-4">
+            <div className="page-shell-card rounded-xl px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-900">Candidates</h2>
                 <Link to="/recruiter/applicants/job-seekers" className="text-xs text-blue-600 hover:underline">View all →</Link>
@@ -138,7 +138,7 @@ export default function RecruiterDashboard() {
             </div>
 
             {/* Freelancers */}
-            <div className="bg-white border border-gray-200 px-5 py-4">
+            <div className="page-shell-card rounded-xl px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-900">Freelancers</h2>
                 <Link to="/recruiter/applicants/freelance" className="text-xs text-blue-600 hover:underline">View all →</Link>
@@ -169,7 +169,7 @@ export default function RecruiterDashboard() {
           </div>
 
           {/* Recent Job Listings */}
-          <div className="bg-white border border-gray-200 px-5 py-4">
+          <div className="page-shell-card rounded-xl px-5 py-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-gray-900">Recent Job Listings</h2>
               <Link to="/recruiter/jobs" className="text-xs text-blue-600 hover:underline">View all →</Link>

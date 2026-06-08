@@ -48,7 +48,7 @@ export default function SearchInvite() {
 
   return (
     <RecruiterLayout title="Active Freelancers">
-      <form onSubmit={search} className="bg-white border border-gray-200 p-4 mb-6 grid md:grid-cols-4 gap-3">
+      <form onSubmit={search} className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-4 gap-3">
         <input value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills (comma-separated)"
           className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <input value={location} onChange={e => setLocation(e.target.value)} placeholder="Location"
@@ -63,7 +63,7 @@ export default function SearchInvite() {
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
       {searched && results.length === 0 && !loading && (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg">No freelancers match your search</p>
           <p className="text-sm mt-1">Only candidates with Freelance Mode activated are shown.</p>
         </div>
@@ -71,7 +71,7 @@ export default function SearchInvite() {
 
       <div className="space-y-3">
         {results.map(c => (
-          <div key={c._id} className="bg-white border border-gray-200 px-5 py-4">
+          <div key={c._id} className="page-shell-card rounded-xl px-5 py-4">
             <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
             {c.headline && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
             {c.location && <p className="text-sm text-gray-500">{c.location}</p>}

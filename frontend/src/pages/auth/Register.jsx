@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePageSection } from '../../context/ThemeContext';
+import { PageBackground } from '../../components/layout';
 import LeftPanel from './LeftPanel';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -95,7 +96,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: leftS.bgColor ?? '#2B3FE7' }}>
+    <div className="min-h-screen flex relative">
+      <PageBackground />
       <LeftPanel
         sectionId="register-left"
         pageName="register"
@@ -105,8 +107,8 @@ export default function Register() {
       />
 
       {/* Right panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 lg:p-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative">
+        <div className="page-shell-card rounded-3xl w-full max-w-md p-8 lg:p-10">
           <Stepper step={step} step1Label={formS.step1Label ?? 'Choose Role'} step2Label={formS.step2Label ?? 'Create Account'} />
 
           {/* ── Step 1 — Choose Role ── */}

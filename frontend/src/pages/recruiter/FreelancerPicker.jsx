@@ -93,7 +93,7 @@ export default function FreelancerPicker() {
     <RecruiterLayout title="Select Freelancers">
 
       {/* ── Top action bar ──────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between bg-white border border-gray-200 px-5 py-3 mb-5">
+      <div className="flex items-center justify-between page-shell-card rounded-xl px-5 py-3 mb-5">
         <p className="text-sm text-gray-600">
           {count === 0
             ? 'Select one or more freelancers to invite.'
@@ -119,7 +119,7 @@ export default function FreelancerPicker() {
       </div>
 
       {/* ── Search form ─────────────────────────────────────────────────── */}
-      <form onSubmit={doSearch} className="bg-white border border-gray-200 p-4 mb-5 grid md:grid-cols-4 gap-3">
+      <form onSubmit={doSearch} className="page-shell-card rounded-xl p-4 mb-5 grid md:grid-cols-4 gap-3">
         <input
           value={skills}
           onChange={e => setSkills(e.target.value)}
@@ -151,7 +151,7 @@ export default function FreelancerPicker() {
 
       {/* ── Freelancer list ─────────────────────────────────────────────── */}
       {searched && results.length === 0 && !loading && (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg">No freelancers found</p>
           <p className="text-sm mt-1">Only candidates with Freelance Mode activated are shown.</p>
         </div>
