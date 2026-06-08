@@ -7,7 +7,7 @@ import {
   Gavel, Send, UserCheck, FileText,
   MessageCircle, Bell,
   CreditCard, ArrowUpCircle, Receipt,
-  UsersRound,
+  UsersRound, BadgeCheck,
   Settings, LogOut,
 } from 'lucide-react';
 
@@ -45,6 +45,12 @@ const NAV_GROUPS = [
       { label: 'Invited freelancers', to: '/recruiter/freelancers/invited', icon: Send },
       { label: 'Active freelancers',  to: '/recruiter/freelancers/active',  icon: UserCheck },
       { label: 'Contracts',           to: '/recruiter/contracts',           icon: FileText },
+    ],
+  },
+  {
+    title: 'HIRED',
+    items: [
+      { label: 'Hired', to: '/recruiter/hired', icon: BadgeCheck },
     ],
   },
   {
@@ -177,7 +183,7 @@ export default function RecruiterLayout({ children, title }) {
       </aside>
 
       {/* ── Main area ────────────────────────────────────────────────────── */}
-      <div className="pl-64 flex-1 flex flex-col min-h-screen">
+      <div className="pl-64 flex-1 flex flex-col min-h-screen min-w-0">
         {/* Top bar */}
         <div className="sticky top-0 z-40 flex h-14 bg-white shadow-sm items-center justify-between px-8 border-b border-gray-100">
           <h1 className="text-lg font-semibold text-gray-800">{title ?? 'Recruiter Dashboard'}</h1>

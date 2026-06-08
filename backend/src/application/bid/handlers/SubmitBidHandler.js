@@ -1,9 +1,10 @@
 const Bid             = require('../../../models/sql/Bid');
-const Notification    = require('../../../models/sql/Notification');
 const jobMysqlRepo    = require('../../../repositories/mysql/job.repo');
 const { bidsAllowed } = require('../../_shared/jobModePolicy');
 const { httpError }   = require('../../_shared/ContractService');
 const { syncBidSafe } = require('../../../sync/bidSync');
+const CreateNotificationCommand = require('../../notification/commands/CreateNotification.command');
+const createNotificationHandler = require('../../notification/handlers/CreateNotificationHandler');
 
 class SubmitBidHandler {
   async handle(command) {
@@ -80,14 +81,14 @@ class SubmitBidHandler {
 
     syncBidSafe(bid.id);
 
-    // Notify the recruiter who owns the job (best-effort — never block the bid).
+    // Notify the recruiter who owns the job (fire-and-forget — never block the bid).
     if (job.recruiterId) {
-      Notification.create({
-        userId:    job.recruiterId,
-        type:      'bid_received',
-        message:   `New bid received on "${job.title}".`,
-        createdAt: now,
-      }).catch(() => {});
+      createNotificationHandler.handle(new CreateNotificationCommand({
+        userId:  job.recruiterId,
+        type:    'bid_received',
+        message: `New bid received on "${job.title}"`,
+        link:    '/recruiter/applicants/freelance',
+      })).catch(() => {});
     }
 
     return bid;

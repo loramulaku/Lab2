@@ -6,13 +6,15 @@ import BidModal from './BidModal';
 const SUB_TABS = ['Find Work', 'My Bids', 'Invitations', 'Contracts'];
 
 const STATUS_CLS = {
-  pending:  'bg-yellow-100 text-yellow-800',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-700',
-  withdrawn:'bg-gray-100 text-gray-500',
-  expired:  'bg-gray-100 text-gray-500',
-  active:   'bg-green-100 text-green-800',
-  completed:'bg-blue-100 text-blue-800',
+  pending:   'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-teal-100 text-teal-700',
+  accepted:  'bg-green-100 text-green-800',
+  rejected:  'bg-red-100 text-red-700',
+  withdrawn: 'bg-gray-100 text-gray-500',
+  expired:   'bg-gray-100 text-gray-500',
+  revoked:   'bg-gray-100 text-gray-500',
+  active:    'bg-green-100 text-green-800',
+  completed: 'bg-blue-100 text-blue-800',
 };
 const Badge = ({ status }) => (
   <span className={`text-xs px-2 py-0.5 font-medium ${STATUS_CLS[status] ?? 'bg-gray-100 text-gray-600'}`}>{status}</span>
@@ -169,7 +171,7 @@ export default function FreelancePanel() {
     await loadAll();
   };
   const handleWithdraw = async (bidId) => { await freelanceService.withdrawBid(bidId); await loadAll(); };
-  const handleAccept   = async (id)    => { await freelanceService.acceptInvitation(id); await loadAll(); setSub('Contracts'); };
+  const handleConfirm  = async (id)    => { await freelanceService.confirmInvitation(id); await loadAll(); };
   const handleReject   = async (id)    => { await freelanceService.rejectInvitation(id); await loadAll(); };
 
   return (
@@ -322,13 +324,15 @@ export default function FreelancePanel() {
                         <Badge status={inv.status} />
                         {inv.status === 'pending' && (
                           <div className="flex gap-2">
-                            <button onClick={() => handleAccept(inv.id)} className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700">Accept</button>
+                            <button onClick={() => handleConfirm(inv.id)} className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700">Confirm</button>
                             <button onClick={() => handleReject(inv.id)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50">Decline</button>
                           </div>
                         )}
+                        {inv.status === 'confirmed' && (
+                          <p className="text-xs text-teal-600 font-medium">Awaiting recruiter</p>
+                        )}
                       </div>
                     </div>
-                    {/* View job details link */}
                     {inv.jobId && (
                       <button
                         onClick={() => setViewJobId(inv.jobId)}

@@ -1,13 +1,19 @@
-const GetMyContractsQuery   = require('../application/contract/queries/GetMyContracts.query');
-const GetContractByIdQuery  = require('../application/contract/queries/GetContractById.query');
-const getMyContractsHandler  = require('../application/contract/handlers/GetMyContractsHandler');
-const getContractByIdHandler = require('../application/contract/handlers/GetContractByIdHandler');
+const GetMyContractsQuery    = require('../application/contract/queries/GetMyContracts.query');
+const GetContractByIdQuery   = require('../application/contract/queries/GetContractById.query');
+const CreateContractCommand  = require('../application/contract/commands/CreateContract.command');
+const ApproveContractCommand = require('../application/contract/commands/ApproveContract.command');
+
+const getMyContractsHandler   = require('../application/contract/handlers/GetMyContractsHandler');
+const getContractByIdHandler  = require('../application/contract/handlers/GetContractByIdHandler');
+const createContractHandler   = require('../application/contract/handlers/CreateContractHandler');
+const approveContractHandler  = require('../application/contract/handlers/ApproveContractHandler');
+
 const ContractDTO = require('../dtos/contract.dto');
 
 // Scope the list to the caller: freelancers see their own, recruiters see their company's.
 const listMine = (req, res, next) => {
   const roles = req.user.roles ?? [];
-  const opts = { ...req.query };
+  const opts  = { ...req.query };
   if (roles.includes('recruiter') && !roles.includes('admin')) opts.companyId = req.user.companyId;
   else if (roles.includes('candidate')) opts.freelancerId = req.user.id;
   return getMyContractsHandler.handle(new GetMyContractsQuery(opts))
@@ -28,4 +34,43 @@ const getById = (req, res, next) =>
     })
     .catch(next);
 
-module.exports = { listMine, getById };
+// POST /contracts — recruiter creates a pending contract draft.
+const create = async (req, res, next) => {
+  try {
+    const { source, bidId, invitationId, applicationId, agreedPrice, startDate, endDate } = req.body;
+    if (!source || !agreedPrice || !startDate) {
+      return res.status(400).json({ message: 'source, agreedPrice, and startDate are required' });
+    }
+    const companyId = req.user.companyId;
+    if (!companyId) return res.status(400).json({ message: 'Recruiter company not found' });
+
+    const contract = await createContractHandler.handle(new CreateContractCommand({
+      companyId, source,
+      bidId:         bidId        ? Number(bidId)        : null,
+      invitationId:  invitationId ? Number(invitationId) : null,
+      applicationId: applicationId? Number(applicationId): null,
+      agreedPrice:   Number(agreedPrice),
+      startDate, endDate: endDate || null,
+    }));
+    return res.status(201).json(ContractDTO.from(contract));
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message, code: err.code });
+    next(err);
+  }
+};
+
+// POST /contracts/:id/approve — freelancer/candidate approves the pending contract.
+const approve = async (req, res, next) => {
+  try {
+    const contract = await approveContractHandler.handle(new ApproveContractCommand({
+      contractId: Number(req.params.id),
+      userId:     req.user.id,
+    }));
+    return res.json(ContractDTO.from(contract));
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message, code: err.code });
+    next(err);
+  }
+};
+
+module.exports = { listMine, getById, create, approve };

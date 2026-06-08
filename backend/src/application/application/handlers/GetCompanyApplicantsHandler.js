@@ -5,9 +5,10 @@ class GetCompanyApplicantsHandler {
   async handle(query) {
     if (!query.companyId) return { data: [], page: query.page, limit: query.limit, total: 0 };
     return applicationRepo.findByCompany(query.companyId, {
-      status: query.status,
-      page:   query.page,
-      limit:  query.limit,
+      status:            query.status,
+      page:              query.page,
+      limit:             query.limit,
+      jobEmploymentType: { $ne: 'freelance' },
     });
   }
 }

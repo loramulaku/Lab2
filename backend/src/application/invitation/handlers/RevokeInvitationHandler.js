@@ -9,8 +9,8 @@ class RevokeInvitationHandler {
     if (inv.companyId !== command.companyId) {
       throw httpError(403, 'You do not own this invitation', 'FORBIDDEN');
     }
-    if (inv.status !== 'pending') {
-      throw httpError(409, `Invitation is already ${inv.status}`, 'INVITATION_NOT_PENDING');
+    if (!['pending', 'confirmed'].includes(inv.status)) {
+      throw httpError(409, `Invitation is already ${inv.status}`, 'INVITATION_NOT_REVOKABLE');
     }
 
     await inv.update({ status: 'revoked', activeKey: null, updatedAt: new Date() });

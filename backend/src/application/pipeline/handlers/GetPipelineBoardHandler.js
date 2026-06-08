@@ -14,7 +14,10 @@ class GetPipelineBoardHandler {
       order: [['order_index', 'ASC']],
     });
 
-    let applications = await ApplicationView.find({ companyId: Number(query.companyId) }).lean();
+    let applications = await ApplicationView.find({
+      companyId: Number(query.companyId),
+      status: { $nin: ['rejected', 'hired'] },
+    }).lean();
 
     if (query.search) {
       const s = query.search.toLowerCase();

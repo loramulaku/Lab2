@@ -35,6 +35,7 @@ const FreelancerPicker    = lazy(() => import('./pages/recruiter/FreelancerPicke
 const InvitedFreelancers  = lazy(() => import('./pages/recruiter/InvitedFreelancers'));
 const BidsReceived        = lazy(() => import('./pages/recruiter/BidsReceived'));
 const Contracts           = lazy(() => import('./pages/recruiter/Contracts'));
+const Hired               = lazy(() => import('./pages/recruiter/Hired'));
 const CurrentPlan         = lazy(() => import('./pages/recruiter/billing/CurrentPlan'));
 const BuyUpgrade          = lazy(() => import('./pages/recruiter/billing/BuyUpgrade'));
 const Invoices            = lazy(() => import('./pages/recruiter/billing/Invoices'));
@@ -130,6 +131,7 @@ function AppShell() {
         ['/recruiter/freelancers/invited',  <InvitedFreelancers />],
         ['/recruiter/bids',                 <BidsReceived />],
         ['/recruiter/contracts',            <Contracts />],
+        ['/recruiter/hired',                <Hired />],
         ['/recruiter/billing/plan',         <CurrentPlan />],
         ['/recruiter/billing/upgrade',      <BuyUpgrade />],
         ['/recruiter/billing/invoices',     <Invoices />],

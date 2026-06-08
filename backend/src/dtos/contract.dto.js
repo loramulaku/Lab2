@@ -4,23 +4,25 @@
  */
 class ContractDTO {
   constructor(c) {
-    this.id           = c.id ?? c._id;
-    this.jobId        = c.jobId;
-    this.freelancerId = c.freelancerId;
-    this.companyId    = c.companyId;
-    this.bidId        = c.bidId ?? null;
-    this.invitationId = c.invitationId ?? null;
-    this.source       = c.source ?? null;
-    this.agreedPrice  = c.agreedPrice != null ? Number(c.agreedPrice) : null;
-    this.startDate    = c.startDate ?? null;
-    this.endDate      = c.endDate ?? null;
-    this.status       = c.status;
-    this.jobTitle     = c.jobTitle ?? null;
-    this.companyName  = c.companyName ?? null;
-    this.freelancer   = (c.freelancerFirstName || c.freelancerLastName)
+    this.id            = c.id ?? c._id;
+    this.jobId         = c.jobId;
+    this.freelancerId  = c.freelancerId;
+    this.companyId     = c.companyId;
+    this.bidId         = c.bidId         ?? null;
+    this.invitationId  = c.invitationId  ?? null;
+    this.applicationId = c.applicationId ?? null;
+    this.source        = c.source        ?? null;
+    this.agreedPrice   = c.agreedPrice != null ? Number(c.agreedPrice) : null;
+    this.startDate     = c.startDate     ?? null;
+    this.endDate       = c.endDate       ?? null;
+    this.status        = c.status;
+    this.approvedAt    = c.approvedAt    ?? null;
+    this.jobTitle      = c.jobTitle      ?? null;
+    this.companyName   = c.companyName   ?? null;
+    this.freelancer    = (c.freelancerFirstName || c.freelancerLastName)
       ? { firstName: c.freelancerFirstName ?? null, lastName: c.freelancerLastName ?? null }
       : null;
-    this.createdAt    = c.createdAt ?? null;
+    this.createdAt     = c.createdAt     ?? null;
   }
 
   static from(c) {

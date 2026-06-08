@@ -5,7 +5,8 @@ const PipelineStage    = require('../../../models/sql/PipelineStage');
 const CandidateProfile = require('../../../models/sql/CandidateProfile');
 const { syncApplicationSafe } = require('../../../sync/applicationSync');
 const { syncCandidateSafe }   = require('../../../sync/candidateSync');
-const { getIo }        = require('../../../socket/ioInstance');
+const CreateNotificationCommand = require('../../notification/commands/CreateNotification.command');
+const createNotificationHandler = require('../../notification/handlers/CreateNotificationHandler');
 
 /**
  * Candidate applies to a STANDARD-employment job. The application enters the
@@ -97,21 +98,14 @@ class ApplyToJobHandler {
 
     syncApplicationSafe(app.id);
 
-    // Push real-time update to recruiter so their dashboard count increments instantly.
+    // Notify the recruiter who owns the job (fire-and-forget — never block the applicant)
     if (job.recruiterId) {
-      try {
-        const io = getIo();
-        if (io) {
-          io.to(`user:${job.recruiterId}`).emit('application:new', {
-            applicationId:      app.id,
-            jobId:              app.jobId,
-            jobTitle:           job.title,
-            status:             'pending',
-            applicantFirstName: profile?.firstName ?? null,
-            applicantLastName:  profile?.lastName  ?? null,
-          });
-        }
-      } catch { /* socket emit is best-effort */ }
+      createNotificationHandler.handle(new CreateNotificationCommand({
+        userId:  job.recruiterId,
+        type:    'application_received',
+        message: `New application received for "${job.title}"`,
+        link:    '/recruiter/applicants/job-seekers',
+      })).catch(() => {});
     }
 
     return { id: app.id, jobId: app.jobId, status: 'in_review', message: 'Application submitted — In review' };

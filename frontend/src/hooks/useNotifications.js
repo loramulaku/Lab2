@@ -6,16 +6,12 @@ export function useNotifications() {
   const socketRef = useSocket();
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch existing notifications on mount
   useEffect(() => {
     api.get('/notifications')
       .then(r => setNotifications(r.data))
       .catch(() => {});
   }, []);
 
-  // Listen for real-time notifications.
-  // socketRef.current in the dep array re-runs this effect after the socket
-  // connects (the API fetch above triggers a re-render that catches it).
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
@@ -24,8 +20,8 @@ export function useNotifications() {
       setNotifications(prev => [notification, ...prev]);
     };
 
-    socket.on('new:notification', handler);
-    return () => socket.off('new:notification', handler);
+    socket.on('notification:new', handler);
+    return () => socket.off('notification:new', handler);
   }, [socketRef.current]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markAsRead = useCallback(async (id) => {

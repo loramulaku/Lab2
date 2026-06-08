@@ -11,8 +11,9 @@ router.get('/jobs/:jobId/invitations',   auth, role('recruiter', 'admin'), invCt
 router.patch('/invitations/:id/revoke',  auth, role('recruiter', 'admin'), invCtrl.revoke);
 
 // Freelancer (role 'candidate') — inbox & response
-router.get('/me/invitations',            auth, role('candidate'), invCtrl.listMine);
-router.post('/invitations/:id/accept',   auth, role('candidate'), invCtrl.accept);
-router.post('/invitations/:id/reject',   auth, role('candidate'), invCtrl.reject);
+router.get('/me/invitations',             auth, role('candidate'), invCtrl.listMine);
+router.post('/invitations/:id/confirm',   auth, role('candidate'), invCtrl.confirm);
+router.post('/invitations/:id/accept',    auth, role('candidate'), invCtrl.accept);
+router.post('/invitations/:id/reject',    auth, role('candidate'), invCtrl.reject);
 
 module.exports = router;
