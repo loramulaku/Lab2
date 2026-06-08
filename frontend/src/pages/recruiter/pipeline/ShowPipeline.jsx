@@ -1,12 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../../components/recruiter/RecruiterLayout';
 import pipelineService from '../../../services/pipelineService';
 
 const COLUMN_COLORS = [
-  'border-t-blue-400', 'border-t-purple-400', 'border-t-amber-400',
-  'border-t-green-400', 'border-t-rose-400', 'border-t-cyan-400',
-  'border-t-orange-400', 'border-t-indigo-400',
+  'border-t-blue-400',
+  'border-t-purple-400',
+  'border-t-amber-400',
+  'border-t-green-400',
+  'border-t-rose-400',
+  'border-t-cyan-400',
+  'border-t-orange-400',
+  'border-t-indigo-400',
+];
+
+const BADGE_COLORS = [
+  'bg-blue-100 text-blue-700',
+  'bg-purple-100 text-purple-700',
+  'bg-amber-100 text-amber-700',
+  'bg-green-100 text-green-700',
+  'bg-rose-100 text-rose-700',
+  'bg-cyan-100 text-cyan-700',
 ];
 
 function initials(first, last) {
@@ -20,19 +33,185 @@ function avatarColor(name) {
   return colors[h % colors.length];
 }
 
+// ── Create / Edit Pipeline UI ─────────────────────────────────────────────────
+
+function PipelineSetupPanel({ existing, onSaved }) {
+  const [stageCount, setStageCount]   = useState('');
+  const [stages, setStages]           = useState([]);
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState('');
+  const [confirmEdit, setConfirmEdit] = useState(false);
+
+  const applyCount = () => {
+    const n = Math.max(1, Math.min(20, parseInt(stageCount, 10) || 0));
+    setStages(prev =>
+      Array.from({ length: n }, (_, i) => prev[i] ?? { name: '', hasCalendar: false })
+    );
+  };
+
+  const updateName     = (i, val) => setStages(prev => prev.map((s, idx) => idx === i ? { ...s, name: val } : s));
+  const toggleCalendar = (i)      => setStages(prev => prev.map((s, idx) => idx === i ? { ...s, hasCalendar: !s.hasCalendar } : s));
+  const validStages    = ()       => stages.filter(s => s.name.trim());
+
+  const doSave = async () => {
+    setError('');
+    if (!validStages().length) { setError('Add at least one stage name.'); return; }
+    setSaving(true);
+    try {
+      if (existing) {
+        await pipelineService.editPipeline(validStages());
+      } else {
+        await pipelineService.createPipeline(validStages());
+      }
+      onSaved();
+    } catch (err) {
+      if (err?.response?.data?.code === 'PIPELINE_EXISTS') { onSaved(); return; }
+      setError(err?.response?.data?.message || 'Failed to save pipeline.');
+    } finally { setSaving(false); setConfirmEdit(false); }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    if (!validStages().length) { setError('Add at least one stage name.'); return; }
+    if (existing) setConfirmEdit(true);
+    else doSave();
+  };
+
+  return (
+    <div className="max-w-xl">
+      {existing && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-5 py-4 mb-6">
+          <p className="text-sm font-semibold text-amber-800">You already have a pipeline — editing will reset all stage assignments.</p>
+          <p className="text-xs text-amber-600 mt-1">
+            Current stages: <strong>{existing.stages?.map(s => s.name).join(' → ')}</strong>
+          </p>
+        </div>
+      )}
+
+      <p className="text-sm text-gray-500 mb-6">
+        Your pipeline always starts with an <strong>Application</strong> stage (added automatically).
+        Enter how many additional stages you want, fill in their names, then click{' '}
+        {existing ? 'Update' : 'Create'}.
+        Toggle <strong>Has Calendar</strong> on any stage where you want to schedule an interview date.
+      </p>
+
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
+      <div className="bg-white border border-gray-200 px-6 py-5 mb-4">
+        <label className="block text-sm font-semibold text-gray-800 mb-2">
+          How many additional stages? (e.g. 4)
+        </label>
+        <div className="flex gap-3">
+          <input
+            type="number" min="1" max="20"
+            value={stageCount}
+            onChange={e => setStageCount(e.target.value)}
+            placeholder="e.g. 4"
+            className="w-28 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button type="button" onClick={applyCount}
+            className="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
+            Set Stages
+          </button>
+        </div>
+      </div>
+
+      {stages.length > 0 && (
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white border border-gray-200 px-6 py-5 mb-4 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 mb-1">Stage 1 (locked)</label>
+              <input disabled value="Application"
+                className="w-full border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+            </div>
+            {stages.map((stage, i) => (
+              <div key={i} className="border border-gray-100 rounded-lg p-3 space-y-2">
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Stage {i + 2}</label>
+                <input
+                  type="text" value={stage.name}
+                  onChange={e => updateName(i, e.target.value)}
+                  placeholder={`e.g. ${['Phone Screen', 'Technical Interview', 'HR Interview', 'Offer'][i] ?? `Stage ${i + 2}`}`}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+                  <button
+                    type="button" onClick={() => toggleCalendar(i)}
+                    className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                      stage.hasCalendar ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${
+                      stage.hasCalendar ? 'translate-x-4' : 'translate-x-0'
+                    }`} />
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    {stage.hasCalendar
+                      ? <span className="font-medium text-blue-700">Has Calendar — recruiter can schedule a date</span>
+                      : <span className="text-gray-400">Has Calendar (off)</span>
+                    }
+                  </span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <button type="submit" disabled={saving}
+            className={`px-6 py-2.5 text-white text-sm font-semibold disabled:opacity-50 ${
+              existing ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {saving ? 'Saving…' : existing ? 'Update Pipeline' : 'Create Pipeline'}
+          </button>
+        </form>
+      )}
+
+      {confirmEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4">
+          <div className="bg-white w-full max-w-md rounded-xl border border-red-200 shadow-2xl overflow-hidden">
+            <div className="px-5 py-4 bg-red-50 border-b border-red-100">
+              <h3 className="font-bold text-red-800 text-lg">Warning — Destructive Action</h3>
+            </div>
+            <div className="p-5 space-y-3">
+              <p className="text-sm text-gray-700">
+                Updating the pipeline will <strong>remove all candidates</strong> from their current stages.
+              </p>
+              <p className="text-sm text-gray-600">
+                Applications are <strong>not deleted</strong> — only stage assignments are cleared.
+              </p>
+              <p className="text-sm font-semibold text-red-700">Are you sure you want to proceed?</p>
+            </div>
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+              <button onClick={doSave}
+                className="px-5 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 rounded">
+                Yes, Update Pipeline
+              </button>
+              <button onClick={() => setConfirmEdit(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Kanban Board ─────────────────────────────────────────────────────────
+
 export default function ShowPipeline() {
-  const navigate = useNavigate();
   const [board, setBoard]               = useState(null);
   const [loading, setLoading]           = useState(true);
+  const [noPipeline, setNoPipeline]     = useState(false);
   const [search, setSearch]             = useState('');
   const [searchInput, setInput]         = useState('');
   const [error, setError]               = useState('');
-  // transitionModal: { applicationId, fromStageId, toStageId, toStageName, hasCalendar, candidateName } | null
   const [transModal, setTransModal]     = useState(null);
-  // addNoteModal: { applicationId, stageId, stageName, candidateName } | null
   const [addNoteModal, setAddNoteModal] = useState(null);
   const [dragCard, setDragCard]         = useState(null);
   const [overStage, setOverStage]       = useState(null);
+  const [showSetup, setShowSetup]       = useState(false);
   const debounceRef                     = useRef(null);
 
   const load = useCallback(async (q = search) => {
@@ -41,14 +220,19 @@ export default function ShowPipeline() {
     try {
       const data = await pipelineService.getBoard(q);
       setBoard(data);
+      setNoPipeline(false);
     } catch (err) {
-      if (err?.response?.data?.code === 'NO_PIPELINE') navigate('/recruiter/pipeline/create');
-      else setError('Failed to load pipeline board.');
+      if (err?.response?.data?.code === 'NO_PIPELINE') {
+        setNoPipeline(true);
+        setBoard(null);
+      } else {
+        setError('Failed to load pipeline board.');
+      }
     } finally {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, navigate]);
+  }, [search]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -68,11 +252,9 @@ export default function ShowPipeline() {
     e.preventDefault();
     setOverStage(null);
     if (!dragCard || dragCard.fromStageId === toStage.id) { setDragCard(null); return; }
-    // Safety net — cards with unread notifications are non-draggable but just in case
     if (dragCard.lastNotificationRead === false) { setDragCard(null); return; }
     const moved = { ...dragCard };
     setDragCard(null);
-    // Open mandatory note + optional calendar modal — move only happens on confirm
     setTransModal({
       applicationId: moved.applicationId,
       fromStageId:   moved.fromStageId,
@@ -85,7 +267,6 @@ export default function ShowPipeline() {
 
   const onDragEnd = () => { setOverStage(null); setDragCard(null); };
 
-  // After note modal confirms — optimistic move then API call
   const handleTransitionConfirmed = async ({ applicationId, toStageId, note, interviewDate }) => {
     setTransModal(null);
     setBoard(prev => {
@@ -105,8 +286,20 @@ export default function ShowPipeline() {
     } catch { load(); }
   };
 
+  // ── No pipeline yet ───────────────────────────────────────────────────────
+  if (!loading && noPipeline) {
+    return (
+      <RecruiterLayout title="Hiring Pipeline">
+        <div className="mb-6">
+          <p className="text-sm text-gray-500">No pipeline set up yet. Create one to start managing candidates.</p>
+        </div>
+        <PipelineSetupPanel existing={null} onSaved={() => { setNoPipeline(false); load(); }} />
+      </RecruiterLayout>
+    );
+  }
+
   if (loading && !board) return (
-    <RecruiterLayout title="Pipeline Board">
+    <RecruiterLayout title="Hiring Pipeline">
       <div className="flex gap-4">
         {[1,2,3,4].map(i => <div key={i} className="flex-shrink-0 w-64 bg-gray-100 rounded-lg h-96 animate-pulse" />)}
       </div>
@@ -114,9 +307,10 @@ export default function ShowPipeline() {
   );
 
   return (
-    <RecruiterLayout title="Pipeline Board">
+    <RecruiterLayout title="Hiring Pipeline">
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
+      {/* Toolbar */}
       <div className="mb-5 flex items-center gap-3 flex-wrap">
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,20 +325,38 @@ export default function ShowPipeline() {
             Clear
           </button>
         )}
-        <div className="text-xs text-gray-400 ml-auto flex items-center gap-3">
+
+        <button
+          onClick={() => setShowSetup(v => !v)}
+          className="ml-auto px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 font-medium"
+        >
+          {showSetup ? 'Hide Setup' : 'Edit Pipeline'}
+        </button>
+
+        <div className="text-xs text-gray-400 flex items-center gap-3">
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-green-400 inline-block" />
             Read — can move
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />
-            Unread — move blocked
+            Unread — blocked
           </span>
-          <span className="text-gray-300">|</span>
-          <span>Note required on every move</span>
         </div>
       </div>
 
+      {/* Inline setup panel */}
+      {showSetup && board && (
+        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-6">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Pipeline Setup</h2>
+          <PipelineSetupPanel
+            existing={board}
+            onSaved={() => { setShowSetup(false); load(); }}
+          />
+        </div>
+      )}
+
+      {/* Board */}
       {board && (
         <div className="flex gap-4 overflow-x-auto pb-6 min-h-[70vh] items-start">
           {board.stages.map((stage, si) => (
@@ -157,18 +369,9 @@ export default function ShowPipeline() {
               } border-t-4 ${COLUMN_COLORS[si % COLUMN_COLORS.length]}`}
             >
               <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[120px]">
-                    {stage.name}
-                  </h3>
-                  {stage.hasCalendar && (
-                    <span title="Calendar stage">
-                      <svg className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </span>
-                  )}
-                </div>
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[140px]">
+                  {stage.name}
+                </h3>
                 <span className="text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2.5 py-0.5 ml-2 flex-shrink-0">
                   {stage.candidates.length}
                 </span>
@@ -182,7 +385,6 @@ export default function ShowPipeline() {
                     stageId={stage.id}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
-                    onViewDetails={() => navigate(`/recruiter/pipeline/candidate/${c.applicationId}`)}
                     onAddNote={() => setAddNoteModal({
                       applicationId: c.applicationId,
                       stageId:       stage.id,
@@ -221,18 +423,15 @@ export default function ShowPipeline() {
   );
 }
 
-function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetails, onAddNote }) {
+function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onAddNote }) {
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
-
-  // lastNotificationRead: null = no notification yet (first move); true = read; false = unread
+  const badge = BADGE_COLORS[stageId % BADGE_COLORS.length]; // eslint-disable-line no-unused-vars
   const isBlocked = candidate.lastNotificationRead === false;
-
-  const readDot =
-    candidate.lastNotificationRead === null  ? null :
-    candidate.lastNotificationRead === true  ? 'bg-green-400' :
-    'bg-red-400';
+  const readDot   = candidate.lastNotificationRead === true  ? 'bg-green-400'
+                  : candidate.lastNotificationRead === false ? 'bg-red-400'
+                  : null;
 
   return (
     <div
@@ -287,11 +486,8 @@ function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetai
         </div>
       )}
 
-      <div className="flex gap-1.5 mt-3">
-        <button onClick={onViewDetails} className="flex-1 text-[11px] font-medium py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors">
-          View Details
-        </button>
-        <button onClick={onAddNote} className="flex-1 text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors">
+      <div className="mt-3">
+        <button onClick={onAddNote} className="w-full text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors">
           Add Note
         </button>
       </div>
@@ -354,9 +550,7 @@ function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, h
               <input type="datetime-local" value={interviewDate} onChange={e => setDate(e.target.value)}
                 className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" />
               {interviewDate && (
-                <p className="text-xs text-blue-600 mt-1">
-                  The candidate will be notified of this date in real time.
-                </p>
+                <p className="text-xs text-blue-600 mt-1">The candidate will be notified of this date.</p>
               )}
             </div>
           )}
@@ -399,7 +593,7 @@ function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
       <div className="bg-white w-full max-w-md border border-gray-200 shadow-xl rounded-xl overflow-hidden"
         onMouseDown={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
@@ -410,9 +604,7 @@ function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClos
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
         <form onSubmit={submit} className="p-5 space-y-3">
-          <p className="text-xs text-gray-500">
-            This note will be saved to the candidate's application record.
-          </p>
+          <p className="text-xs text-gray-500">This note will be saved to the candidate's application record.</p>
           <textarea value={note} onChange={e => setNote(e.target.value)} rows={4} autoFocus
             placeholder="e.g. Strong technical skills, moving to next round…"
             className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" />
