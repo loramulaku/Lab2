@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import recruiterService from '../../services/recruiterService';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
 export default function JobSeekers() {
+  const navigate = useNavigate();
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState('');
@@ -42,16 +44,24 @@ export default function JobSeekers() {
                   <h3 className="font-semibold text-gray-900">
                     {a.applicant?.firstName} {a.applicant?.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-0.5">{a.jobTitle} · {a.applicant?.email}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    <span className="font-medium text-gray-700">{a.jobTitle ?? '—'}</span>
+                    {' · '}{a.applicant?.email}
+                  </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     Applied {a.appliedAt ? new Date(a.appliedAt).toLocaleDateString() : '—'}
                   </p>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   <button
                     onClick={() => setShowApp(a)}
                     className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 whitespace-nowrap">
-                    Show Application
+                    View Application
+                  </button>
+                  <button
+                    onClick={() => navigate(`/chat?userId=${a.userId}`)}
+                    className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 whitespace-nowrap">
+                    Live Chat
                   </button>
                 </div>
               </div>

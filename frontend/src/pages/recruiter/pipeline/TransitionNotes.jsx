@@ -25,6 +25,7 @@ export default function TransitionNotes() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const [search, setSearch]   = useState('');
 
   useEffect(() => {
     pipelineService.getNotes()
@@ -33,11 +34,40 @@ export default function TransitionNotes() {
       .finally(() => setLoading(false));
   }, []);
 
+  const q = search.toLowerCase().trim();
+  const visible = q
+    ? entries.filter(entry => {
+        const name = `${entry.firstName ?? ''} ${entry.lastName ?? ''}`.toLowerCase();
+        const hasNameMatch = name.includes(q);
+        const hasNoteMatch = entry.notes.some(n => n.note.toLowerCase().includes(q));
+        return hasNameMatch || hasNoteMatch;
+      })
+    : entries;
+
   return (
     <RecruiterLayout title="Transition Notes">
-      <p className="text-sm text-gray-500 mb-6">
-        Notes written by recruiters for each stage — delivered to candidates as notifications and stored here.
-      </p>
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <p className="text-sm text-gray-500 flex-1 min-w-0">
+          Notes written by recruiters for each stage transition.
+        </p>
+        <div className="relative flex-shrink-0">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name or note…"
+            className="pl-9 pr-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-60"
+          />
+        </div>
+        {search && (
+          <button onClick={() => setSearch('')} className="text-xs text-gray-500 hover:text-gray-700 underline">
+            Clear
+          </button>
+        )}
+      </div>
 
       {error   && <p className="text-sm text-red-600">{error}</p>}
       {loading && <p className="text-sm text-gray-400">Loading…</p>}
@@ -49,10 +79,19 @@ export default function TransitionNotes() {
         </div>
       )}
 
+      {!loading && entries.length > 0 && visible.length === 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl text-center py-12 text-gray-400">
+          <p className="text-sm">No notes match your search.</p>
+        </div>
+      )}
+
       <div className="space-y-5">
-        {entries.map(entry => {
+        {visible.map(entry => {
           const name = `${entry.firstName ?? ''} ${entry.lastName ?? ''}`.trim() || `Applicant #${entry.applicationId}`;
           const ini  = initials(entry.firstName, entry.lastName);
+          const filteredNotes = q
+            ? entry.notes.filter(n => n.note.toLowerCase().includes(q) || name.toLowerCase().includes(q))
+            : entry.notes;
 
           return (
             <div key={entry.applicationId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
@@ -68,13 +107,13 @@ export default function TransitionNotes() {
                   )}
                 </div>
                 <span className="ml-auto text-xs text-gray-400">
-                  {entry.notes.length} note{entry.notes.length !== 1 ? 's' : ''}
+                  {filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
               {/* Notes */}
               <div className="divide-y divide-gray-100">
-                {entry.notes.map(n => (
+                {filteredNotes.map(n => (
                   <div key={n.id} className="px-5 py-4">
                     {/* Note body */}
                     <p className="text-sm text-gray-800 leading-relaxed">{n.note}</p>

@@ -29,6 +29,12 @@ export default function SearchInvite() {
         setJobs((res.data ?? []).filter(j => ['invite', 'both'].includes(j.jobMode) && j.status === 'open'));
       } catch { /* ignore */ }
     })();
+    // Auto-load all active freelancers on mount
+    setLoading(true);
+    freelanceService.searchFreelancers({ limit: 200 })
+      .then(res => { setResults(res.data ?? []); setSearched(true); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const search = async (e) => {
