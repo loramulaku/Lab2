@@ -14,15 +14,19 @@ const getMyBidsHandler     = require('../application/bid/handlers/GetMyBidsHandl
 
 const BidDTO       = require('../dtos/bid.dto');
 const ContractDTO  = require('../dtos/contract.dto');
+const auditLog     = require('../utils/audit');
 
-const submit = (req, res, next) =>
-  submitBidHandler.handle(new SubmitBidCommand({
-    ...req.body,
-    jobId:        Number(req.params.jobId),
-    freelancerId: req.user.id,
-  }))
-    .then(r => res.status(201).json(BidDTO.from(r)))
-    .catch(next);
+const submit = async (req, res, next) => {
+  try {
+    const r = await submitBidHandler.handle(new SubmitBidCommand({
+      ...req.body,
+      jobId:        Number(req.params.jobId),
+      freelancerId: req.user.id,
+    }));
+    auditLog(req, { action: 'BID_SUBMIT', entity: 'Bid', entityId: r.id, newValue: JSON.stringify({ price: r.price, status: r.status }) });
+    res.status(201).json(BidDTO.from(r));
+  } catch (err) { next(err); }
+};
 
 const listByJob = (req, res, next) =>
   getBidsByJobHandler.handle(new GetBidsByJobQuery(Number(req.params.jobId), req.query))
@@ -34,10 +38,14 @@ const listMine = (req, res, next) =>
     .then(r => res.json({ ...r, data: BidDTO.fromList(r.data) }))
     .catch(next);
 
-const accept = (req, res, next) =>
-  acceptBidHandler.handle(new AcceptBidCommand(Number(req.params.bidId), req.user.companyId))
-    .then(r => res.status(201).json(ContractDTO.from(r)))
-    .catch(next);
+const accept = async (req, res, next) => {
+  try {
+    const bidId = Number(req.params.bidId);
+    const r = await acceptBidHandler.handle(new AcceptBidCommand(bidId, req.user.companyId));
+    auditLog(req, { action: 'BID_ACCEPT', entity: 'Bid', entityId: bidId });
+    res.status(201).json(ContractDTO.from(r));
+  } catch (err) { next(err); }
+};
 
 const reject = (req, res, next) =>
   rejectBidHandler.handle(new RejectBidCommand(Number(req.params.bidId), req.user.companyId))

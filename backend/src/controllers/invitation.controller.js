@@ -16,19 +16,23 @@ const searchFreelancersHandler     = require('../application/invitation/handlers
 
 const InvitationDTO = require('../dtos/invitation.dto');
 const ContractDTO   = require('../dtos/contract.dto');
+const auditLog      = require('../utils/audit');
 
 const searchFreelancers = (req, res, next) =>
   searchFreelancersHandler.handle(new SearchFreelancersQuery(req.query))
     .then(r => res.json(r))
     .catch(next);
 
-const send = (req, res, next) =>
-  sendInvitationHandler.handle(new SendInvitationCommand({
-    ...req.body,
-    companyId: req.user.companyId,
-  }))
-    .then(r => res.status(201).json(InvitationDTO.from(r)))
-    .catch(next);
+const send = async (req, res, next) => {
+  try {
+    const r = await sendInvitationHandler.handle(new SendInvitationCommand({
+      ...req.body,
+      companyId: req.user.companyId,
+    }));
+    auditLog(req, { action: 'INVITATION_SEND', entity: 'Invitation', entityId: r.id });
+    res.status(201).json(InvitationDTO.from(r));
+  } catch (err) { next(err); }
+};
 
 const listMine = (req, res, next) =>
   getMyInvitationsHandler.handle(new GetMyInvitationsQuery(req.user.id, req.query))

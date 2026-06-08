@@ -13,7 +13,8 @@ const GetUserProfileQuery   = require('../application/user/queries/GetUserProfil
 const registerUserHandler   = require('../application/user/handlers/RegisterUserHandler');
 const getUserProfileHandler = require('../application/user/handlers/GetUserProfileHandler');
 
-const UserDTO = require('../dtos/user.dto');
+const UserDTO    = require('../dtos/user.dto');
+const auditLog   = require('../utils/audit');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,7 @@ async function createRefreshToken(userId) {
 const userController = {
   async register(req, res) {
     const user = await registerUserHandler.handle(new RegisterUserCommand(req.body));
+    auditLog(req, { action: 'USER_REGISTER', entity: 'User', entityId: user.id });
     return res.status(201).json(user);
   },
 
@@ -82,6 +84,7 @@ const userController = {
 
     setRefreshCookie(res, refreshRaw);
     user.roles = roles;
+    auditLog(req, { action: 'USER_LOGIN', entity: 'User', entityId: user.id });
     return res.json({ token: accessToken, user: UserDTO.from(user) });
   },
 

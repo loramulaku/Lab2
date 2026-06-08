@@ -11,6 +11,7 @@ const deleteJobHandler        = require('../application/job/handlers/DeleteJobHa
 const getJobsHandler          = require('../application/job/handlers/GetJobsHandler');
 const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdHandler');
 const JobDTO                  = require('../dtos/job.dto');
+const auditLog                = require('../utils/audit');
 
 // Public read — excludes invite-only freelance jobs (candidates can't apply to them)
 const getAll = async (req, res, next) => {
@@ -35,6 +36,7 @@ const create = async (req, res, next) => {
       companyId:   req.user.companyId,
       recruiterId: req.user.id,
     }));
+    auditLog(req, { action: 'JOB_CREATE', entity: 'Job', entityId: r.id, newValue: JSON.stringify({ title: r.title, status: r.status }) });
     res.status(201).json(JobDTO.from(r));
   } catch (err) { next(err); }
 };
@@ -43,6 +45,7 @@ const update = async (req, res, next) => {
   try {
     const r = await updateJobHandler.handle(new UpdateJobCommand(Number(req.params.id), req.body));
     if (!r) return res.status(404).json({ message: 'Job not found' });
+    auditLog(req, { action: 'JOB_UPDATE', entity: 'Job', entityId: r.id });
     res.json(JobDTO.from(r));
   } catch (err) { next(err); }
 };

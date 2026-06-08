@@ -4,7 +4,9 @@ const companyRepo = require('../repositories/mysql/company.repo');
 const applicationRepo = require('../repositories/mysql/application.repo');
 const roleRepo = require('../repositories/mysql/role.repo');
 const Category = require('../models/sql/Category');
+const AuditLog = require('../models/sql/AuditLog');
 const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
 
 const adminController = {
   async getUsers(req, res) {
@@ -366,6 +368,45 @@ const adminController = {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Failed to delete category' });
+    }
+  },
+
+  // ── Audit Logs ─────────────────────────────────────────────────────────────
+
+  async getAuditLogs(req, res) {
+    try {
+      const { page = 1, limit = 20, userId, action, entity, from, to } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const where = {};
+      if (userId) where.userId = parseInt(userId);
+      if (action) where.action = { [Op.like]: `%${action}%` };
+      if (entity && entity !== 'All') where.entity = entity;
+      if (from || to) {
+        where.createdAt = {};
+        if (from) where.createdAt[Op.gte] = new Date(from);
+        if (to)   where.createdAt[Op.lte] = new Date(`${to}T23:59:59`);
+      }
+
+      const { count, rows } = await AuditLog.findAndCountAll({
+        where,
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit),
+        offset,
+      });
+
+      return res.json({
+        logs: rows,
+        pagination: {
+          total: count,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(count / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to fetch audit logs' });
     }
   },
 
