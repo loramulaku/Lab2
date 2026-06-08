@@ -118,6 +118,25 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
   }
 }
 
+/* ── Sidebar scrollbar — blends into dark navy #0c1322 ─────────────────────── */
+.sidebar-scrollbar {
+  scrollbar-width: thin;                      /* Firefox */
+  scrollbar-color: #1e2d47 #0c1322;           /* Firefox: thumb track */
+}
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #0c1322;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e2d47;
+  border-radius: 2px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2a3d5c;
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.15s ease-out;
