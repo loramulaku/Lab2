@@ -5,12 +5,13 @@ const { getIo }                = require('../../../socket/ioInstance');
 class CreateNotificationHandler {
   async handle(command) {
     const notification = await Notification.create({
-      userId:    command.userId,
-      type:      command.type,
-      message:   command.message,
-      link:      command.link ?? null,
-      isRead:    false,
-      createdAt: new Date(),
+      userId:        command.userId,
+      applicationId: command.applicationId ?? null,
+      type:          command.type,
+      message:       command.message,
+      link:          command.link ?? null,
+      isRead:        false,
+      createdAt:     new Date(),
     });
 
     // Project to MongoDB read-side

@@ -561,12 +561,6 @@ function ApplicationsTab() {
               </div>
               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                 <span className="text-xs text-gray-400">{fmtApplied(app.appliedAt)}</span>
-                {/* Read/unread badge — only shown after candidate has been moved to a pipeline stage */}
-                {app.stageName && pipelineNotifs.length > 0 && (
-                  firstUnread
-                    ? <span className="text-xs px-2 py-0.5 font-medium rounded bg-red-100 text-red-700">Unread</span>
-                    : <span className="text-xs px-2 py-0.5 font-medium rounded bg-green-100 text-green-700">Read</span>
-                )}
               </div>
             </div>
             <div className="flex gap-2 mt-2.5">

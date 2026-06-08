@@ -168,7 +168,7 @@ export default function ShowPipeline() {
               onDrop={e => onDrop(e, stage)}
               className={`flex-shrink-0 w-64 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col transition-all duration-150 ${
                 overStage === stage.id ? 'ring-2 ring-blue-400 bg-blue-50/30' : ''
-              } border-t-4 ${STAGE_COLORS[si % STAGE_COLORS.length].column}`}
+              } border-t-4 ${COLUMN_COLORS[si % COLUMN_COLORS.length]}`}
             >
               <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
                 <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate max-w-[140px]">
@@ -230,7 +230,11 @@ function CandidateCard({ candidate, stageId, onDragStart, onDragEnd, onViewDetai
   const name  = `${candidate.firstName ?? ''} ${candidate.lastName ?? ''}`.trim() || `#${candidate.applicationId}`;
   const ini   = initials(candidate.firstName, candidate.lastName);
   const color = avatarColor(name);
-  const badge = BADGE_COLORS[stageIndex % BADGE_COLORS.length];
+  const badge = BADGE_COLORS[stageId % BADGE_COLORS.length];
+  const isBlocked = candidate.lastNotificationRead === false;
+  const readDot   = candidate.lastNotificationRead === true  ? 'bg-green-400'
+                  : candidate.lastNotificationRead === false ? 'bg-red-400'
+                  : null;
 
   return (
     <div

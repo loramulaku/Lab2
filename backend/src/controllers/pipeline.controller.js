@@ -54,6 +54,7 @@ const editPipeline = async (req, res, next) => {
 const getMyPipeline = async (req, res, next) => {
   try {
     const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'Company profile not set up yet' });
     const result = await getCompanyPipelineHandler.handle(new GetCompanyPipelineQuery(companyId));
     if (!result) return res.status(404).json({ message: 'No pipeline found', code: 'NO_PIPELINE' });
     res.json(result);
@@ -64,6 +65,7 @@ const getMyPipeline = async (req, res, next) => {
 const getPipelineBoard = async (req, res, next) => {
   try {
     const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'Company profile not set up yet' });
     const result = await getPipelineBoardHandler.handle(
       new GetPipelineBoardQuery(companyId, req.query.search)
     );
@@ -76,6 +78,7 @@ const getPipelineBoard = async (req, res, next) => {
 const getTransitionNotes = async (req, res, next) => {
   try {
     const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'Company profile not set up yet' });
     const result = await getTransitionNotesHandler.handle(new GetTransitionNotesQuery(companyId));
     res.json(result);
   } catch (err) { next(err); }

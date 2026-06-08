@@ -16,17 +16,18 @@ class MoveCandidateToStageHandler {
     const app = await Application.findByPk(command.applicationId);
     if (!app) { const e = new Error('Application not found'); e.status = 404; throw e; }
 
+    const stage = await PipelineStage.findByPk(command.toStageId);
+    if (!stage) { const e = new Error('Stage not found'); e.status = 404; throw e; }
+
     // Gate: block the move if the candidate has an unread pipeline_stage_change notification
+    // for THIS specific application, preventing cross-company false positives.
     const unread = await Notification.findOne({
-      where: { userId: app.userId, type: 'pipeline_stage_change', isRead: false },
+      where: { userId: app.userId, applicationId: command.applicationId, type: 'pipeline_stage_change', isRead: false },
     });
     if (unread) {
       const e = new Error('The candidate must read the previous notification before being moved to the next stage');
       e.status = 403; e.code = 'NOTIFICATION_NOT_READ'; throw e;
     }
-
-    const stage = await PipelineStage.findByPk(command.toStageId);
-    if (!stage) { const e = new Error('Stage not found'); e.status = 404; throw e; }
 
     const updatePayload = { stageId: command.toStageId };
     if (command.interviewDate) updatePayload.interviewAt = new Date(command.interviewDate);
@@ -54,10 +55,11 @@ class MoveCandidateToStageHandler {
     }
 
     createNotificationHandler.handle(new CreateNotificationCommand({
-      userId:  app.userId,
-      type:    'pipeline_stage_change',
-      message: msg,
-      link:    '/my-profile?tab=applications',
+      userId:        app.userId,
+      applicationId: command.applicationId,
+      type:          'pipeline_stage_change',
+      message:       msg,
+      link:          '/my-profile?tab=applications',
     })).catch(() => {});
 
     return {
