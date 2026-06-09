@@ -3,8 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
-import ThemePreviewBridge from './components/admin/ThemePreviewBridge';
 import { AdminShell } from './components/layout';
+
+const ThemePreviewBridge = lazy(() => import('./components/admin/ThemePreviewBridge'));
 
 // ── Lazy-loaded route components ───────────────────────────────────────────────
 // Each page is code-split into its own chunk and fetched on first navigation,
@@ -254,8 +255,8 @@ function App() {
       <AuthProvider>
         <NotificationProvider>
           <ThemeProvider>
-            {/* Activates click-to-select and highlight when running inside the ThemeEditor iframe */}
-            <ThemePreviewBridge />
+            {/* Only active inside the ThemeEditor iframe — load lazily so it never touches the initial bundle */}
+            <Suspense fallback={null}><ThemePreviewBridge /></Suspense>
             <AppShell />
           </ThemeProvider>
         </NotificationProvider>

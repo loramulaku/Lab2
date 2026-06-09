@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import notificationService from '../services/notificationService';
 
@@ -39,6 +38,8 @@ export function NotificationProvider({ children }) {
   }, [token, fetchAll]);
 
   // ── Socket — real-time push ───────────────────────────────────────────────
+  // socket.io-client is dynamically imported so it stays out of the initial bundle
+  // and only loads after the user actually logs in.
   useEffect(() => {
     if (!token) {
       socketRef.current?.disconnect();
@@ -46,8 +47,11 @@ export function NotificationProvider({ children }) {
       return;
     }
 
-    const socket = io(SOCKET_URL, { auth: { token } });
-    socketRef.current = socket;
+    let cancelled = false;
+    import('socket.io-client').then(({ io }) => {
+      if (cancelled) return;
+      const socket = io(SOCKET_URL, { auth: { token } });
+      socketRef.current = socket;
 
     socket.on('notification:new', (n) => {
       setNotifications(prev => [n, ...prev]);
@@ -61,8 +65,15 @@ export function NotificationProvider({ children }) {
     socket.on('job:updated',        (job) => setLastJobEvent({ type: 'updated',        job, _ts: Date.now() }));
     socket.on('job:status_changed', (job) => setLastJobEvent({ type: 'status_changed', job, _ts: Date.now() }));
 
+      return () => {
+        socket.disconnect();
+        socketRef.current = null;
+      };
+    });
+
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      socketRef.current?.disconnect();
       socketRef.current = null;
     };
   }, [token]);
