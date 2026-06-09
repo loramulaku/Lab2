@@ -5,6 +5,9 @@ const applicationRepo = require('../repositories/mysql/application.repo');
 const roleRepo = require('../repositories/mysql/role.repo');
 const Category = require('../models/sql/Category');
 const AuditLog = require('../models/sql/AuditLog');
+const Payment  = require('../models/sql/Payment');
+const Company  = require('../models/sql/Company');
+const Plan     = require('../models/sql/Plan');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 
@@ -407,6 +410,52 @@ const adminController = {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Failed to fetch audit logs' });
+    }
+  },
+
+  // ── Payment Logs (admin: all companies) ────────────────────────────────────
+  async getPaymentLogs(req, res) {
+    try {
+      const { page = 1, limit = 25, status, companyId } = req.query;
+      const offset = (page - 1) * limit;
+      const where  = {};
+      if (status)    where.status    = status;
+      if (companyId) where.companyId = companyId;
+
+      const { count, rows } = await Payment.findAndCountAll({
+        where,
+        include: [
+          { model: Plan,    as: 'Plan',    attributes: ['id', 'name', 'price'], required: false },
+          { model: Company, foreignKey: 'companyId', attributes: ['id', 'name'], required: false },
+        ],
+        order:  [['created_at', 'DESC']],
+        limit:  parseInt(limit),
+        offset: parseInt(offset),
+      });
+
+      return res.json({
+        payments: rows.map(p => ({
+          id:                    p.id,
+          companyId:             p.companyId,
+          companyName:           p.Company?.name ?? null,
+          planName:              p.Plan?.name    ?? null,
+          amount:                p.amount ? Number(p.amount) : null,
+          currency:              p.currency ?? 'usd',
+          status:                p.status,
+          paymentMethod:         p.paymentMethod ?? null,
+          stripePaymentIntentId: p.stripePaymentIntentId,
+          createdAt:             p.createdAt,
+        })),
+        pagination: {
+          total: count,
+          page:  parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(count / limit),
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Failed to fetch payment logs' });
     }
   },
 

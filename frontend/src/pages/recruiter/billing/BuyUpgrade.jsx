@@ -33,7 +33,12 @@ export default function BuyUpgrade() {
       const { url } = await subscriptionService.createCheckoutSession(planId);
       window.location.href = url;
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to start checkout.');
+      const apiMsg = err?.response?.data?.message ?? '';
+      let msg = 'Failed to start checkout. Please try again.';
+      if (apiMsg.toLowerCase().includes('declined'))          msg = 'Your card was declined. Please use a different payment method.';
+      else if (apiMsg.toLowerCase().includes('insufficient')) msg = 'Your card has insufficient funds. Please use a different card.';
+      else if (apiMsg)                                         msg = apiMsg;
+      setError(msg);
       setSubscribing(null);
     }
   };

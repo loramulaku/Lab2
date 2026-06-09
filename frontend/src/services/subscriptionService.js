@@ -15,4 +15,7 @@ export const subscriptionService = {
 
   confirmCheckout: (sessionId) =>
     api.post('/subscriptions/confirm-checkout', { sessionId }).then(r => r.data),
+
+  getMyInvoices: () =>
+    api.get('/subscriptions/my-invoices').then(r => r.data),
 };

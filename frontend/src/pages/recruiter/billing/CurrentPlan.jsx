@@ -38,6 +38,25 @@ export default function CurrentPlan() {
           </div>
         ) : (
           <div className="page-shell-card rounded-xl p-6 max-w-2xl">
+            {/* Prominent expiry / renewal banner */}
+            {sub.currentPeriodEnd && (
+              <div className={`mb-5 rounded-lg px-4 py-3 border ${
+                sub.cancelAtPeriodEnd
+                  ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  : 'bg-blue-50 border-blue-100 text-blue-800'
+              }`}>
+                <p className="text-sm font-semibold">
+                  {sub.cancelAtPeriodEnd ? 'Plan expires on ' : 'Valid until '}
+                  <span className="text-base">{fmtDate(sub.currentPeriodEnd)}</span>
+                </p>
+                {!sub.cancelAtPeriodEnd && (
+                  <p className="text-xs mt-0.5 opacity-80">
+                    Your plan auto-renews each billing cycle. Cancel any time to stop renewals.
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-8">
               <div>
                 <p className="text-xs text-gray-500 font-medium">Plan</p>
@@ -54,10 +73,6 @@ export default function CurrentPlan() {
               <div>
                 <p className="text-xs text-gray-500 font-medium">Status</p>
                 <div className="mt-1"><StatusBadge status={sub.status} /></div>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">{sub.cancelAtPeriodEnd ? 'Cancels On' : 'Renews On'}</p>
-                <p className="text-base font-medium text-gray-900 mt-1">{fmtDate(sub.currentPeriodEnd)}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Job Limit</p>
