@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useSocket } from '../../hooks/useSocket';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import Header from '../../components/Header';
@@ -12,12 +12,12 @@ function getOtherName(conv, currentUserId) {
     const uid = p.userId ?? p.id;
     return uid !== currentUserId;
   });
-  if (others.length === 0) return `Bisedë #${conv.id}`;
+  if (others.length === 0) return `Conversation #${conv.id}`;
   const other = others[0];
   const firstName = other.firstName ?? other.user?.firstName;
   const lastName  = other.lastName  ?? other.user?.lastName;
   if (firstName || lastName) return [firstName, lastName].filter(Boolean).join(' ');
-  return `Bisedë #${conv.id}`;
+  return `Conversation #${conv.id}`;
 }
 
 function formatTime(ts) {
@@ -29,20 +29,27 @@ function formatTime(ts) {
 
 export default function Chat() {
   const { user } = useAuth();
-  const socketRef = useSocket();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  // Reuse the single socket owned by NotificationContext — already connected,
+  // avoids a second handshake and fixes the race where a fresh socket from
+  // useSocket() might not be open yet when the message-listener effect runs.
+  const { socketRef } = useNotifications();
+  const location = useLocation();
 
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations]       = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loadingConvos, setLoadingConvos] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [messages, setMessages]                 = useState([]);
+  const [input, setInput]                       = useState('');
+  const [loadingConvos, setLoadingConvos]       = useState(true);
+  const [loadingMessages, setLoadingMessages]   = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Load conversations on mount; auto-select if navigated with a conversationId.
+  // ── Load conversations; auto-select from location.state or ?cid= param ──
   useEffect(() => {
-    const targetId = location.state?.conversationId;
+    const stateId  = location.state?.conversationId;
+    const paramCid = new URLSearchParams(location.search).get('cid');
+    const targetId = stateId ?? (paramCid ? parseInt(paramCid) : null);
+
     api.get('/conversations')
       .then(res => {
         const convos = res.data ?? [];
@@ -57,7 +64,7 @@ export default function Chat() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When active conversation changes, load messages and join socket room
+  // ── When active conversation changes, load its messages and join the room ──
   useEffect(() => {
     if (!activeConversation) return;
 
@@ -72,36 +79,48 @@ export default function Chat() {
     return () => {
       socketRef.current?.emit('leave:conversation', activeConversation.id);
     };
-  }, [activeConversation]);
+  }, [activeConversation, socketRef]);
 
-  // Listen for new messages
+  // ── Listen for incoming messages (real-time) ──────────────────────────────
+  // We capture activeConversation in a ref so the stable socket handler always
+  // sees the current value without needing to be re-registered each time.
+  const activeConvRef = useRef(activeConversation);
+  useEffect(() => { activeConvRef.current = activeConversation; }, [activeConversation]);
+
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
 
     const handler = (msg) => {
-      if (msg.conversationId === activeConversation?.id) {
+      if (msg.conversationId === activeConvRef.current?.id) {
         setMessages(prev => [...prev, msg]);
       }
+      // Also refresh conversation list so last-message preview updates
+      setConversations(prev => prev.map(c =>
+        c.id === msg.conversationId ? { ...c, lastMessage: msg } : c
+      ));
     };
 
     socket.on('new:message', handler);
     return () => socket.off('new:message', handler);
-  }, [activeConversation, socketRef.current]);
+  // socketRef is a stable ref object — only run once (on mount) since the
+  // socket from NotificationContext is already connected before Chat mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Scroll to bottom when messages change
+  // ── Scroll to bottom whenever messages update ─────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  function sendMessage() {
+  const sendMessage = useCallback(() => {
     if (!input.trim() || !activeConversation) return;
     socketRef.current?.emit('send:message', {
       conversationId: activeConversation.id,
-      message: input.trim()
+      message: input.trim(),
     });
     setInput('');
-  }
+  }, [input, activeConversation, socketRef]);
 
   function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -114,22 +133,31 @@ export default function Chat() {
     <>
       <Header />
 
-      {/* Full-height chat layout sitting directly below the fixed header */}
       <div className="flex mt-16 h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
 
         {/* ── Sidebar — conversation list ───────────────────────────────── */}
         <div className="w-72 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
-            <h2 className="text-sm font-semibold text-gray-900">Bisedat</h2>
+          <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0 flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
+              aria-label="Go back"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <h2 className="text-sm font-semibold text-gray-900">Messages</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loadingConvos && (
-              <p className="px-4 py-3 text-sm text-gray-400">Duke ngarkuar...</p>
+              <p className="px-4 py-3 text-sm text-gray-400">Loading…</p>
             )}
 
             {!loadingConvos && conversations.length === 0 && (
-              <p className="px-4 py-3 text-sm text-gray-400">Nuk ka biseda ende.</p>
+              <p className="px-4 py-3 text-sm text-gray-400">No conversations yet.</p>
             )}
 
             {conversations.map(conv => {
@@ -164,7 +192,7 @@ export default function Chat() {
 
           {!activeConversation ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-gray-400">Zgjidh një bisedë për të filluar</p>
+              <p className="text-sm text-gray-400">Select a conversation to start</p>
             </div>
           ) : (
             <>
@@ -178,7 +206,7 @@ export default function Chat() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                 {loadingMessages && (
-                  <p className="text-sm text-gray-400">Duke ngarkuar mesazhet...</p>
+                  <p className="text-sm text-gray-400">Loading messages…</p>
                 )}
 
                 {messages.map((msg, i) => {
@@ -215,7 +243,7 @@ export default function Chat() {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Shkruaj një mesazh..."
+                  placeholder="Type a message…"
                   className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
@@ -223,7 +251,7 @@ export default function Chat() {
                   disabled={!input.trim()}
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Dërgo
+                  Send
                 </button>
               </div>
             </>
