@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import recruiterService from '../../services/recruiterService';
 import api from '../../services/api';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
+const PAGE_SIZE = 20;
 
 const lc = (s) => (s ?? '').toLowerCase();
 
@@ -15,22 +17,34 @@ export default function JobSeekers() {
   const [error, setError]           = useState('');
   const [showApp,   setShowApp]   = useState(null);
   const [chatBusy,  setChatBusy]  = useState(null);
+  const [page, setPage] = useState(1);
 
-  // ── Search state ──────────────────────────────────────────────────────────
   const [q, setQ] = useState('');
+  const debouncedQ = useDebounce(q, 300);
 
-  const visible = applicants.filter(a => {
-    if (!q) return true;
-    const term = lc(q);
-    const name    = lc(`${a.applicant?.firstName} ${a.applicant?.lastName}`);
-    const email   = lc(a.applicant?.email);
-    const title   = lc(a.jobTitle);
-    const status  = lc(a.status);
-    const company = lc(a.companyName);
-    return name.includes(term) || email.includes(term) || title.includes(term) || status.includes(term) || company.includes(term);
-  });
+  const visible = useMemo(() => {
+    if (!debouncedQ) return applicants;
+    const term = lc(debouncedQ);
+    return applicants.filter(a => {
+      const name    = lc(`${a.applicant?.firstName} ${a.applicant?.lastName}`);
+      const email   = lc(a.applicant?.email);
+      const title   = lc(a.jobTitle);
+      const status  = lc(a.status);
+      const company = lc(a.companyName);
+      return name.includes(term) || email.includes(term) || title.includes(term) || status.includes(term) || company.includes(term);
+    });
+  }, [applicants, debouncedQ]);
 
-  // ── Data loading ──────────────────────────────────────────────────────────
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = useMemo(
+    () => visible.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [visible, safePage]
+  );
+
+  // reset to page 1 when filter changes
+  useEffect(() => { setPage(1); }, [debouncedQ]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -46,7 +60,7 @@ export default function JobSeekers() {
 
   useEffect(() => { load(); }, [load]);
 
-  const openChat = async (a) => {
+  const openChat = useCallback(async (a) => {
     setChatBusy(a.id);
     try {
       const { data } = await api.post('/conversations', { recipientId: a.userId });
@@ -55,12 +69,11 @@ export default function JobSeekers() {
       setError(e?.response?.data?.message || 'Could not open chat.');
       setChatBusy(null);
     }
-  };
+  }, [navigate]);
 
   return (
     <RecruiterLayout title="Job Seekers">
 
-      {/* ── Search bar ─────────────────────────────────────────────────────── */}
       <div className="page-shell-card rounded-xl px-4 py-3 mb-6">
         <input
           type="search"
@@ -83,7 +96,7 @@ export default function JobSeekers() {
         </div>
       ) : visible.length === 0 ? (
         <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
-          <p className="text-base">No results for "{q}"</p>
+          <p className="text-base">No results for "{debouncedQ}"</p>
           <button onClick={() => setQ('')} className="mt-3 text-sm text-blue-600 hover:underline">
             Clear search
           </button>
@@ -92,9 +105,10 @@ export default function JobSeekers() {
         <>
           <p className="text-xs text-gray-400 mb-3">
             {visible.length} of {applicants.length} applicant{applicants.length !== 1 ? 's' : ''}
+            {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
           </p>
           <div className="space-y-3">
-            {visible.map(a => (
+            {pageItems.map(a => (
               <div key={a.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900">
@@ -124,6 +138,26 @@ export default function JobSeekers() {
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+              >
+                ← Prev
+              </button>
+              <span className="text-sm text-gray-500">{safePage} / {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -164,7 +198,6 @@ function ApplicationDetailModal({ app, onClose }) {
 
         <div className="p-5 overflow-y-auto space-y-5">
 
-          {/* ── Job section ─────────────────────────────────────────── */}
           <div className="border border-blue-100 bg-blue-50 rounded-lg px-4 py-3">
             <p className="text-[11px] font-semibold text-blue-400 uppercase tracking-wide mb-2">Job Applied For</p>
             <p className="font-semibold text-gray-900 text-sm">{app.jobTitle ?? '—'}</p>
@@ -183,7 +216,6 @@ function ApplicationDetailModal({ app, onClose }) {
             </div>
           </div>
 
-          {/* ── Applicant details ─────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Applied" value={app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'} />
             <Field label="Phone" value={app.phone ?? '—'} />

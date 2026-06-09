@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const SearchBar = ({ onSearch, placeholder = 'Search...', className = '' }) => {
+const SearchBar = ({ onSearch, placeholder = 'Search...', className = '', delay = 300 }) => {
   const [value, setValue] = useState('');
+  const timer = useRef(null);
 
   const handleChange = (e) => {
-    setValue(e.target.value);
-    onSearch(e.target.value);
+    const next = e.target.value;
+    setValue(next);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => onSearch(next), delay);
   };
+
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   const handleSubmit = (e) => e.preventDefault();
 

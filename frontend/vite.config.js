@@ -8,14 +8,17 @@ export default defineConfig({
       output: {
         // Vite 8 (rolldown) requires manualChunks as a function, not an object.
         manualChunks(id) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/') || id.includes('node_modules/scheduler/')) {
             return 'react-vendor';
           }
-          if (id.includes('node_modules/socket.io-client')) {
+          if (id.includes('node_modules/socket.io-client/') || id.includes('node_modules/engine.io-client/') || id.includes('node_modules/socket.io-parser/')) {
             return 'socket-vendor';
           }
-          if (id.includes('node_modules/axios')) {
+          if (id.includes('node_modules/axios/')) {
             return 'http-vendor';
+          }
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'icons-vendor';
           }
         },
       },
