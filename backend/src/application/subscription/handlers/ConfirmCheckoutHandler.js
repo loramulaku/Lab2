@@ -49,6 +49,14 @@ class ConfirmCheckoutHandler {
       latestInvoice    = stripeSub.latest_invoice ?? null;
     }
 
+    // Fallback: if Stripe didn't give us a period end, calculate exactly 1 month
+    // from now. This ensures plan validity is always exactly 1 calendar month.
+    if (!currentPeriodEnd) {
+      const oneMonthFromNow = new Date();
+      oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+      currentPeriodEnd = oneMonthFromNow;
+    }
+
     // ── Upsert subscription in MySQL ─────────────────────────────────────────
     const existing = await Subscription.findOne({ where: { companyId } });
 

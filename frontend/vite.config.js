@@ -6,12 +6,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Split large, rarely-changing dependencies into their own long-cached
-        // chunks so they aren't re-downloaded when app code changes.
-        manualChunks: {
-          'react-vendor':  ['react', 'react-dom', 'react-router-dom'],
-          'socket-vendor': ['socket.io-client'],
-          'http-vendor':   ['axios'],
+        // Vite 8 (rolldown) requires manualChunks as a function, not an object.
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/socket.io-client')) {
+            return 'socket-vendor';
+          }
+          if (id.includes('node_modules/axios')) {
+            return 'http-vendor';
+          }
         },
       },
     },

@@ -32,7 +32,14 @@ const PaymentSuccess = () => {
         }
       } catch (err) {
         console.error('Could not confirm subscription:', err);
-        setError('Payment was received but we could not confirm your plan. Please refresh the page or contact support.');
+        const apiMsg = err?.response?.data?.message ?? '';
+        // Map common Stripe decline reasons to clear user messages
+        let msg = 'Payment was received but we could not confirm your plan. Please refresh or contact support.';
+        if (apiMsg.toLowerCase().includes('declined'))           msg = 'Your card was declined. Please try a different payment method.';
+        else if (apiMsg.toLowerCase().includes('insufficient'))  msg = 'Your card has insufficient funds. Please use a different card.';
+        else if (apiMsg.toLowerCase().includes('not completed')) msg = 'Payment was not completed. Please try again or use a different card.';
+        else if (apiMsg)                                          msg = apiMsg;
+        setError(msg);
       } finally {
         setLoading(false);
       }

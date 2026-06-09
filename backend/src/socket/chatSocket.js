@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const conversationRepo = require('../repositories/mysql/conversation.repo');
 const messageRepo = require('../repositories/mysql/message.repo');
+const ConversationParticipant = require('../models/sql/ConversationParticipant');
+const User = require('../models/sql/User');
+const CreateNotificationCommand = require('../application/notification/commands/CreateNotification.command');
+const createNotificationHandler = require('../application/notification/handlers/CreateNotificationHandler');
 
 module.exports = function initChatSocket(io) {
 
@@ -44,7 +48,7 @@ module.exports = function initChatSocket(io) {
           message: data.message.trim()
         });
 
-        // Broadcast to everyone in the room
+        // Broadcast to everyone in the conversation room
         io.to(`conversation:${data.conversationId}`).emit('new:message', {
           id: saved.id,
           conversationId: saved.conversationId,
@@ -53,6 +57,25 @@ module.exports = function initChatSocket(io) {
           isRead: saved.isRead,
           createdAt: saved.createdAt
         });
+
+        // Notify non-sender participants so they see the message in real-time
+        // even when they are not currently on the chat page.
+        const sender = await User.findByPk(socket.user.id, { attributes: ['firstName', 'lastName'] });
+        const senderName = [sender?.firstName, sender?.lastName].filter(Boolean).join(' ') || 'Someone';
+
+        const participants = await ConversationParticipant.findAll({
+          where: { conversationId: data.conversationId },
+        });
+        for (const p of participants) {
+          if (p.userId !== socket.user.id) {
+            createNotificationHandler.handle(new CreateNotificationCommand({
+              userId:  p.userId,
+              type:    'new_message',
+              message: `New message from ${senderName}`,
+              link:    `/chat?cid=${data.conversationId}`,
+            })).catch(() => {});
+          }
+        }
       } catch (err) {
         console.error('send:message error:', err);
         socket.emit('error', { message: 'Failed to send message' });
