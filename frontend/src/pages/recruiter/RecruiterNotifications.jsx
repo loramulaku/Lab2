@@ -57,7 +57,7 @@ export default function RecruiterNotifications() {
           {notifications.map(n => (
             <div
               key={n.id}
-              className={`bg-white border px-5 py-4 flex items-start gap-4 ${
+              className={`page-shell-card rounded-xl px-5 py-4 flex items-start gap-4 ${
                 n.isRead ? 'border-gray-200' : 'border-blue-200 bg-blue-50/30'
               }`}
             >

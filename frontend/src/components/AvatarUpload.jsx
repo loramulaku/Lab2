@@ -68,7 +68,7 @@ export default function AvatarUpload({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="border border-gray-300 text-gray-700 text-sm px-4 py-2 hover:bg-gray-50 transition rounded-none"
+            className="border border-gray-300 text-gray-700 text-sm px-4 py-2 hover:bg-gray-50 transition rounded-lg"
           >
             {buttonLabel}
           </button>

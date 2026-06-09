@@ -66,7 +66,7 @@ export default function AuditLogs() {
     <AdminPage title="Audit Logs" subtitle={`${total} total event${total !== 1 ? 's' : ''}`} loading={false} error={error}>
 
       {/* ── Filters ───────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 p-4 mb-6 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+      <div className="page-shell-card rounded-xl p-4 mb-6 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Action</label>
           <input
@@ -75,7 +75,7 @@ export default function AuditLogs() {
             onChange={e => setActionQ(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && applyFilters()}
             placeholder="e.g. USER_LOGIN"
-            className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -83,7 +83,7 @@ export default function AuditLogs() {
           <select
             value={entityQ}
             onChange={e => setEntityQ(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
             {ENTITY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
@@ -94,7 +94,7 @@ export default function AuditLogs() {
             type="date"
             value={fromQ}
             onChange={e => setFromQ(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -103,7 +103,7 @@ export default function AuditLogs() {
             type="date"
             value={toQ}
             onChange={e => setToQ(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="flex gap-2">
@@ -128,7 +128,7 @@ export default function AuditLogs() {
       {loading ? (
         <p className="text-sm text-gray-400">Loading…</p>
       ) : logs.length === 0 ? (
-        <div className="bg-white border border-gray-200 text-center py-16 text-gray-400">
+        <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
           <p className="text-lg">No audit events found</p>
           {hasFilter && (
             <button onClick={clearFilters} className="mt-3 text-sm text-blue-600 hover:underline">
@@ -138,7 +138,7 @@ export default function AuditLogs() {
         </div>
       ) : (
         <>
-          <div className="bg-white border border-gray-200 overflow-x-auto">
+          <div className="page-shell-card rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">

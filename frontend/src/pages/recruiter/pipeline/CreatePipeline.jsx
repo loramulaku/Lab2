@@ -121,7 +121,7 @@ export default function CreatePipeline() {
               value={stageCount}
               onChange={e => setStageCount(e.target.value)}
               placeholder="e.g. 4"
-              className="w-28 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-28 border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="button"
@@ -158,7 +158,7 @@ export default function CreatePipeline() {
                     value={stage.name}
                     onChange={e => updateName(i, e.target.value)}
                     placeholder={`e.g. ${['Phone Screen', 'Technical Interview', 'HR Interview', 'Offer'][i] ?? `Stage ${i + 2}`}`}
-                    className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {/* Calendar toggle */}
                   <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">

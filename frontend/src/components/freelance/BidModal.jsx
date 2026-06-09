@@ -13,7 +13,7 @@ import candidateService from '../../services/candidateService';
  *   onSubmit : (payload) => Promise   — caller posts to /jobs/:id/bids
  *   onClose  : () => void
  */
-const inputCls = 'w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const inputCls = 'w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500';
 const labelCls = 'block text-xs font-medium text-gray-600 mb-1';
 
 function fmtBudget(job) {
@@ -94,7 +94,7 @@ export default function BidModal({ job, onSubmit, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
-      <div className="bg-white w-full max-w-xl border border-gray-200 shadow-xl flex flex-col max-h-[90vh]"
+      <div className="page-shell-card w-full max-w-xl rounded-xl shadow-xl flex flex-col max-h-[90vh]"
         onMouseDown={e => e.stopPropagation()}>
 
         {/* Header */}
@@ -121,7 +121,7 @@ export default function BidModal({ job, onSubmit, onClose }) {
                     <div className="flex">
                       {['fixed', 'hourly'].map((t, i) => (
                         <button key={t} type="button" onClick={() => setVal('bidType', t)}
-                          className={`flex-1 py-2 text-xs font-medium border capitalize ${i === 1 ? 'border-l-0' : ''} ${
+                          className={`flex-1 py-2 text-xs font-medium border capitalize ${i === 0 ? 'rounded-l-md' : 'rounded-r-md border-l-0'} ${
                             form.bidType === t ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'}`}>
                           {t === 'fixed' ? 'Fixed price' : 'Hourly rate'}
                         </button>
@@ -153,8 +153,8 @@ export default function BidModal({ job, onSubmit, onClose }) {
                   {form.milestones.map((m, i) => (
                     <div key={i} className="flex gap-2 mb-2">
                       <input value={m.phase} onChange={e => setMilestone(i, 'phase', e.target.value)} className={inputCls} placeholder="Phase" />
-                      <input type="number" min="0" value={m.price} onChange={e => setMilestone(i, 'price', e.target.value)} className="w-24 border border-gray-300 px-2 py-2 text-sm" placeholder="$" />
-                      <input type="date" value={m.deadline} onChange={e => setMilestone(i, 'deadline', e.target.value)} className="w-40 border border-gray-300 px-2 py-2 text-sm" />
+                      <input type="number" min="0" value={m.price} onChange={e => setMilestone(i, 'price', e.target.value)} className="w-24 border border-gray-300 rounded-md px-2 py-2 text-sm" placeholder="$" />
+                      <input type="date" value={m.deadline} onChange={e => setMilestone(i, 'deadline', e.target.value)} className="w-40 border border-gray-300 rounded-md px-2 py-2 text-sm" />
                       <button type="button" onClick={() => removeMilestone(i)} className="text-gray-400 hover:text-gray-700 px-1">×</button>
                     </div>
                   ))}
@@ -173,7 +173,7 @@ export default function BidModal({ job, onSubmit, onClose }) {
                       {form.skills.map(s => {
                         const match = jobSkills.includes(s.toLowerCase());
                         return (
-                          <span key={s} className={`flex items-center gap-1 text-xs px-2 py-1 border ${
+                          <span key={s} className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${
                             match ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                             {match && '✓'} {s}
                             <button type="button" onClick={() => removeSkill(s)} className="text-gray-400 hover:text-gray-700 leading-none">×</button>
@@ -223,12 +223,12 @@ export default function BidModal({ job, onSubmit, onClose }) {
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 border-t border-gray-100 px-5 py-3 flex items-center gap-3 bg-white">
+            <div className="flex-shrink-0 border-t border-gray-100 px-5 py-3 flex items-center gap-3">
               <button type="submit" disabled={submitting}
-                className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+                className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                 {submitting ? 'Submitting…' : 'Submit Bid'}
               </button>
-              <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50">
+              <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
                 Cancel
               </button>
             </div>

@@ -6,10 +6,12 @@ export default function HomeHeroSection({ sectionId, settings: s = {} }) {
 
   const titleLines = (s.title ?? 'Find work.\nHire talent.').split('\n');
 
-  const bgStyle =
+  // CMS-set colours use an inline gradient; the default wash lives in CSS
+  // (`home-hero-wash`) so dark mode can recolour it to match the blue blobs.
+  const customBg =
     s.bgFrom && s.bgTo
       ? { background: `linear-gradient(180deg, ${s.bgFrom} 0%, ${s.bgTo} 60%)` }
-      : { background: 'linear-gradient(180deg, rgba(239,246,255,0.6) 0%, rgba(255,255,255,0) 60%)' };
+      : undefined;
 
   const btn1Style = {};
   if (s.btn1BgColor) btn1Style.backgroundColor = s.btn1BgColor;
@@ -25,10 +27,10 @@ export default function HomeHeroSection({ sectionId, settings: s = {} }) {
       data-theme-label="Hero"
       className="relative flex flex-col items-center justify-center px-4 pt-36 pb-32 overflow-hidden min-h-screen"
     >
-      {/* Light background wash */}
+      {/* Background wash — top-of-hero gradient */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={bgStyle}
+        className={`absolute inset-0 pointer-events-none ${customBg ? '' : 'home-hero-wash'}`}
+        style={customBg}
         aria-hidden
       />
 

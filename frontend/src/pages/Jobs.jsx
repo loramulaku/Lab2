@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import api from '../services/api';
 import { PageShell, PageCard } from '../components/layout';
 import BidModal from '../components/freelance/BidModal';
@@ -10,11 +11,16 @@ import { SORT_OPTIONS } from '../constants/jobsBoard';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
 import candidateService from '../services/candidateService';
+import { useNotifications } from '../context/NotificationContext';
+
+const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
 export default function Jobs() {
   const { filter: urlFilter } = useParams();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isCandidate = (user?.roles ?? []).includes('candidate');
+  const { lastJobEvent } = useNotifications();
+  const anonSocketRef = useRef(null);
 
   const [qInput, setQInput]               = useState('');
   const [locationInput, setLocationInput] = useState('');
@@ -73,6 +79,32 @@ export default function Jobs() {
   }, [jobType, workMode, expLevel, minSalary, maxSalary, category, sort, activeQ, activeLoc]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Live-reload when a recruiter posts/updates/closes a job (authenticated users)
+  useEffect(() => {
+    if (!lastJobEvent) return;
+    load();
+  }, [lastJobEvent, load]);
+
+  // Anonymous socket — connects when user is NOT logged in so unauthenticated
+  // visitors still get live job-board updates without polling
+  useEffect(() => {
+    if (token) {
+      anonSocketRef.current?.disconnect();
+      anonSocketRef.current = null;
+      return;
+    }
+    const socket = io(SOCKET_URL);
+    anonSocketRef.current = socket;
+    const reload = () => load();
+    socket.on('job:created',        reload);
+    socket.on('job:updated',        reload);
+    socket.on('job:status_changed', reload);
+    return () => {
+      socket.disconnect();
+      anonSocketRef.current = null;
+    };
+  }, [token, load]);
 
   useEffect(() => {
     api.get('/categories').then((r) => setCategories(r.data ?? [])).catch(() => {});

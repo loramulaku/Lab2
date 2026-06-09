@@ -126,13 +126,13 @@ const Plans = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
             <input type="text" value={formData.name} placeholder="e.g. Basic, Pro"
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price per Month (USD)</label>
             <input type="number" min="0" step="0.01" value={formData.price} placeholder="e.g. 19.99"
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -140,7 +140,7 @@ const Plans = () => {
             </label>
             <input type="number" min="1" value={formData.jobLimit} placeholder="e.g. 5"
               onChange={(e) => setFormData({ ...formData, jobLimit: e.target.value })}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div className="flex gap-3 pt-2">

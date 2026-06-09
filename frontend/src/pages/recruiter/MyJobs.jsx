@@ -6,6 +6,7 @@ import StatusBadge from '../../components/recruiter/StatusBadge';
 import recruiterService from '../../services/recruiterService';
 import { subscriptionService } from '../../services/subscriptionService';
 import freelanceService from '../../services/freelanceService';
+import { useNotifications } from '../../context/NotificationContext';
 
 export default function MyJobs() {
   const [params, setParams]       = useSearchParams();
@@ -27,6 +28,8 @@ export default function MyJobs() {
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice]         = useState('');
   const [hasSub, setHasSub]         = useState(null);
+
+  const { lastJobEvent } = useNotifications();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +56,12 @@ export default function MyJobs() {
   }, [titleQ, statusQ, typeQ]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Live-reload on socket job events from any session
+  useEffect(() => {
+    if (!lastJobEvent) return;
+    load();
+  }, [lastJobEvent, load]);
 
   // "Post a Job" sidebar link sets ?post=1
   useEffect(() => {
@@ -182,12 +191,12 @@ export default function MyJobs() {
           onChange={e => setTitleInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') setTitleQ(titleInput.trim()); }}
           placeholder="Search by title…"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={statusQ}
           onChange={e => setStatusQ(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="">All Statuses</option>
           <option value="open">Open</option>
@@ -198,7 +207,7 @@ export default function MyJobs() {
         <select
           value={typeQ}
           onChange={e => setTypeQ(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="">All Types</option>
           <option value="full-time">Full-time</option>

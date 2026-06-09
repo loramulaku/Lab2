@@ -40,6 +40,7 @@ const CurrentPlan         = lazy(() => import('./pages/recruiter/billing/Current
 const BuyUpgrade          = lazy(() => import('./pages/recruiter/billing/BuyUpgrade'));
 const Invoices            = lazy(() => import('./pages/recruiter/billing/Invoices'));
 const TeamMembers         = lazy(() => import('./pages/recruiter/TeamMembers'));
+const RecruiterSettings   = lazy(() => import('./pages/recruiter/Settings'));
 const PaymentSuccess      = lazy(() => import('./pages/recruiter/PaymentSuccess'));
 const PaymentCancelled    = lazy(() => import('./pages/recruiter/PaymentCancelled'));
 const Chat                = lazy(() => import('./pages/chat/Chat'));
@@ -136,6 +137,7 @@ function AppShell() {
         ['/recruiter/billing/upgrade',      <BuyUpgrade />],
         ['/recruiter/billing/invoices',     <Invoices />],
         ['/recruiter/users',                <TeamMembers />],
+        ['/recruiter/settings',             <RecruiterSettings />],
         ['/recruiter/company',              <CompanySetup />],
         ['/recruiter/payment/success',        <PaymentSuccess />],
         ['/recruiter/payment/cancelled',    <PaymentCancelled />],

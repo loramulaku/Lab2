@@ -12,6 +12,7 @@ const getJobsHandler          = require('../application/job/handlers/GetJobsHand
 const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdHandler');
 const JobDTO                  = require('../dtos/job.dto');
 const auditLog                = require('../utils/audit');
+const { getIo }               = require('../socket/ioInstance');
 
 // Public read — excludes invite-only freelance jobs (candidates can't apply to them)
 const getAll = async (req, res, next) => {
@@ -37,7 +38,9 @@ const create = async (req, res, next) => {
       recruiterId: req.user.id,
     }));
     auditLog(req, { action: 'JOB_CREATE', entity: 'Job', entityId: r.id, newValue: JSON.stringify({ title: r.title, status: r.status }) });
-    res.status(201).json(JobDTO.from(r));
+    const dto = JobDTO.from(r);
+    getIo()?.emit('job:created', dto);
+    res.status(201).json(dto);
   } catch (err) { next(err); }
 };
 
@@ -46,7 +49,9 @@ const update = async (req, res, next) => {
     const r = await updateJobHandler.handle(new UpdateJobCommand(Number(req.params.id), req.body));
     if (!r) return res.status(404).json({ message: 'Job not found' });
     auditLog(req, { action: 'JOB_UPDATE', entity: 'Job', entityId: r.id });
-    res.json(JobDTO.from(r));
+    const dto = JobDTO.from(r);
+    getIo()?.emit('job:updated', dto);
+    res.json(dto);
   } catch (err) { next(err); }
 };
 
@@ -56,7 +61,9 @@ const updateStatus = async (req, res, next) => {
       new UpdateJobStatusCommand(Number(req.params.id), req.body.status)
     );
     if (!r) return res.status(404).json({ message: 'Job not found' });
-    res.json(JobDTO.from(r));
+    const dto = JobDTO.from(r);
+    getIo()?.emit('job:status_changed', dto);
+    res.json(dto);
   } catch (err) { next(err); }
 };
 

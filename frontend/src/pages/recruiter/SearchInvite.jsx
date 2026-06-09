@@ -50,11 +50,11 @@ export default function SearchInvite() {
     <RecruiterLayout title="Active Freelancers">
       <form onSubmit={search} className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-4 gap-3">
         <input value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills (comma-separated)"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <input value={location} onChange={e => setLocation(e.target.value)} placeholder="Location"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Name or headline"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
           {loading ? 'Searching…' : 'Search'}
         </button>

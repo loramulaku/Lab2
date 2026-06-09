@@ -9,7 +9,7 @@ import {
   MessageCircle, Bell,
   CreditCard, ArrowUpCircle, Receipt,
   UsersRound, BadgeCheck,
-  Settings, LogOut,
+  Settings, LogOut, Briefcase,
 } from 'lucide-react';
 
 // ── Nav data ──────────────────────────────────────────────────────────────────
@@ -106,11 +106,16 @@ export default function RecruiterLayout({ children, title }) {
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white/60 backdrop-blur-xl border-r border-blue-200/50 flex flex-col select-none">
 
-        {/* Brand */}
-        <div className="flex items-center gap-2 px-4 pt-5 pb-3 flex-shrink-0">
-          <span className="text-[20px] font-semibold text-gray-900 leading-none">HireWire</span>
-          <span className="text-[13px] text-blue-500 leading-none">Recruiter</span>
-        </div>
+        {/* Brand — matches the public header logo, links back to the dashboard */}
+        <Link to="/recruiter/dashboard" className="flex items-center gap-2.5 px-4 pt-5 pb-3 flex-shrink-0 group">
+          <span className="bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
+            <Briefcase size={18} />
+          </span>
+          <span className="text-[19px] font-bold tracking-tight text-gray-900 leading-none">
+            Hire<span className="text-blue-600">Wire</span>
+          </span>
+          <span className="text-[11px] font-medium text-blue-500 bg-blue-50 rounded px-1.5 py-0.5 leading-none">Recruiter</span>
+        </Link>
 
         {/* Scrollable nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 sidebar-scrollbar-light">

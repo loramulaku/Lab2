@@ -187,3 +187,119 @@ html.theme-editor-preview [data-theme-section].theme-preview-selected {
   }
 
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK MODE
+   Driven by the `dark` class on <html> (Tailwind class strategy + the
+   no-flash script in index.html). The app's surfaces are built on the
+   page-shell-* design tokens, so re-skinning those plus a scoped remap of the
+   common gray/white utilities turns the whole app dark without editing every
+   component. These rules are intentionally un-layered so they win over the
+   generated Tailwind utilities; the `.dark` prefix also raises specificity.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.dark { color-scheme: dark; }
+.dark body { background-color: #0b1220; }
+
+/* Homepage hero top wash — light default; dark uses a blue tint that matches
+   the background blobs instead of the old white gradient. */
+.home-hero-wash { background: linear-gradient(180deg, rgba(239, 246, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%); }
+.dark .home-hero-wash { background: linear-gradient(180deg, rgba(37, 99, 235, 0.16) 0%, rgba(10, 15, 26, 0) 60%); }
+
+/* Form controls that don't carry an explicit bg class (many raw inputs) would
+   otherwise render with the light UA default. Give them a dark surface. */
+.dark input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+.dark select,
+.dark textarea {
+  background-color: rgba(15, 23, 42, 0.70);
+  color: #e2e8f0;
+}
+
+/* Design tokens — frosted glass, dark variant */
+.dark .page-shell-bg {
+  /* Flatter, lower-contrast navy so it reads calm rather than banded. */
+  background: linear-gradient(160deg, #0a0f1a 0%, #0c1320 50%, #0e1628 80%, #0a0f1a 100%);
+}
+
+/* Decorative background blobs (defined as light tints in shell.jsx) glow too
+   brightly on dark — dim them to deep, subtle washes that blend with the bg. */
+.dark .bg-blue-300\/30   { background-color: rgba(37, 99, 235, 0.10); }
+.dark .bg-indigo-200\/35 { background-color: rgba(79, 70, 229, 0.10); }
+.dark .bg-sky-200\/25    { background-color: rgba(2, 132, 199, 0.07); }
+.dark .page-shell-card {
+  border-color: rgba(148, 197, 253, 0.12);
+  background: rgba(30, 41, 59, 0.55);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.55);
+}
+.dark .page-shell-field {
+  border-color: rgba(148, 163, 184, 0.30);
+  background: rgba(15, 23, 42, 0.70);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px -4px rgba(0, 0, 0, 0.45);
+  color: #e2e8f0;
+}
+.dark .page-shell-field:focus-within {
+  border-color: rgba(96, 165, 250, 0.65);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.30), 0 2px 8px -4px rgba(0, 0, 0, 0.5);
+}
+.dark .page-shell-bar {
+  background: rgba(15, 23, 42, 0.72);
+  border-bottom-color: rgba(148, 197, 253, 0.12);
+}
+.dark .page-shell-btn { border-color: rgba(148, 163, 184, 0.22); }
+.dark .page-shell-btn:hover { border-color: rgba(96, 165, 250, 0.55); }
+
+/* Text colours */
+.dark .text-gray-900 { color: #f1f5f9; }
+.dark .text-gray-800 { color: #e7ecf3; }
+.dark .text-gray-700 { color: #e2e8f0; }
+.dark .text-gray-600 { color: #cbd5e1; }
+.dark .text-gray-500 { color: #9aa7b8; }
+.dark .text-gray-400 { color: #8b98aa; }
+.dark .text-gray-300 { color: #7c8aa0; }
+.dark ::placeholder   { color: #64748b; }
+
+/* Solid surfaces */
+.dark .bg-white     { background-color: #1e293b; }
+.dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.95); }
+.dark .bg-white\/90 { background-color: rgba(30, 41, 59, 0.90); }
+.dark .bg-white\/80 { background-color: rgba(30, 41, 59, 0.80); }
+.dark .bg-white\/70 { background-color: rgba(30, 41, 59, 0.70); }
+.dark .bg-white\/60 { background-color: rgba(30, 41, 59, 0.60); }
+.dark .bg-white\/50 { background-color: rgba(30, 41, 59, 0.50); }
+.dark .bg-white\/40 { background-color: rgba(30, 41, 59, 0.40); }
+.dark .bg-white\/30 { background-color: rgba(30, 41, 59, 0.30); }
+.dark .bg-gray-50   { background-color: #1e293b; }
+.dark .bg-gray-100  { background-color: #334155; }
+.dark .bg-gray-200  { background-color: #3b4a61; }
+
+/* Borders + dividers */
+.dark .border-gray-100 { border-color: rgba(148, 163, 184, 0.14); }
+.dark .border-gray-200 { border-color: rgba(148, 163, 184, 0.20); }
+.dark .border-gray-300 { border-color: rgba(148, 163, 184, 0.28); }
+.dark .divide-gray-50  > :not([hidden]) ~ :not([hidden]) { border-color: rgba(148, 163, 184, 0.10); }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(148, 163, 184, 0.14); }
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(148, 163, 184, 0.20); }
+
+/* Hover backgrounds */
+.dark .hover\:bg-gray-50:hover    { background-color: #334155; }
+.dark .hover\:bg-gray-100:hover   { background-color: #3b4a61; }
+.dark .hover\:bg-white\/50:hover  { background-color: rgba(148, 163, 184, 0.12); }
+.dark .hover\:bg-white\/60:hover  { background-color: rgba(148, 163, 184, 0.14); }
+.dark .hover\:bg-white\/70:hover  { background-color: rgba(148, 163, 184, 0.16); }
+.dark .hover\:bg-blue-50:hover    { background-color: rgba(59, 130, 246, 0.16); }
+.dark .hover\:bg-blue-100\/60:hover { background-color: rgba(59, 130, 246, 0.16); }
+.dark .hover\:bg-teal-100\/60:hover { background-color: rgba(20, 184, 166, 0.16); }
+.dark .hover\:bg-red-50:hover     { background-color: rgba(239, 68, 68, 0.16); }
+
+/* Light accent tints → dark translucent so chips/banners aren't glaring.
+   Their coloured text (text-blue-700 etc.) stays readable on these. */
+.dark .bg-blue-50    { background-color: rgba(59, 130, 246, 0.14); }
+.dark .bg-indigo-50  { background-color: rgba(99, 102, 241, 0.14); }
+.dark .bg-blue-100   { background-color: rgba(59, 130, 246, 0.20); }
+.dark .bg-indigo-100 { background-color: rgba(99, 102, 241, 0.20); }
+.dark .bg-amber-50   { background-color: rgba(245, 158, 11, 0.14); }
+.dark .bg-yellow-50  { background-color: rgba(234, 179, 8, 0.14); }
+.dark .bg-green-50   { background-color: rgba(34, 197, 94, 0.14); }
+.dark .bg-red-50     { background-color: rgba(239, 68, 68, 0.14); }
+.dark .bg-purple-50  { background-color: rgba(168, 85, 247, 0.14); }
+.dark .bg-orange-50  { background-color: rgba(249, 115, 22, 0.14); }

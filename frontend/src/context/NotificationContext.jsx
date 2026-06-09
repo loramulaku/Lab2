@@ -17,6 +17,7 @@ export function NotificationProvider({ children }) {
   const { token, user } = useAuth();
   const [notifications, setNotifications]       = useState([]);
   const [lastApplicationEvent, setLastAppEvent] = useState(null);
+  const [lastJobEvent, setLastJobEvent]         = useState(null);
   const socketRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -56,6 +57,10 @@ export function NotificationProvider({ children }) {
       setLastAppEvent({ ...data, _ts: Date.now() });
     });
 
+    socket.on('job:created',        (job) => setLastJobEvent({ type: 'created',        job, _ts: Date.now() }));
+    socket.on('job:updated',        (job) => setLastJobEvent({ type: 'updated',        job, _ts: Date.now() }));
+    socket.on('job:status_changed', (job) => setLastJobEvent({ type: 'status_changed', job, _ts: Date.now() }));
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -75,7 +80,7 @@ export function NotificationProvider({ children }) {
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent, lastJobEvent }}>
       {children}
     </NotificationContext.Provider>
   );

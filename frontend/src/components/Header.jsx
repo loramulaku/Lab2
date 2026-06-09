@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { usePageSection } from '../context/ThemeContext';
+import { useDarkMode } from '../hooks/useDarkMode';
 import candidateService from '../services/candidateService';
 import FreelanceToggle from './freelance/FreelanceToggle';
 
@@ -53,6 +54,19 @@ const SignOutIcon = () => (
   </svg>
 );
 
+const SunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <circle cx="12" cy="12" r="4" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+  </svg>
+);
+
 const ChevronDownIcon = ({ open }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
@@ -64,7 +78,6 @@ const ChevronDownIcon = ({ open }) => (
 const NAV_LINKS = [
   { label: 'Home',        href: '/'     },
   { label: 'Browse Jobs', href: '/jobs' },
-  { label: 'Contact',     href: '/contact' },
 ];
 
 const ROLE_LABEL = {
@@ -72,6 +85,15 @@ const ROLE_LABEL = {
   recruiter: 'Recruiter',
   admin:     'Admin',
 };
+
+// Third nav slot — a shortcut that points wherever makes sense for the role.
+// Logged-out visitors only see Home + Browse Jobs.
+function getRoleShortcut(roles = []) {
+  if (roles.includes('admin'))     return { label: 'Admin',           href: '/admin' };
+  if (roles.includes('recruiter')) return { label: 'Dashboard',       href: '/recruiter/dashboard' };
+  if (roles.includes('candidate')) return { label: 'My Applications', href: '/my-profile?tab=applications' };
+  return null;
+}
 
 // ── Role-aware dropdown menu items ────────────────────────────────────────────
 
@@ -118,6 +140,7 @@ function Avatar({ src, firstName, lastName, size = 'md' }) {
 export default function Header() {
   const { user, logout }  = useAuth();
   const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+  const [dark, toggleDark] = useDarkMode();
   const siteS             = usePageSection('global', 'site-identity');
   const navigate          = useNavigate();
   const location          = useLocation();
@@ -162,13 +185,15 @@ export default function Header() {
     navigate('/login', { replace: true });
   };
 
-  const roles       = user?.roles ?? [];
-  const primaryRole = roles[0] ?? 'candidate';
-  const roleLabel   = ROLE_LABEL[primaryRole] ?? ROLE_LABEL.candidate;
-  const fullName    = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
-  const displayName = fullName !== roleLabel ? fullName : (user?.email?.split('@')[0] ?? fullName);
-  const avatarSrc   = user?.avatarPath ? `${API_BASE}${user.avatarPath}` : null;
-  const menuItems   = getMenuItems(roles);
+  const roles         = user?.roles ?? [];
+  const primaryRole   = roles[0] ?? 'candidate';
+  const roleLabel     = ROLE_LABEL[primaryRole] ?? ROLE_LABEL.candidate;
+  const fullName      = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
+  const displayName   = fullName !== roleLabel ? fullName : (user?.email?.split('@')[0] ?? fullName);
+  const avatarSrc     = user?.avatarPath ? `${API_BASE}${user.avatarPath}` : null;
+  const menuItems     = getMenuItems(roles);
+  const roleShortcut  = getRoleShortcut(roles);
+  const canMessage    = roles.includes('candidate') || roles.includes('recruiter');
 
   const iconBtn =
     'page-shell-btn relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-blue-700 hover:bg-white/50 transition-all';
@@ -194,9 +219,9 @@ export default function Header() {
           {[
             { label: siteS.nav1Label || NAV_LINKS[0].label, href: NAV_LINKS[0].href },
             { label: siteS.nav2Label || NAV_LINKS[1].label, href: NAV_LINKS[1].href },
-            { label: siteS.nav3Label || NAV_LINKS[2].label, href: NAV_LINKS[2].href },
+            ...(roleShortcut ? [roleShortcut] : []),
           ].map(({ label, href }) => {
-            const active = location.pathname === href;
+            const active = location.pathname === href.split('?')[0];
             return (
               <Link
                 key={href}
@@ -219,6 +244,29 @@ export default function Header() {
         {/* Actions */}
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
 
+          {/* Dark mode toggle — always available */}
+          <button
+            className={iconBtn}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={dark ? 'Light mode' : 'Dark mode'}
+            onClick={toggleDark}
+          >
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </button>
+
+          {!user && (
+            <>
+              <Link to="/login" className="text-sm text-gray-600 hover:text-blue-700 px-3 py-1.5 transition-colors">
+                Sign in
+              </Link>
+              <Link to="/register" className="bg-blue-600 text-white text-sm font-medium px-4 py-1.5 rounded-lg hover:bg-blue-500 transition-colors">
+                Sign up
+              </Link>
+            </>
+          )}
+
+          {user && (
+          <>
           {/* ── Notification bell ── */}
           <div className="relative" ref={bellRef}>
             <button
@@ -283,9 +331,11 @@ export default function Header() {
             )}
           </div>
 
-          <button className={iconBtn} aria-label="Messages">
-            <ChatIcon />
-          </button>
+          {canMessage && (
+            <Link to="/chat" className={iconBtn} aria-label="Messages">
+              <ChatIcon />
+            </Link>
+          )}
 
           <div className="hidden sm:block w-px h-6 bg-blue-200/60 mx-1.5" aria-hidden />
 
@@ -348,6 +398,8 @@ export default function Header() {
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
     </header>

@@ -167,7 +167,7 @@ export default function ContractModal({
                   type="number" min="0" step="0.01"
                   value={agreedPrice} onChange={e => setAgreedPrice(e.target.value)}
                   required
-                  className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0.00"
                 />
               </div>
@@ -181,14 +181,14 @@ export default function ContractModal({
                 <input
                   type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
                 <input
                   type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

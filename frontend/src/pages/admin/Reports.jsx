@@ -59,7 +59,7 @@ export default function Reports() {
       {/* ── Export cards ───────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {ENTITIES.map(entity => (
-          <div key={entity.key} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+          <div key={entity.key} className="page-shell-card rounded-xl p-5">
             <h3 className="text-base font-semibold text-gray-900 mb-1">{entity.label}</h3>
             <p className="text-xs text-gray-500 mb-4">{entity.description}</p>
             <div className="flex flex-wrap gap-2">
@@ -87,7 +87,7 @@ export default function Reports() {
       </div>
 
       {/* ── Export history ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="page-shell-card rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200">
           <h3 className="text-base font-semibold text-gray-900">Export History</h3>
         </div>

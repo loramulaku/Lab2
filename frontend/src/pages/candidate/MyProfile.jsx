@@ -36,8 +36,8 @@ const MailIcon      = () => <svg xmlns="http://www.w3.org/2000/svg" className="w
 const SaveIcon      = () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>;
 const CancelIcon    = () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>;
 
-const BTN_PRIMARY = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-none';
-const BTN_OUTLINE = 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-none';
+const BTN_PRIMARY = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-lg';
+const BTN_OUTLINE = 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 text-sm transition flex items-center gap-2 rounded-lg';
 
 // ── Profile Header ────────────────────────────────────────────────────────────
 function ProfileHeader({ profile, onSave, onAvatarUpload, onCvUpload }) {
@@ -82,7 +82,7 @@ function ProfileHeader({ profile, onSave, onAvatarUpload, onCvUpload }) {
   const memberSince = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-CA') : '';
 
   return (
-    <div className="bg-white border border-gray-200 p-6 mb-4">
+    <div className="page-shell-card rounded-xl p-6 mb-4">
       {!editing ? (
         <>
           <div className="flex items-start gap-5">
@@ -99,8 +99,8 @@ function ProfileHeader({ profile, onSave, onAvatarUpload, onCvUpload }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="border border-gray-300 text-gray-600 text-xs font-medium px-3 py-1">Candidate</span>
-                  <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition rounded-none">
+                  <span className="border border-gray-300 text-gray-600 text-xs font-medium px-3 py-1 rounded-full">Candidate</span>
+                  <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition rounded-lg">
                     <PencilIcon /> Edit
                   </button>
                 </div>
@@ -162,9 +162,44 @@ function ProfileHeader({ profile, onSave, onAvatarUpload, onCvUpload }) {
 }
 
 // ── Profile Tab ───────────────────────────────────────────────────────────────
-function ProfileTab({ stats, skills }) {
+function ProfileCompleteness({ profile, stats, skills }) {
+  const items = [
+    { label: 'Headline',   done: !!profile.headline?.trim() },
+    { label: 'Bio',        done: !!profile.bio?.trim() },
+    { label: 'CV',         done: !!profile.cvPath },
+    { label: 'Skills',     done: (skills?.length ?? 0) > 0 },
+    { label: 'Experience', done: (stats?.workExperiences ?? 0) > 0 },
+    { label: 'Education',  done: (stats?.educationRecords ?? 0) > 0 },
+  ];
+  const done = items.filter(i => i.done).length;
+  const pct  = Math.round((done / items.length) * 100);
+  if (done === items.length) return null;
+
+  return (
+    <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-5">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-gray-900">Complete your profile</h3>
+        <span className="text-sm font-medium text-blue-600">{pct}%</span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="text-xs text-gray-500 mt-3">A complete profile gets noticed by more recruiters. Still to add:</p>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {items.filter(i => !i.done).map(i => (
+          <span key={i.label} className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            {i.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfileTab({ profile, stats, skills }) {
   return (
     <div className="space-y-6">
+      <ProfileCompleteness profile={profile} stats={stats} skills={skills} />
       <div className="grid grid-cols-2 gap-4">
         <StatCard icon={<BriefcaseIcon />} value={stats.totalApplications} label="Total Applications" />
         <StatCard icon={<StarIcon />}      value={stats.skillsListed}      label="Skills Listed" />
@@ -213,12 +248,12 @@ function SkillsTab({ skills, onAdd, onDelete }) {
       />
 
       {adding && (
-        <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100">
+        <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
           <input
             value={name}
             onChange={e => { setName(e.target.value); setError(''); }}
             placeholder="Skill name (e.g. React) *"
-            className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-none"
+            className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
             autoFocus
           />
@@ -228,10 +263,10 @@ function SkillsTab({ skills, onAdd, onDelete }) {
             options={LEVELS}
             className="w-40"
           />
-          <button onClick={handleAdd} className="w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition rounded-none">
+          <button onClick={handleAdd} className="w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition rounded-lg">
             <SaveIcon />
           </button>
-          <button onClick={() => { setAdding(false); setName(''); setError(''); }} className="w-9 h-9 border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition rounded-none">
+          <button onClick={() => { setAdding(false); setName(''); setError(''); }} className="w-9 h-9 border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition rounded-lg">
             <CancelIcon />
           </button>
           {error && <span className="text-xs text-red-500 whitespace-nowrap">{error}</span>}
@@ -299,7 +334,7 @@ function ExperienceTab({ experiences, onAdd, onUpdate, onDelete }) {
       <SectionHeader title="Work Experience" onAdd={!showForm ? openAdd : undefined} addLabel="+ Add Experience" />
 
       {showForm && (
-        <div className="bg-gray-50 border border-gray-200 p-4 mb-4 space-y-3">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormInput value={form.title}   onChange={set('title')}   placeholder="Job title *" />
             <FormInput value={form.company} onChange={set('company')} placeholder="Company *" />
@@ -321,8 +356,8 @@ function ExperienceTab({ experiences, onAdd, onUpdate, onDelete }) {
         {experiences.length === 0 && !showForm
           ? <EmptyState message="No experience added yet." onAdd={openAdd} addLabel="+ Add Experience" />
           : experiences.map(exp => (
-            <div key={exp.id} className="flex gap-4 p-4 border border-gray-100 group hover:border-gray-200 transition">
-              <div className="w-9 h-9 bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
+            <div key={exp.id} className="flex gap-4 p-4 border border-gray-100 rounded-lg group hover:border-gray-200 transition">
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 flex-shrink-0">
                 <BriefcaseIcon />
               </div>
               <div className="flex-1 min-w-0">
@@ -386,7 +421,7 @@ function EducationTab({ educations, onAdd, onUpdate, onDelete }) {
       <SectionHeader title="Education" onAdd={!showForm ? openAdd : undefined} addLabel="+ Add Education" />
 
       {showForm && (
-        <div className="bg-gray-50 border border-gray-200 p-4 mb-4 space-y-3">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormInput value={form.degree}      onChange={set('degree')}      placeholder="Degree (e.g. B.Sc. Computer Science) *" />
             <FormInput value={form.institution} onChange={set('institution')} placeholder="Institution *" />
@@ -407,8 +442,8 @@ function EducationTab({ educations, onAdd, onUpdate, onDelete }) {
         {educations.length === 0 && !showForm
           ? <EmptyState message="No education added yet." onAdd={openAdd} addLabel="+ Add Education" />
           : educations.map(edu => (
-            <div key={edu.id} className="flex gap-4 p-4 border border-gray-100 group hover:border-gray-200 transition">
-              <div className="w-9 h-9 bg-purple-50 flex items-center justify-center text-purple-500 flex-shrink-0">
+            <div key={edu.id} className="flex gap-4 p-4 border border-gray-100 rounded-lg group hover:border-gray-200 transition">
+              <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center text-purple-500 flex-shrink-0">
                 <GradIcon />
               </div>
               <div className="flex-1 min-w-0">
@@ -624,8 +659,8 @@ function SavedJobsTab() {
         return (
           <div key={job.id} className="flex items-center gap-3 py-3">
             {logoSrc
-              ? <img src={logoSrc} alt={job.company?.name} className="w-9 h-9 object-contain border border-gray-100 flex-shrink-0" />
-              : <div className="w-9 h-9 bg-blue-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+              ? <img src={logoSrc} alt={job.company?.name} className="w-9 h-9 object-contain border border-gray-100 rounded-lg flex-shrink-0" />
+              : <div className="w-9 h-9 bg-blue-600 text-white text-xs font-bold rounded-lg flex items-center justify-center flex-shrink-0">
                   {(job.company?.name ?? '?').slice(0, 2).toUpperCase()}
                 </div>
             }
@@ -706,7 +741,7 @@ export default function MyProfile() {
         <PageCard>
           <TabNav tabs={tabs} active={tab} onChange={setTab} />
           <div className="p-6">
-            {tab === 'Profile'      && <ProfileTab stats={data.stats} skills={data.skills} />}
+            {tab === 'Profile'      && <ProfileTab profile={data} stats={data.stats} skills={data.skills} />}
             {tab === 'Skills'       && <SkillsTab skills={data.skills} onAdd={handleSkillAdd} onDelete={handleSkillDelete} />}
             {tab === 'Experience'   && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}
             {tab === 'Education'    && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}

@@ -59,7 +59,7 @@ export default function TransitionNotes() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name or note…"
-            className="pl-9 pr-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-60"
+            className="pl-9 pr-3 py-2 border border-gray-300 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-60"
           />
         </div>
         {search && (

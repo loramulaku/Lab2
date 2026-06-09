@@ -106,7 +106,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
             value={stageCount}
             onChange={e => setStageCount(e.target.value)}
             placeholder="e.g. 4"
-            className="w-28 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-28 border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button type="button" onClick={applyCount}
             className="px-4 py-2 bg-gray-800 text-white text-sm font-medium hover:bg-gray-700">
@@ -130,7 +130,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
                   type="text" value={stage.name}
                   onChange={e => updateName(i, e.target.value)}
                   placeholder={`e.g. ${['Phone Screen', 'Technical Interview', 'HR Interview', 'Offer'][i] ?? `Stage ${i + 2}`}`}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
                   <button
@@ -329,7 +329,7 @@ export default function ShowPipeline() {
           </svg>
           <input type="text" value={searchInput} onChange={e => handleSearch(e.target.value)}
             placeholder="Search candidates…"
-            className="pl-9 pr-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+            className="pl-9 pr-3 py-2 border border-gray-300 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
         </div>
         {searchInput && (
           <button onClick={() => { setInput(''); setSearch(''); }} className="text-xs text-gray-500 hover:text-gray-700 underline">
@@ -604,7 +604,7 @@ function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, h
                 <span className="text-xs font-normal text-gray-400">(optional — notifies the candidate)</span>
               </label>
               <input type="datetime-local" value={interviewDate} onChange={e => setDate(e.target.value)}
-                className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" />
+                className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
               {interviewDate && (
                 <p className="text-xs text-blue-600 mt-1">The candidate will be notified of this date.</p>
               )}

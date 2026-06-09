@@ -65,6 +65,7 @@ export default function Dashboard() {
 
   return (
     <AdminPage title="Dashboard" loading={loading} error={error}>
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">Platform overview</h2>
       <PageCard className="p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard title="Total Users"        value={stats?.users ?? 0}               icon={IconUsers}     color="blue"   />
@@ -74,6 +75,7 @@ export default function Dashboard() {
         </div>
       </PageCard>
 
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">Applications breakdown</h2>
       <PageCard className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard title="Pending"  value={stats?.applications?.pending ?? 0}  icon={IconClock}       color="yellow" />

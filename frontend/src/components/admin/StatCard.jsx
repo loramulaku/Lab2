@@ -10,7 +10,7 @@ const StatCard = ({ title, label, value, icon, color = 'blue', compact = false }
   const displayTitle = title ?? label;
   if (compact) {
     return (
-      <div className="bg-gray-50 border border-gray-100 p-4 flex items-center gap-3">
+      <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 flex items-center gap-3">
         <span className="text-blue-500">{icon}</span>
         <div>
           <p className="text-xl font-bold text-gray-900">{value}</p>

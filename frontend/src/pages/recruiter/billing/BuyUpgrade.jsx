@@ -41,29 +41,29 @@ export default function BuyUpgrade() {
   return (
     <RecruiterLayout title="Buy / Upgrade Plan">
       {reason && (
-        <div className="bg-yellow-50 border border-yellow-200 px-4 py-3 mb-6 text-sm text-yellow-800">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-6 text-sm text-yellow-800">
           {reason} — choose or upgrade a plan to continue posting.
         </div>
       )}
-      {error && <div className="bg-red-50 border border-red-200 px-4 py-3 mb-6 text-sm text-red-700">{error}</div>}
+      {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6 text-sm text-red-700">{error}</div>}
 
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
           {plans.map(plan => {
             const isCurrent   = currentSub?.planId === plan.id && currentSub?.status === 'active';
             const isSuggested = suggestedPlanId !== null && plan.id === suggestedPlanId;
-            const borderClass = isSuggested
-              ? 'border-green-500 ring-2 ring-green-100'
+            const accent = isSuggested
+              ? 'ring-2 ring-green-400/60'
               : isCurrent
-                ? 'border-blue-500'
-                : 'border-gray-200';
+                ? 'ring-2 ring-blue-400/60'
+                : '';
             return (
-              <div key={plan.id} className={`bg-white border p-6 flex flex-col ${borderClass}`}>
+              <div key={plan.id} className={`page-shell-card rounded-xl p-6 flex flex-col ${accent}`}>
                 {isSuggested && !isCurrent && (
-                  <span className="text-xs font-medium text-green-600 mb-2">Recommended</span>
+                  <span className="inline-flex w-fit text-[11px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full mb-2">Recommended</span>
                 )}
                 {isCurrent && (
-                  <span className="text-xs font-medium text-blue-600 mb-2">Current Plan</span>
+                  <span className="inline-flex w-fit text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full mb-2">Current plan</span>
                 )}
                 <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">${Number(plan.price).toFixed(2)}<span className="text-sm font-normal text-gray-500">/{plan.billingInterval === 'year' ? 'yr' : 'mo'}</span></p>
@@ -73,7 +73,7 @@ export default function BuyUpgrade() {
                 </p>
                 <div className="mt-auto pt-6">
                   <button onClick={() => subscribe(plan.id)} disabled={!!subscribing || isCurrent}
-                    className={`w-full py-2 text-sm font-medium transition ${
+                    className={`w-full py-2 text-sm font-medium rounded-lg transition ${
                       isCurrent    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
                       isSuggested  ? 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50' :
                                      'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'

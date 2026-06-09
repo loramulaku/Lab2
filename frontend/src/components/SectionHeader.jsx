@@ -5,7 +5,7 @@ export default function SectionHeader({ title, onAdd, addLabel = '+ Add', action
       {onAdd && (
         <button
           onClick={onAdd}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition flex items-center gap-1 rounded-none"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-sm transition flex items-center gap-1 rounded-lg"
         >
           {addLabel}
         </button>

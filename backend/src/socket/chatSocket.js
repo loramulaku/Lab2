@@ -6,7 +6,10 @@ module.exports = function initChatSocket(io) {
 
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-    if (!token) return next(new Error('No token'));
+    if (!token) {
+      socket.user = null;
+      return next();
+    }
     try {
       socket.user = jwt.verify(token, process.env.JWT_SECRET);
       next();
@@ -16,9 +19,10 @@ module.exports = function initChatSocket(io) {
   });
 
   io.on('connection', (socket) => {
-    console.log(`Socket connected: user ${socket.user.id}`);
-
-    socket.join(`user:${socket.user.id}`);
+    if (socket.user) {
+      console.log(`Socket connected: user ${socket.user.id}`);
+      socket.join(`user:${socket.user.id}`);
+    }
 
     socket.on('join:conversation', (conversationId) => {
       socket.join(`conversation:${conversationId}`);
@@ -29,6 +33,7 @@ module.exports = function initChatSocket(io) {
     });
 
     socket.on('send:message', async (data) => {
+      if (!socket.user) return;
       if (!data.conversationId || !data.message?.trim()) return;
 
       try {
@@ -55,7 +60,7 @@ module.exports = function initChatSocket(io) {
     });
 
     socket.on('disconnect', () => {
-      console.log(`Socket disconnected: user ${socket.user.id}`);
+      if (socket.user) console.log(`Socket disconnected: user ${socket.user.id}`);
     });
   });
 

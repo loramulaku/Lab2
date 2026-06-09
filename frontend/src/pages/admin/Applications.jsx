@@ -76,7 +76,7 @@ const Applications = () => {
           <SearchBar onSearch={handleSearch} placeholder="Search by job title, candidate name or status…" />
         </div>
         <select value={statusFilter} onChange={handleStatusChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="">All Status</option>
           <option value="pending">Pending</option>
           <option value="reviewed">Reviewed</option>

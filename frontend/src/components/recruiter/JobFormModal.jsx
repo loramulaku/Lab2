@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
-
-/**
- * Compact 2-column Job form.
- *
- * Step 0  — Standard Employment | Freelance type picker
- * Step 1A — Standard: Employment sub-type · Work mode · Title · Budget · Schedule (internship only)
- * Step 1B — Freelance: Mode tabs (Bid A | Invite B | Both C) · Title · Budget · Invite section
- *
- * Stable sections: conditional blocks are rendered-but-invisible (not unmounted)
- * so the layout never shifts when the user switches sub-types or modes.
- */
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -58,19 +48,22 @@ const EMPTY = {
   schedule: { ...DEFAULT_SCHEDULE },
 };
 
-function Pill({ active, onClick, children }) {
+const inputCls = 'w-full border border-gray-300 px-3 py-1.5 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500';
+const labelCls = 'block text-xs font-medium text-gray-600 mb-1';
+
+function Pill({ active, accent = 'blue', onClick, children }) {
+  const activeCls = accent === 'indigo'
+    ? 'bg-indigo-600 text-white border-indigo-600'
+    : 'bg-blue-600 text-white border-blue-600';
   return (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1 text-xs font-medium border transition ${
-        active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+      className={`px-3 py-1 text-xs font-medium border rounded transition ${
+        active ? activeCls : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
       }`}>
       {children}
     </button>
   );
 }
-
-const inputCls = 'w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
-const labelCls = 'block text-xs font-medium text-gray-600 mb-1';
 
 export default function JobFormModal({
   open,
@@ -91,7 +84,6 @@ export default function JobFormModal({
   const [categories,    setCategories]    = useState([]);
   const [detailsOpen,   setDetailsOpen]   = useState(false);
 
-  // Load categories once (or whenever modal opens the first time)
   useEffect(() => {
     api.get('/categories').then(r => setCategories(r.data ?? [])).catch(() => {});
   }, []);
@@ -108,14 +100,14 @@ export default function JobFormModal({
       setForm({
         ...EMPTY,
         ...initial,
-        workMode:        isF ? 'freelance' : (initial.workMode       ?? 'remote'),
-        employmentType:  isF ? 'freelance' : (initial.employmentType ?? 'full-time'),
-        schedule:        initial.schedule ?? { ...DEFAULT_SCHEDULE },
-        categoryId:      initial.categoryId ?? '',
+        workMode:         isF ? 'freelance' : (initial.workMode       ?? 'remote'),
+        employmentType:   isF ? 'freelance' : (initial.employmentType ?? 'full-time'),
+        schedule:         initial.schedule ?? { ...DEFAULT_SCHEDULE },
+        categoryId:       initial.categoryId ?? '',
         responsibilities: initial.responsibilities ?? '',
-        requirements:    initial.requirements     ?? '',
-        niceToHave:      initial.niceToHave       ?? '',
-        benefits:        initial.benefits         ?? '',
+        requirements:     initial.requirements     ?? '',
+        niceToHave:       initial.niceToHave       ?? '',
+        benefits:         initial.benefits         ?? '',
       });
       if (initial.responsibilities || initial.requirements || initial.niceToHave || initial.benefits) {
         setDetailsOpen(true);
@@ -156,21 +148,21 @@ export default function JobFormModal({
     setError('');
     try {
       await onSubmit({
-        title:           form.title.trim(),
-        description:     form.description.trim(),
-        employmentType:  form.employmentType,
-        workMode:        form.workMode,
-        jobMode:         topType === 'freelance' ? form.jobMode : null,
-        experienceLevel: form.experienceLevel || null,
-        budgetMin:       form.budgetMin !== '' ? Number(form.budgetMin) : null,
-        budgetMax:       form.budgetMax !== '' ? Number(form.budgetMax) : null,
-        categoryId:      form.categoryId !== '' ? Number(form.categoryId) : null,
+        title:            form.title.trim(),
+        description:      form.description.trim(),
+        employmentType:   form.employmentType,
+        workMode:         form.workMode,
+        jobMode:          topType === 'freelance' ? form.jobMode : null,
+        experienceLevel:  form.experienceLevel || null,
+        budgetMin:        form.budgetMin !== '' ? Number(form.budgetMin) : null,
+        budgetMax:        form.budgetMax !== '' ? Number(form.budgetMax) : null,
+        categoryId:       form.categoryId !== '' ? Number(form.categoryId) : null,
         responsibilities: form.responsibilities.trim() || null,
-        requirements:    form.requirements.trim()     || null,
-        niceToHave:      form.niceToHave.trim()       || null,
-        benefits:        form.benefits.trim()         || null,
-        schedule:        (!isFreelance && form.employmentType === 'internship') ? form.schedule : null,
-        invitees:        localInvitees,
+        requirements:     form.requirements.trim()     || null,
+        niceToHave:       form.niceToHave.trim()       || null,
+        benefits:         form.benefits.trim()         || null,
+        schedule:         (!isFreelance && form.employmentType === 'internship') ? form.schedule : null,
+        invitees:         localInvitees,
       });
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to save job.');
@@ -180,29 +172,41 @@ export default function JobFormModal({
   const browseFreelancers = () => onBrowseFreelancers?.({ ...form, _topType: topType });
   const removeInvitee = (id) => setLocalInvitees(prev => prev.filter(x => String(x._id ?? x.id) !== String(id)));
 
-  // ── Step 0 ─────────────────────────────────────────────────────────────────
+  // ── Shared overlay wrapper ────────────────────────────────────────────────
+  const Overlay = ({ children }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div onMouseDown={e => e.stopPropagation()}>{children}</div>
+    </div>
+  );
+
+  // ── Subscription banner ───────────────────────────────────────────────────
+  const SubBanner = () => hasSubscription === false ? (
+    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-xs text-amber-800">
+      <svg className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
+    </div>
+  ) : null;
+
+  // ── Step 0 ────────────────────────────────────────────────────────────────
   if (step === 0) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
-        <div className="bg-white w-full max-w-lg border border-gray-200 shadow-xl" onMouseDown={e => e.stopPropagation()}>
+      <Overlay>
+        <div className="page-shell-card w-full max-w-lg rounded-xl shadow-xl overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
           </div>
+
+          <SubBanner />
+
           <div className="p-5">
-            {hasSubscription === false && (
-              <div className="flex items-start gap-2 border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                </svg>
-                <span>Subscription required — <a href="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</a> to post.</span>
-              </div>
-            )}
             <p className="text-xs text-gray-500 mb-3">What kind of role are you hiring for?</p>
             <div className="grid grid-cols-2 gap-3">
               <button type="button" onClick={() => pickTopType('standard')}
-                className="border-2 border-gray-200 p-4 text-left hover:border-blue-500 hover:bg-blue-50/40 transition group">
-                <div className="w-7 h-7 bg-blue-100 flex items-center justify-center mb-2.5 group-hover:bg-blue-200 transition">
+                className="border border-gray-200 rounded-xl p-4 text-left hover:border-blue-400 hover:bg-blue-50/40 transition group">
+                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center mb-2.5 group-hover:bg-blue-200 transition">
                   <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2" />
                   </svg>
@@ -210,9 +214,10 @@ export default function JobFormModal({
                 <p className="font-semibold text-gray-900 text-sm mb-0.5">Standard Employment</p>
                 <p className="text-xs text-gray-500">Full-time, part-time, or internship. Candidates apply through your pipeline.</p>
               </button>
+
               <button type="button" onClick={() => pickTopType('freelance')}
-                className="border-2 border-gray-200 p-4 text-left hover:border-indigo-500 hover:bg-indigo-50/40 transition group">
-                <div className="w-7 h-7 bg-indigo-100 flex items-center justify-center mb-2.5 group-hover:bg-indigo-200 transition">
+                className="border border-gray-200 rounded-xl p-4 text-left hover:border-indigo-400 hover:bg-indigo-50/40 transition group">
+                <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center mb-2.5 group-hover:bg-indigo-200 transition">
                   <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
@@ -223,20 +228,19 @@ export default function JobFormModal({
             </div>
           </div>
         </div>
-      </div>
+      </Overlay>
     );
   }
 
-  // ── Step 1 ─────────────────────────────────────────────────────────────────
+  // ── Step 1 ────────────────────────────────────────────────────────────────
   const isFreelance   = topType === 'freelance';
   const activeMode    = FREELANCE_MODES.find(m => m.value === form.jobMode);
   const showInviteeUI = isFreelance && (form.jobMode === 'invite' || form.jobMode === 'both') && !!onBrowseFreelancers;
   const showSchedule  = !isFreelance && form.employmentType === 'internship';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 px-4" onMouseDown={onClose}>
-      <div className="bg-white w-full max-w-2xl border border-gray-200 shadow-xl flex flex-col max-h-[88vh]"
-        onMouseDown={e => e.stopPropagation()}>
+    <Overlay>
+      <div className="page-shell-card w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[88vh]">
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -248,21 +252,14 @@ export default function JobFormModal({
             <h3 className="font-semibold text-gray-900 text-sm truncate">{title}</h3>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-xs font-medium px-2 py-0.5 border ${
+            <span className={`text-xs font-medium px-2 py-0.5 rounded border ${
               isFreelance ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-blue-50 text-blue-700 border-blue-200'
             }`}>{isFreelance ? 'Freelance' : 'Standard'}</span>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-1">×</button>
           </div>
         </div>
 
-        {hasSubscription === false && (
-          <div className="flex-shrink-0 flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-800">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-            </svg>
-            <span>Subscription required — <a href="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</a>.</span>
-          </div>
-        )}
+        <SubBanner />
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
@@ -271,14 +268,14 @@ export default function JobFormModal({
             {isFreelance && (
               <div>
                 <p className={labelCls}>Hiring Mode</p>
-                <div className="flex border border-gray-200">
+                <div className="flex border border-gray-200 rounded">
                   {FREELANCE_MODES.map((m, i) => (
                     <button key={m.value} type="button" onClick={() => setVal('jobMode', m.value)}
                       className={`flex-1 py-2 px-3 text-xs font-medium transition flex items-center justify-center gap-1.5
                         ${i !== 0 ? 'border-l border-gray-200' : ''}
                         ${form.jobMode === m.value ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                       <span>{m.label}</span>
-                      <span className={`text-[10px] font-bold px-1 py-0.5 ${
+                      <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${
                         form.jobMode === m.value ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
                       }`}>{m.tag}</span>
                     </button>
@@ -314,131 +311,122 @@ export default function JobFormModal({
               </div>
             )}
 
-            {/* Experience required — applies to both standard and freelance roles */}
+            {/* Experience level */}
             <div>
               <p className={labelCls}>Experience Required</p>
               <div className="flex gap-1.5">
                 {EXPERIENCE_LEVELS.map(l => (
-                  <Pill key={l.value} active={form.experienceLevel === l.value}
-                    onClick={() => setVal('experienceLevel', l.value)}>
+                  <Pill key={l.value} active={form.experienceLevel === l.value} onClick={() => setVal('experienceLevel', l.value)}>
                     {l.label}
                   </Pill>
                 ))}
               </div>
             </div>
 
-            {/* 2-column main grid */}
-            <div className="grid grid-cols-2 gap-x-5 items-stretch">
-              {/* Left column — stable height (conditional sections use invisible, not unmount) */}
-              <div className="flex flex-col gap-3">
-                <div>
-                  <label className={labelCls}>Job Title <span className="text-red-500">*</span></label>
-                  <input value={form.title} onChange={set('title')} className={inputCls}
-                    placeholder={isFreelance ? 'e.g. Build a REST API in Node.js' : 'e.g. Senior Frontend Developer'} />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className={labelCls}>{isFreelance ? 'Budget Min ($)' : 'Salary Min ($)'}</label>
-                    <input type="number" min="0" value={form.budgetMin} onChange={set('budgetMin')} className={inputCls} placeholder="e.g. 3000" />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{isFreelance ? 'Budget Max ($)' : 'Salary Max ($)'}</label>
-                    <input type="number" min="0" value={form.budgetMax} onChange={set('budgetMax')} className={inputCls} placeholder="e.g. 5000" />
-                  </div>
-                </div>
-
-                {/* Category */}
-                {categories.length > 0 && (
-                  <div>
-                    <label className={labelCls}>Category</label>
-                    <select value={form.categoryId} onChange={set('categoryId')} className={inputCls}>
-                      <option value="">— No category —</option>
-                      {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* ── Internship schedule (stable — invisible when not internship) ── */}
-                <div className={`border border-gray-200 p-3 transition-opacity ${showSchedule ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  style={{ minHeight: '108px' }}>
-                  <p className={labelCls}>Weekly Schedule</p>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {DAYS.map(d => (
-                      <button key={d} type="button"
-                        onClick={() => toggleDay(d)}
-                        className={`text-[11px] px-1.5 py-0.5 border transition ${
-                          (form.schedule?.days ?? []).includes(d)
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                        }`}>
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="time" value={form.schedule?.startTime ?? '09:00'}
-                      onChange={e => setTime('startTime', e.target.value)}
-                      className="border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                    <span className="text-xs text-gray-400">to</span>
-                    <input type="time" value={form.schedule?.endTime ?? '17:00'}
-                      onChange={e => setTime('endTime', e.target.value)}
-                      className="border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                  </div>
-                </div>
-
-                {/* ── Invite section (stable — invisible when not invite/both mode) ── */}
-                <div className={`border border-indigo-200 bg-indigo-50/30 px-3 py-2.5 space-y-2 transition-opacity ${
-                  (isFreelance && showInviteeUI) ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`} style={{ minHeight: '76px' }}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-700">
-                      Freelancers to invite
-                      {localInvitees.length > 0 && (
-                        <span className="ml-1.5 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold">{localInvitees.length}</span>
-                      )}
-                    </span>
-                    <button type="button" onClick={browseFreelancers}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 text-white text-[11px] font-medium hover:bg-indigo-700">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      Browse
-                    </button>
-                  </div>
-                  {localInvitees.length === 0 ? (
-                    <p className="text-[11px] text-gray-400">No freelancers selected. Click Browse to pick from the pool.</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {localInvitees.map(f => {
-                        const id = String(f._id ?? f.id);
-                        return (
-                          <span key={id} className="flex items-center gap-1 bg-white border border-indigo-300 text-indigo-800 text-[11px] px-2 py-0.5">
-                            {f.firstName} {f.lastName}
-                            <button type="button" onClick={() => removeInvitee(id)} className="text-indigo-400 hover:text-indigo-700 leading-none ml-0.5">×</button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right column — Description fills height */}
-              <div className="flex flex-col">
-                <label className={labelCls}>Description <span className="text-red-500">*</span></label>
-                <textarea value={form.description} onChange={set('description')}
-                  className={`${inputCls} flex-1 resize-none`} style={{ minHeight: '9rem' }}
-                  placeholder={isFreelance
-                    ? 'Describe the project scope, deliverables, and requirements…'
-                    : 'Describe the role, responsibilities, and requirements…'} />
-              </div>
+            {/* Title */}
+            <div>
+              <label className={labelCls}>Job Title <span className="text-red-500">*</span></label>
+              <input value={form.title} onChange={set('title')} className={inputCls}
+                placeholder={isFreelance ? 'e.g. Build a REST API in Node.js' : 'e.g. Senior Frontend Developer'} />
             </div>
 
-            {/* ── Collapsible: Detailed sections (optional) ────────────── */}
-            <div className="border border-gray-200">
+            {/* Pay + category */}
+            <div className={`grid grid-cols-2 ${categories.length > 0 ? 'sm:grid-cols-3' : ''} gap-3`}>
+              <div>
+                <label className={labelCls}>{isFreelance ? 'Budget Min ($)' : 'Salary Min ($)'}</label>
+                <input type="number" min="0" value={form.budgetMin} onChange={set('budgetMin')} className={inputCls} placeholder="e.g. 3000" />
+              </div>
+              <div>
+                <label className={labelCls}>{isFreelance ? 'Budget Max ($)' : 'Salary Max ($)'}</label>
+                <input type="number" min="0" value={form.budgetMax} onChange={set('budgetMax')} className={inputCls} placeholder="e.g. 5000" />
+              </div>
+              {categories.length > 0 && (
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={labelCls}>Category</label>
+                  <select value={form.categoryId} onChange={set('categoryId')} className={inputCls}>
+                    <option value="">— No category —</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className={labelCls}>Description <span className="text-red-500">*</span></label>
+              <textarea value={form.description} onChange={set('description')} rows={6}
+                className={`${inputCls} resize-y`}
+                placeholder={isFreelance
+                  ? 'Describe the project scope, deliverables, and requirements…'
+                  : 'Describe the role, responsibilities, and requirements…'} />
+            </div>
+
+            {/* Internship schedule — only when an internship is selected */}
+            {showSchedule && (
+              <div className="border border-gray-200 rounded-lg p-3">
+                <p className={labelCls}>Weekly Schedule</p>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {DAYS.map(d => (
+                    <button key={d} type="button" onClick={() => toggleDay(d)}
+                      className={`text-[11px] px-1.5 py-0.5 border rounded transition ${
+                        (form.schedule?.days ?? []).includes(d)
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                      }`}>
+                      {d}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="time" value={form.schedule?.startTime ?? '09:00'}
+                    onChange={e => setTime('startTime', e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <span className="text-xs text-gray-400">to</span>
+                  <input type="time" value={form.schedule?.endTime ?? '17:00'}
+                    onChange={e => setTime('endTime', e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+              </div>
+            )}
+
+            {/* Invite section — only in invite / both freelance modes */}
+            {isFreelance && showInviteeUI && (
+              <div className="border border-indigo-200 bg-indigo-50/30 px-3 py-2.5 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-700">
+                    Freelancers to invite
+                    {localInvitees.length > 0 && (
+                      <span className="ml-1.5 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold rounded">{localInvitees.length}</span>
+                    )}
+                  </span>
+                  <button type="button" onClick={browseFreelancers}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 text-white text-[11px] font-medium rounded hover:bg-indigo-700">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Browse
+                  </button>
+                </div>
+                {localInvitees.length === 0 ? (
+                  <p className="text-[11px] text-gray-400">No freelancers selected. Click Browse to pick from the pool.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {localInvitees.map(f => {
+                      const id = String(f._id ?? f.id);
+                      return (
+                        <span key={id} className="flex items-center gap-1 bg-white border border-indigo-300 text-indigo-800 text-[11px] px-2 py-0.5 rounded">
+                          {f.firstName} {f.lastName}
+                          <button type="button" onClick={() => removeInvitee(id)} className="text-indigo-400 hover:text-indigo-700 leading-none ml-0.5">×</button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Collapsible detail sections */}
+            <div className="border border-gray-200 rounded">
               <button type="button"
                 onClick={() => setDetailsOpen(o => !o)}
                 className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
@@ -480,19 +468,19 @@ export default function JobFormModal({
             {error && <p className="text-xs text-red-600">{error}</p>}
           </div>
 
-          {/* Footer — always pinned */}
-          <div className="flex-shrink-0 border-t border-gray-100 px-5 py-3 flex items-center gap-3 bg-white">
+          {/* Footer */}
+          <div className="flex-shrink-0 border-t border-gray-100 px-5 py-3 flex items-center gap-3">
             <button type="submit" disabled={submitting}
-              className="px-5 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+              className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50">
               {submitting ? 'Saving…' : 'Save Job'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50">
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50">
               Cancel
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </Overlay>
   );
 }

@@ -1,7 +1,7 @@
 export default function FreelanceModeGate({ onActivate, onCancel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onCancel}>
-      <div className="bg-white border border-gray-200 shadow-xl w-full max-w-sm p-6" onMouseDown={e => e.stopPropagation()}>
+      <div className="bg-white border border-gray-200 shadow-xl w-full max-w-sm p-6 rounded-xl" onMouseDown={e => e.stopPropagation()}>
         <h3 className="font-semibold text-gray-900 text-base mb-2">Freelance Mode required</h3>
         <p className="text-sm text-gray-600 mb-6">
           To add bids you should activate Freelance Mode on your account.

@@ -24,7 +24,7 @@ function DotRating({ level }) {
 export default function SkillBadge({ name, level, compact = false }) {
   const color = COLOR_MAP[name?.toLowerCase()] ?? 'bg-indigo-100 text-indigo-700';
   return (
-    <span className={`inline-flex items-center gap-2 px-2.5 py-1 text-sm font-medium ${color} ${compact ? '' : 'rounded-none'}`}>
+    <span className={`inline-flex items-center gap-2 px-2.5 py-1 text-sm font-medium rounded-md ${color}`}>
       {name}
       {level && <DotRating level={level} />}
     </span>
