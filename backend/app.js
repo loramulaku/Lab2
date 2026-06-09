@@ -62,6 +62,14 @@ app.use('/api/exports',      exportRoutes);
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// ── Serve React SPA ──────────────────────────────────────────────────────────
+const clientDir = path.join(__dirname, 'public/client');
+app.use(express.static(clientDir));
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/exports')) return next();
+  res.sendFile(path.join(clientDir, 'index.html'));
+});
+
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error(err);
