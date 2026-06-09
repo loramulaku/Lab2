@@ -69,7 +69,7 @@ export default function Overview() {
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-gray-900">
-              Welcome back{user?.firstName ? `, ${user.firstName}` : ''} 👋
+              Welcome back{user?.firstName ? `, ${user.firstName}` : ''}
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">Here's what's happening with your hiring today.</p>
           </div>

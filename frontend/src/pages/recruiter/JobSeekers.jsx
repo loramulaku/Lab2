@@ -6,18 +6,6 @@ import api from '../../services/api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
-const STATUS_OPTIONS = [
-  { value: '',            label: 'All Statuses' },
-  { value: 'pending',     label: 'Pending' },
-  { value: 'in_review',   label: 'In Review' },
-  { value: 'shortlisted', label: 'Shortlisted' },
-  { value: 'interview',   label: 'Interview' },
-  { value: 'offer',       label: 'Offer' },
-  { value: 'accepted',    label: 'Accepted' },
-  { value: 'rejected',    label: 'Rejected' },
-  { value: 'withdrawn',   label: 'Withdrawn' },
-];
-
 const lc = (s) => (s ?? '').toLowerCase();
 
 export default function JobSeekers() {
@@ -29,19 +17,18 @@ export default function JobSeekers() {
   const [chatBusy,  setChatBusy]  = useState(null);
 
   // ── Search state ──────────────────────────────────────────────────────────
-  const [nameQ,   setNameQ]   = useState('');
-  const [titleQ,  setTitleQ]  = useState('');
-  const [statusQ, setStatusQ] = useState('');
+  const [q, setQ] = useState('');
 
   const visible = applicants.filter(a => {
-    const fullName = `${lc(a.applicant?.firstName)} ${lc(a.applicant?.lastName)}`;
-    if (nameQ   && !fullName.includes(lc(nameQ)))                             return false;
-    if (titleQ  && !lc(a.jobTitle).includes(lc(titleQ)))                      return false;
-    if (statusQ && a.status !== statusQ)                                       return false;
-    return true;
+    if (!q) return true;
+    const term = lc(q);
+    const name    = lc(`${a.applicant?.firstName} ${a.applicant?.lastName}`);
+    const email   = lc(a.applicant?.email);
+    const title   = lc(a.jobTitle);
+    const status  = lc(a.status);
+    const company = lc(a.companyName);
+    return name.includes(term) || email.includes(term) || title.includes(term) || status.includes(term) || company.includes(term);
   });
-
-  const hasFilter = nameQ || titleQ || statusQ;
 
   // ── Data loading ──────────────────────────────────────────────────────────
   const load = useCallback(async () => {
@@ -74,28 +61,15 @@ export default function JobSeekers() {
     <RecruiterLayout title="Job Seekers">
 
       {/* ── Search bar ─────────────────────────────────────────────────────── */}
-      <div className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-3 gap-3">
+      <div className="page-shell-card rounded-xl px-4 py-3 mb-6">
         <input
-          type="text"
-          value={nameQ}
-          onChange={e => setNameQ(e.target.value)}
-          placeholder="Candidate name…"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          type="search"
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          placeholder="Search by name, email, job title, status…"
+          className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoFocus
         />
-        <input
-          type="text"
-          value={titleQ}
-          onChange={e => setTitleQ(e.target.value)}
-          placeholder="Job title…"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <select
-          value={statusQ}
-          onChange={e => setStatusQ(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
       </div>
 
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
@@ -109,15 +83,10 @@ export default function JobSeekers() {
         </div>
       ) : visible.length === 0 ? (
         <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
-          <p className="text-base">No results match your search</p>
-          {hasFilter && (
-            <button
-              onClick={() => { setNameQ(''); setTitleQ(''); setStatusQ(''); }}
-              className="mt-3 text-sm text-blue-600 hover:underline"
-            >
-              Clear filters
-            </button>
-          )}
+          <p className="text-base">No results for "{q}"</p>
+          <button onClick={() => setQ('')} className="mt-3 text-sm text-blue-600 hover:underline">
+            Clear search
+          </button>
         </div>
       ) : (
         <>

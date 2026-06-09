@@ -6,12 +6,16 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Split large, rarely-changing dependencies into their own long-cached
-        // chunks so they aren't re-downloaded when app code changes.
         manualChunks(id) {
-          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';
-          if (id.includes('socket.io-client')) return 'socket-vendor';
-          if (id.includes('node_modules/axios')) return 'http-vendor';
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/socket.io-client')) {
+            return 'socket-vendor';
+          }
+          if (id.includes('node_modules/axios')) {
+            return 'http-vendor';
+          }
         },
       },
     },

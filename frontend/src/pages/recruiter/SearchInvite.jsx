@@ -2,89 +2,84 @@ import { useEffect, useState } from 'react';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import freelanceService from '../../services/freelanceService';
 
-/**
- * Active Freelancers — browse candidates with Freelance Mode activated.
- * Only candidates with Freelance Mode activated are returned (enforced
- * server-side in SearchFreelancersHandler).
- */
+const lc = s => (s ?? '').toLowerCase();
+
 export default function SearchInvite() {
-  const [skills, setSkills] = useState('');
-  const [location, setLocation] = useState('');
-  const [q, setQ] = useState('');
-  const [results, setResults] = useState([]);
-  const [searched, setSearched] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [q,       setQ]       = useState('');
+  const [all,     setAll]     = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Auto-load all active freelancers on mount
-    setLoading(true);
-    freelanceService.searchFreelancers({ limit: 200 })
-      .then(res => { setResults(res.data ?? []); setSearched(true); })
+    freelanceService.searchFreelancers({ limit: 500 })
+      .then(res => setAll(res.data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const search = async (e) => {
-    e?.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const params = {
-        skills: skills.split(',').map(s => s.trim()).filter(Boolean).join(','),
-        location: location.trim(),
-        q: q.trim(),
-        limit: 50,
-      };
-      const res = await freelanceService.searchFreelancers(params);
-      setResults(res.data ?? []);
-      setSearched(true);
-    } catch {
-      setError('Search failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const term    = lc(q);
+  const visible = term
+    ? all.filter(c => {
+        const name     = lc(`${c.firstName} ${c.lastName}`);
+        const headline = lc(c.headline);
+        const location = lc(c.location);
+        const skills   = (c.skills ?? []).map(s => lc(s.name)).join(' ');
+        return name.includes(term) || headline.includes(term) || location.includes(term) || skills.includes(term);
+      })
+    : all;
 
   return (
     <RecruiterLayout title="Active Freelancers">
-      <form onSubmit={search} className="page-shell-card rounded-xl p-4 mb-6 grid md:grid-cols-4 gap-3">
-        <input value={skills} onChange={e => setSkills(e.target.value)} placeholder="Skills (comma-separated)"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <input value={location} onChange={e => setLocation(e.target.value)} placeholder="Location"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Name or headline"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
-          {loading ? 'Searching…' : 'Search'}
-        </button>
-      </form>
 
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+      <div className="page-shell-card rounded-xl px-4 py-3 mb-6">
+        <input
+          type="search"
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          placeholder="Search by name, headline, location or skill…"
+          className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoFocus
+        />
+      </div>
 
-      {searched && results.length === 0 && !loading && (
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : all.length === 0 ? (
         <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
-          <p className="text-lg">No freelancers match your search</p>
+          <p className="text-lg">No active freelancers yet</p>
           <p className="text-sm mt-1">Only candidates with Freelance Mode activated are shown.</p>
         </div>
-      )}
-
-      <div className="space-y-3">
-        {results.map(c => (
-          <div key={c._id} className="page-shell-card rounded-xl px-5 py-4">
-            <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
-            {c.headline && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
-            {c.location && <p className="text-sm text-gray-500">{c.location}</p>}
-            {c.skills?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {c.skills.map(s => (
-                  <span key={s.skillId ?? s.name} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5">{s.name}</span>
-                ))}
+      ) : visible.length === 0 ? (
+        <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
+          <p className="text-base">No results for "{q}"</p>
+          <button onClick={() => setQ('')} className="mt-3 text-sm text-blue-600 hover:underline">
+            Clear search
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-gray-400 mb-3">
+            {visible.length} of {all.length} freelancer{all.length !== 1 ? 's' : ''}
+          </p>
+          <div className="space-y-3">
+            {visible.map(c => (
+              <div key={c._id} className="page-shell-card rounded-xl px-5 py-4">
+                <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
+                {c.headline  && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
+                {c.location  && <p className="text-sm text-gray-500">{c.location}</p>}
+                {c.skills?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {c.skills.map(s => (
+                      <span key={s.skillId ?? s.name} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                        {s.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </RecruiterLayout>
   );
 }
