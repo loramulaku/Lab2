@@ -659,7 +659,7 @@ function SavedJobsTab() {
         return (
           <div key={job.id} className="flex items-center gap-3 py-3">
             {logoSrc
-              ? <img src={logoSrc} alt={job.company?.name} className="w-9 h-9 object-contain border border-gray-100 rounded-lg flex-shrink-0" />
+              ? <img src={logoSrc} alt={job.company?.name} loading="lazy" className="w-9 h-9 object-contain border border-gray-100 rounded-lg flex-shrink-0" />
               : <div className="w-9 h-9 bg-blue-600 text-white text-xs font-bold rounded-lg flex items-center justify-center flex-shrink-0">
                   {(job.company?.name ?? '?').slice(0, 2).toUpperCase()}
                 </div>

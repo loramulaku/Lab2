@@ -26,7 +26,7 @@ function FilterCheckbox({ label, checked, onChange }) {
 function CompanyAvatar({ company }) {
   const logoSrc = company?.logoPath ? `${API_BASE}${company.logoPath}` : null;
   if (logoSrc) {
-    return <img src={logoSrc} alt={company.name} className="w-12 h-12 flex-shrink-0 object-contain border border-gray-100 bg-white rounded-lg" />;
+    return <img src={logoSrc} alt={company.name} loading="lazy" className="w-12 h-12 flex-shrink-0 object-contain border border-gray-100 bg-white rounded-lg" />;
   }
   return (
     <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center text-white text-sm font-bold rounded-lg ${avatarColor(company?.name)}`}>

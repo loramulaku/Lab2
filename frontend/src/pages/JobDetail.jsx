@@ -197,7 +197,7 @@ export default function JobDetail() {
             <div className="page-shell-card rounded-xl p-6">
               <div className="flex gap-4 items-start">
                 {logoSrc
-                  ? <img src={logoSrc} alt={job.company?.name} className="w-16 h-16 object-contain border border-gray-100 bg-white rounded-xl flex-shrink-0" />
+                  ? <img src={logoSrc} alt={job.company?.name} loading="lazy" className="w-16 h-16 object-contain border border-gray-100 bg-white rounded-xl flex-shrink-0" />
                   : (
                     <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg bg-blue-600 rounded-xl">
                       {(job.company?.name ?? '?').slice(0, 2).toUpperCase()}
@@ -271,7 +271,7 @@ export default function JobDetail() {
             {job.company?.description && (
               <div className="page-shell-card rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  {logoSrc && <img src={logoSrc} alt={job.company.name} className="w-10 h-10 object-contain border border-gray-100 rounded-lg" />}
+                  {logoSrc && <img src={logoSrc} alt={job.company.name} loading="lazy" className="w-10 h-10 object-contain border border-gray-100 rounded-lg" />}
                   <h3 className="text-base font-semibold text-gray-900">About {job.company.name}</h3>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{job.company.description}</p>
