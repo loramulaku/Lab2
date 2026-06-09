@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import freelanceService from '../../services/freelanceService';
+import { useDebounce } from '../../hooks/useDebounce';
 
+const PAGE_SIZE = 20;
 const lc = s => (s ?? '').toLowerCase();
 
 export default function SearchInvite() {
   const [q,       setQ]       = useState('');
   const [all,     setAll]     = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page,    setPage]    = useState(1);
+
+  const debouncedQ = useDebounce(q, 300);
 
   useEffect(() => {
     freelanceService.searchFreelancers({ limit: 500 })
@@ -16,16 +21,26 @@ export default function SearchInvite() {
       .finally(() => setLoading(false));
   }, []);
 
-  const term    = lc(q);
-  const visible = term
-    ? all.filter(c => {
-        const name     = lc(`${c.firstName} ${c.lastName}`);
-        const headline = lc(c.headline);
-        const location = lc(c.location);
-        const skills   = (c.skills ?? []).map(s => lc(s.name)).join(' ');
-        return name.includes(term) || headline.includes(term) || location.includes(term) || skills.includes(term);
-      })
-    : all;
+  useEffect(() => { setPage(1); }, [debouncedQ]);
+
+  const visible = useMemo(() => {
+    const term = lc(debouncedQ);
+    if (!term) return all;
+    return all.filter(c => {
+      const name     = lc(`${c.firstName} ${c.lastName}`);
+      const headline = lc(c.headline);
+      const location = lc(c.location);
+      const skills   = (c.skills ?? []).map(s => lc(s.name)).join(' ');
+      return name.includes(term) || headline.includes(term) || location.includes(term) || skills.includes(term);
+    });
+  }, [all, debouncedQ]);
+
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = useMemo(
+    () => visible.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [visible, safePage]
+  );
 
   return (
     <RecruiterLayout title="Active Freelancers">
@@ -50,7 +65,7 @@ export default function SearchInvite() {
         </div>
       ) : visible.length === 0 ? (
         <div className="page-shell-card rounded-xl text-center py-10 text-gray-400">
-          <p className="text-base">No results for "{q}"</p>
+          <p className="text-base">No results for "{debouncedQ}"</p>
           <button onClick={() => setQ('')} className="mt-3 text-sm text-blue-600 hover:underline">
             Clear search
           </button>
@@ -59,9 +74,10 @@ export default function SearchInvite() {
         <>
           <p className="text-xs text-gray-400 mb-3">
             {visible.length} of {all.length} freelancer{all.length !== 1 ? 's' : ''}
+            {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
           </p>
           <div className="space-y-3">
-            {visible.map(c => (
+            {pageItems.map(c => (
               <div key={c._id} className="page-shell-card rounded-xl px-5 py-4">
                 <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
                 {c.headline  && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
@@ -78,6 +94,26 @@ export default function SearchInvite() {
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+              >
+                ← Prev
+              </button>
+              <span className="text-sm text-gray-500">{safePage} / {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </>
       )}
     </RecruiterLayout>

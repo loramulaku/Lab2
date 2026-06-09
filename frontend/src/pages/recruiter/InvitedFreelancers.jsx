@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import StatusBadge from '../../components/recruiter/StatusBadge';
@@ -6,6 +6,8 @@ import ContractModal from '../../components/recruiter/ContractModal';
 import recruiterService from '../../services/recruiterService';
 import freelanceService from '../../services/freelanceService';
 import api from '../../services/api';
+
+const PAGE_SIZE = 20;
 
 /**
  * Invited Freelancers — direct invitations sent by the recruiter (Mode B).
@@ -18,7 +20,15 @@ export default function InvitedFreelancers() {
   const [error,   setError]   = useState('');
   const [busy,     setBusy]     = useState(null);
   const [chatBusy, setChatBusy] = useState(null);
-  const [contractTarget, setContractTarget] = useState(null); // invitation row for modal
+  const [contractTarget, setContractTarget] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(invites.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = useMemo(
+    () => invites.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [invites, safePage]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -92,8 +102,13 @@ export default function InvitedFreelancers() {
             <p className="text-sm mt-1">Go to "Active Freelancers" to search and invite freelancers.</p>
           </div>
         ) : (
+          <>
+          <p className="text-xs text-gray-400 mb-3">
+            {invites.length} invitation{invites.length !== 1 ? 's' : ''}
+            {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
+          </p>
           <div className="space-y-3">
-            {invites.map(inv => (
+            {pageItems.map(inv => (
               <div key={inv.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -140,6 +155,17 @@ export default function InvitedFreelancers() {
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40">← Prev</button>
+              <span className="text-sm text-gray-500">{safePage} / {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40">Next →</button>
+            </div>
+          )}
+          </>
         )}
 
       {contractTarget && (

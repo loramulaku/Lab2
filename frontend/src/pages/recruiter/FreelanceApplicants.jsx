@@ -1,4 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+
+const PAGE_SIZE = 20;
 import { useNavigate } from 'react-router-dom';
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import StatusBadge from '../../components/recruiter/StatusBadge';
@@ -16,6 +18,14 @@ export default function FreelanceApplicants() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(bids.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = useMemo(
+    () => bids.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [bids, safePage]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,8 +67,13 @@ export default function FreelanceApplicants() {
             <p className="text-sm mt-1">Freelancers who bid on your public freelance jobs appear here.</p>
           </div>
         ) : (
+          <>
+          <p className="text-xs text-gray-400 mb-3">
+            {bids.length} applicant{bids.length !== 1 ? 's' : ''}
+            {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
+          </p>
           <div className="space-y-3">
-            {bids.map(b => (
+            {pageItems.map(b => (
               <div key={b.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -81,6 +96,17 @@ export default function FreelanceApplicants() {
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40">← Prev</button>
+              <span className="text-sm text-gray-500">{safePage} / {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40">Next →</button>
+            </div>
+          )}
+          </>
         )}
     </RecruiterLayout>
   );
