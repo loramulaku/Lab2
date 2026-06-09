@@ -4,12 +4,14 @@ const CancelSubscriptionCommand       = require('../application/subscription/com
 const HandleStripeWebhookCommand      = require('../application/subscription/commands/HandleStripeWebhook.command');
 const ConfirmCheckoutSessionCommand   = require('../application/subscription/commands/ConfirmCheckoutSession.command');
 const GetMySubscriptionQuery          = require('../application/subscription/queries/GetMySubscription.query');
+const GetMyPaymentsQuery              = require('../application/subscription/queries/GetMyPayments.query');
 const GetAllSubscriptionsQuery        = require('../application/subscription/queries/GetAllSubscriptions.query');
 const createCheckoutSessionHandler    = require('../application/subscription/handlers/CreateCheckoutSessionHandler');
 const cancelSubscriptionHandler       = require('../application/subscription/handlers/CancelSubscriptionHandler');
 const handleStripeWebhookHandler      = require('../application/subscription/handlers/HandleStripeWebhookHandler');
 const confirmCheckoutSessionHandler   = require('../application/subscription/handlers/ConfirmCheckoutSessionHandler');
 const getMySubscriptionHandler        = require('../application/subscription/handlers/GetMySubscriptionHandler');
+const getMyPaymentsHandler            = require('../application/subscription/handlers/GetMyPaymentsHandler');
 const getAllSubscriptionsHandler       = require('../application/subscription/handlers/GetAllSubscriptionsHandler');
 const confirmCheckoutHandler          = require('../application/subscription/handlers/ConfirmCheckoutHandler');
 const RecruiterProfile                = require('../models/sql/RecruiterProfile');
@@ -50,6 +52,7 @@ const checkout = async (req, res, next) => {
     const result = await createCheckoutSessionHandler.handle(new CreateCheckoutSessionCommand({
       companyId,
       planId:      req.body.planId,
+      userId:      req.user.id,
       userEmail:   req.user.email,
       companyName: req.user.companyName,
     }));
@@ -85,4 +88,13 @@ const confirmCheckout = (req, res, next) =>
     .then(r => res.json(r))
     .catch(next);
 
-module.exports = { webhook, checkout, confirmCheckout, getMy, cancel, getAll };
+const getMyInvoices = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.json([]);
+    const result = await getMyPaymentsHandler.handle(new GetMyPaymentsQuery(companyId));
+    res.json(result);
+  } catch (err) { next(err); }
+};
+
+module.exports = { webhook, checkout, confirmCheckout, getMy, getMyInvoices, cancel, getAll };

@@ -31,23 +31,27 @@ class CreateCheckoutSessionHandler {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-    const session = await stripe.checkout.sessions.create({
-      customer:             stripeCustomerId,
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price:    plan.stripePriceId,
-          quantity: 1,
+    // Idempotency key: same company + plan within a 5-minute window
+    // returns the same Stripe session rather than creating a duplicate.
+    const windowBucket  = Math.floor(Date.now() / 300_000);
+    const idempotencyKey = `checkout-co${command.companyId}-pl${command.planId}-${windowBucket}`;
+
+    const session = await stripe.checkout.sessions.create(
+      {
+        customer:             stripeCustomerId,
+        payment_method_types: ['card'],
+        line_items: [{ price: plan.stripePriceId, quantity: 1 }],
+        mode:        'subscription',
+        success_url: `${frontendUrl}/recruiter/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${frontendUrl}/recruiter/payment/cancelled`,
+        metadata: {
+          companyId: String(command.companyId),
+          planId:    String(command.planId),
+          userId:    String(command.userId ?? ''),
         },
-      ],
-      mode:        'subscription',
-      success_url: `${frontendUrl}/recruiter/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${frontendUrl}/recruiter/payment/cancelled`,
-      metadata: {
-        companyId: String(command.companyId),
-        planId:    String(command.planId),
       },
-    });
+      { idempotencyKey },
+    );
 
     return { url: session.url };
   }
