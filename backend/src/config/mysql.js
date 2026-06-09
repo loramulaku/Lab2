@@ -1,6 +1,10 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+const sslOptions = process.env.MYSQL_HOST && process.env.MYSQL_HOST.includes('azure.com')
+  ? { ssl: { rejectUnauthorized: false } }
+  : {};
+
 const sequelize = new Sequelize(
   process.env.MYSQL_DB,
   process.env.MYSQL_USER,
@@ -16,6 +20,7 @@ const sequelize = new Sequelize(
       acquire: 30000,
       idle: 10000,
     },
+    dialectOptions: sslOptions,
   }
 );
 

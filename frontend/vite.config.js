@@ -8,10 +8,10 @@ export default defineConfig({
       output: {
         // Split large, rarely-changing dependencies into their own long-cached
         // chunks so they aren't re-downloaded when app code changes.
-        manualChunks: {
-          'react-vendor':  ['react', 'react-dom', 'react-router-dom'],
-          'socket-vendor': ['socket.io-client'],
-          'http-vendor':   ['axios'],
+        manualChunks(id) {
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';
+          if (id.includes('socket.io-client')) return 'socket-vendor';
+          if (id.includes('node_modules/axios')) return 'http-vendor';
         },
       },
     },
