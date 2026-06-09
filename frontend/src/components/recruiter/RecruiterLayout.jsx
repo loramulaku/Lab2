@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { PageBackground } from '../layout';
 import {
   LayoutDashboard,
@@ -10,6 +12,7 @@ import {
   CreditCard, ArrowUpCircle, Receipt,
   UsersRound, BadgeCheck,
   Settings, LogOut, Briefcase,
+  Globe, Building2, ChevronDown,
 } from 'lucide-react';
 
 // ── Nav data ──────────────────────────────────────────────────────────────────
@@ -66,7 +69,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'My current plan',    to: '/recruiter/billing/plan',     icon: CreditCard },
       { label: 'Buy / upgrade plan', to: '/recruiter/billing/upgrade',  icon: ArrowUpCircle },
-      { label: 'Invoices & billing', to: '/recruiter/billing/invoices', icon: Receipt },
+      { label: 'Payment logs',       to: '/recruiter/billing/invoices', icon: Receipt },
     ],
   },
   {
@@ -81,22 +84,50 @@ const BOTTOM_ITEMS = [
   { label: 'Settings', to: '/recruiter/settings', icon: Settings },
 ];
 
+// ── Avatar initials fallback ──────────────────────────────────────────────────
+function Avatar({ firstName, lastName }) {
+  const initials = [firstName?.[0], lastName?.[0]].filter(Boolean).join('').toUpperCase() || '?';
+  return (
+    <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-semibold text-white flex-shrink-0">
+      {initials}
+    </div>
+  );
+}
+
 // ── RecruiterLayout ───────────────────────────────────────────────────────────
 export default function RecruiterLayout({ children, title }) {
   const location  = useLocation();
   const navigate  = useNavigate();
   const { user, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [bellOpen,     setBellOpen]     = useState(false);
+  const dropdownRef = useRef(null);
+  const bellRef     = useRef(null);
+
+  useEffect(() => {
+    function onOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
+      if (bellRef.current    && !bellRef.current.contains(e.target))     setBellOpen(false);
+    }
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, []);
+
+  useEffect(() => { setDropdownOpen(false); setBellOpen(false); }, [location.pathname]);
+
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   const isActive = (item) => {
     const base = (item.match ?? item.to).split('?')[0];
     if (base === '__never__') return false;
     if (base === '/recruiter/jobs') return location.pathname === '/recruiter/jobs';
     return location.pathname === base || location.pathname.startsWith(base + '/');
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
   };
 
   return (
@@ -194,14 +225,123 @@ export default function RecruiterLayout({ children, title }) {
         {/* Top bar */}
         <div className="sticky top-0 z-40 flex h-14 page-shell-bar items-center justify-between px-8">
           <h1 className="text-lg font-semibold text-gray-800">{title ?? 'Recruiter Dashboard'}</h1>
-          <div className="flex items-center gap-5">
+
+          <div className="flex items-center gap-1">
+
+            {/* Browse Jobs */}
             <Link
-              to="/recruiter/company"
-              className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+              to="/jobs"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-blue-700 hover:bg-blue-50/60 rounded-lg transition-colors"
             >
-              Company Profile
+              <Globe size={15} />
+              Browse Jobs
             </Link>
-            <span className="text-sm font-medium text-gray-700">{user?.firstName ?? 'Recruiter'}</span>
+
+            <div className="w-px h-5 bg-blue-200/50 mx-1" aria-hidden />
+
+            {/* Notification bell */}
+            <div className="relative" ref={bellRef}>
+              <button
+                onClick={() => setBellOpen(o => !o)}
+                className="relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-blue-700 hover:bg-blue-50/60 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {bellOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-xs text-blue-600 hover:underline">
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-gray-400 text-center py-8">No notifications yet.</p>
+                    ) : (
+                      notifications.map(n => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            if (!n.isRead) markAsRead(n.id);
+                            setBellOpen(false);
+                            if (n.link) navigate(n.link);
+                          }}
+                          className={`flex gap-3 px-4 py-3 transition-colors ${n.link ? 'cursor-pointer hover:bg-gray-50' : ''} ${n.isRead ? '' : 'bg-indigo-50/60'}`}
+                        >
+                          <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.isRead ? 'bg-gray-200' : 'bg-indigo-500'}`} />
+                          <div className="min-w-0 flex-1">
+                            <p className={`text-sm leading-snug ${n.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
+                              {n.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">{new Date(n.createdAt).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* User dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(o => !o)}
+                className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-blue-50/60 transition-colors"
+              >
+                <Avatar firstName={user?.firstName} lastName={user?.lastName} />
+                <span className="text-sm font-medium text-gray-700 max-w-[7rem] truncate">
+                  {user?.firstName ?? 'Recruiter'}
+                </span>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-150 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {[user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Recruiter'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email ?? ''}</p>
+                  </div>
+                  <div className="py-1.5">
+                    <Link
+                      to="/jobs"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      <BrowseIcon size={15} className="text-gray-400" />
+                      Browse Jobs
+                    </Link>
+                    <Link
+                      to="/recruiter/company"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      <Building2 size={15} className="text-gray-400" />
+                      Company Profile
+                    </Link>
+                  </div>
+                  <div className="border-t border-gray-100 py-1.5">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut size={15} className="text-red-500" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

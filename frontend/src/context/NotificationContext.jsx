@@ -80,7 +80,7 @@ export function NotificationProvider({ children }) {
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent, lastJobEvent }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent, lastJobEvent, socketRef }}>
       {children}
     </NotificationContext.Provider>
   );
