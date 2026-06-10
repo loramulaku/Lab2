@@ -88,8 +88,15 @@ const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true
+    origin: (origin, callback) => {
+      // Allow same-origin requests (no origin header) and any localhost port in dev.
+      // In production set FRONTEND_URL to your deployed frontend domain.
+      if (!origin) return callback(null, true);
+      if (origin.startsWith('http://localhost:')) return callback(null, true);
+      if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return callback(null, true);
+      callback(new Error(`Socket.IO CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
   }
 });
 

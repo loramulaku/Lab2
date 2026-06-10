@@ -10,7 +10,10 @@ export function useNotifications() {
   return ctx;
 }
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL
+  ?? (import.meta.env.VITE_API_BASE_URL?.startsWith('http')
+    ? import.meta.env.VITE_API_BASE_URL.replace('/api', '')
+    : 'http://localhost:3001');
 
 export function NotificationProvider({ children }) {
   const { token, user } = useAuth();

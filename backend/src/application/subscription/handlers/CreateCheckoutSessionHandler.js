@@ -29,7 +29,7 @@ class CreateCheckoutSessionHandler {
       await company.update({ stripeCustomerId });
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = command.origin || process.env.FRONTEND_URL || 'http://localhost:5174';
 
     // Idempotency key: same company + plan within a 5-minute window
     // returns the same Stripe session rather than creating a duplicate.

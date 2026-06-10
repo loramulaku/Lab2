@@ -55,6 +55,7 @@ const checkout = async (req, res, next) => {
       userId:      req.user.id,
       userEmail:   req.user.email,
       companyName: req.user.companyName,
+      origin:      req.get('origin') || null,
     }));
     res.json(result);
   } catch (err) { next(err); }
