@@ -2,29 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
-// ── Module-level wrapper components ────────────────────────────────────────────
-// Defined outside JobFormModal so React never treats them as new component types
-// on re-render — otherwise every keystroke unmounts/remounts all inputs inside.
-function Overlay({ onClose, children }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
-      <div onMouseDown={e => e.stopPropagation()}>{children}</div>
-    </div>
-  );
-}
-
-function SubBanner({ hasSubscription }) {
-  if (hasSubscription !== false) return null;
-  return (
-    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-xs text-amber-800">
-      <svg className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-      </svg>
-      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
-    </div>
-  );
-}
-
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const STD_SUBTYPES = [
