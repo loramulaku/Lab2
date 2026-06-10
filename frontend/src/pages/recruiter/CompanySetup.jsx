@@ -21,7 +21,7 @@ export default function CompanySetup() {
   const [saved, setSaved]       = useState(false);
   const [error, setError]       = useState('');
   const [logoSrc, setLogoSrc]   = useState(null);
-  const [, setPhotoFile]        = useState(null);
+  const [photoSrc, setPhotoSrc] = useState(null);
   const [company, setCompany]     = useState(EMPTY_COMPANY);
   const [recruiter, setRecruiter] = useState(EMPTY_RECRUITER);
 
@@ -40,6 +40,7 @@ export default function CompanySetup() {
           });
           if (data.company.logoPath) setLogoSrc(`${API_BASE}${data.company.logoPath}`);
         }
+        if (data.avatarPath) setPhotoSrc(`${API_BASE}${data.avatarPath}`);
         setRecruiter({
           jobTitle:    data.jobTitle    ?? '',
           phone:       data.phone       ?? '',
@@ -96,6 +97,7 @@ export default function CompanySetup() {
             company={company}
             recruiter={recruiter}
             logoSrc={logoSrc}
+            photoSrc={photoSrc}
             onCompanyField={onCompanyField}
             onRecruiterField={onRecruiterField}
             onLocationChange={(val) => {
@@ -110,7 +112,12 @@ export default function CompanySetup() {
                 setLogoSrc(`${API_BASE}${path}`);
               } catch { /* service handles */ }
             }}
-            onPhotoUpload={setPhotoFile}
+            onPhotoUpload={async (file) => {
+              try {
+                const { path } = await recruiterService.uploadAvatar(file);
+                setPhotoSrc(`${API_BASE}${path}`);
+              } catch { /* service handles */ }
+            }}
           />
         </div>
 

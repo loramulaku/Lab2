@@ -8,6 +8,25 @@ import { useDebounce } from '../../hooks/useDebounce';
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 const PAGE_SIZE = 20;
 
+function CandidateAvatar({ avatarPath, name, size = 'md' }) {
+  const dim = size === 'lg' ? 'w-14 h-14 text-lg' : 'w-10 h-10 text-sm';
+  const initials = name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  if (avatarPath) {
+    return (
+      <img
+        src={`${API_BASE}${avatarPath}`}
+        alt={name}
+        className={`${dim} rounded-full object-cover flex-shrink-0 border border-gray-200`}
+      />
+    );
+  }
+  return (
+    <div className={`${dim} rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center flex-shrink-0`}>
+      {initials || '?'}
+    </div>
+  );
+}
+
 const lc = (s) => (s ?? '').toLowerCase();
 
 export default function JobSeekers() {
@@ -110,17 +129,23 @@ export default function JobSeekers() {
           <div className="space-y-3">
             {pageItems.map(a => (
               <div key={a.id} className="page-shell-card rounded-xl px-5 py-4 flex justify-between items-start gap-4">
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900">
-                    {a.applicant?.firstName} {a.applicant?.lastName}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    <span className="font-medium text-gray-700">{a.jobTitle ?? '—'}</span>
-                    {' · '}{a.applicant?.email}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Applied {a.appliedAt ? new Date(a.appliedAt).toLocaleDateString() : '—'}
-                  </p>
+                <div className="flex items-center gap-3 min-w-0">
+                  <CandidateAvatar
+                    avatarPath={a.applicant?.avatarPath}
+                    name={`${a.applicant?.firstName ?? ''} ${a.applicant?.lastName ?? ''}`}
+                  />
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900">
+                      {a.applicant?.firstName} {a.applicant?.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      <span className="font-medium text-gray-700">{a.jobTitle ?? '—'}</span>
+                      {' · '}{a.applicant?.email}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Applied {a.appliedAt ? new Date(a.appliedAt).toLocaleDateString() : '—'}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   <button
@@ -185,13 +210,20 @@ function ApplicationDetailModal({ app, onClose }) {
         onMouseDown={e => e.stopPropagation()}
       >
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-          <div>
-            <h3 className="font-semibold text-gray-900">
-              {app.applicant?.firstName} {app.applicant?.lastName}
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {app.applicant?.email} · {app.jobTitle}
-            </p>
+          <div className="flex items-center gap-3">
+            <CandidateAvatar
+              avatarPath={app.applicant?.avatarPath}
+              name={`${app.applicant?.firstName ?? ''} ${app.applicant?.lastName ?? ''}`}
+              size="lg"
+            />
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                {app.applicant?.firstName} {app.applicant?.lastName}
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {app.applicant?.email} · {app.jobTitle}
+              </p>
+            </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>

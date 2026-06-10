@@ -14,7 +14,7 @@ const COMPANY_SIZE_OPTIONS = [
   { value: '1000+',    label: '1000+ employees' },
 ];
 
-export default function CompanySetupForm({ company, recruiter, logoSrc, onCompanyField, onRecruiterField, onLocationChange, onLogoUpload, onPhotoUpload }) {
+export default function CompanySetupForm({ company, recruiter, logoSrc, photoSrc, onCompanyField, onRecruiterField, onLocationChange, onLogoUpload, onPhotoUpload }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
       <div className="lg:border-r lg:border-blue-100/80 lg:pr-8">
@@ -35,7 +35,7 @@ export default function CompanySetupForm({ company, recruiter, logoSrc, onCompan
       </div>
       <div>
         <SectionHeader title="Recruiter Profile" />
-        <AvatarUpload layout="inline" shape="circle" src={null} onUpload={onPhotoUpload} label="Photo" buttonLabel="Upload Photo" hint="PNG, JPG up to 5 MB" />
+        <AvatarUpload layout="inline" shape="circle" src={photoSrc ?? null} onUpload={onPhotoUpload} label="Photo" buttonLabel="Upload Photo" hint="PNG, JPG up to 5 MB" />
         <div className="space-y-4">
           <FormInput label="Job Title" value={recruiter.jobTitle} onChange={onRecruiterField('jobTitle')} placeholder="e.g. Head of Talent" />
           <FormInput label="Phone" type="tel" value={recruiter.phone} onChange={onRecruiterField('phone')} placeholder="+1 555 000 0000" />

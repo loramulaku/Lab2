@@ -3,6 +3,26 @@ import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
 import freelanceService from '../../services/freelanceService';
 import { useDebounce } from '../../hooks/useDebounce';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
+
+function CandidateAvatar({ avatarPath, name }) {
+  const initials = name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  if (avatarPath) {
+    return (
+      <img
+        src={`${API_BASE}${avatarPath}`}
+        alt={name}
+        className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-gray-200"
+      />
+    );
+  }
+  return (
+    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm flex items-center justify-center flex-shrink-0">
+      {initials || '?'}
+    </div>
+  );
+}
+
 const PAGE_SIZE = 20;
 const lc = s => (s ?? '').toLowerCase();
 
@@ -78,19 +98,25 @@ export default function SearchInvite() {
           </p>
           <div className="space-y-3">
             {pageItems.map(c => (
-              <div key={c._id} className="page-shell-card rounded-xl px-5 py-4">
-                <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
-                {c.headline  && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
-                {c.location  && <p className="text-sm text-gray-500">{c.location}</p>}
-                {c.skills?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {c.skills.map(s => (
-                      <span key={s.skillId ?? s.name} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-                        {s.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
+              <div key={c._id} className="page-shell-card rounded-xl px-5 py-4 flex items-start gap-4">
+                <CandidateAvatar
+                  avatarPath={c.avatarPath}
+                  name={`${c.firstName ?? ''} ${c.lastName ?? ''}`}
+                />
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-gray-900">{c.firstName} {c.lastName}</h3>
+                  {c.headline  && <p className="text-sm text-blue-600 mt-0.5">{c.headline}</p>}
+                  {c.location  && <p className="text-sm text-gray-500">{c.location}</p>}
+                  {c.skills?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {c.skills.map(s => (
+                        <span key={s.skillId ?? s.name} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                          {s.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
