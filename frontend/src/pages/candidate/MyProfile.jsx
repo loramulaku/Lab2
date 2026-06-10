@@ -645,7 +645,7 @@ function ContractsTab() {
     setError('');
     try {
       await candidateService.approveContract(contractId);
-      await load();
+      setContracts(prev => prev.map(c => c.id === contractId ? { ...c, status: 'active' } : c));
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to confirm contract.');
     } finally {

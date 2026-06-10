@@ -32,6 +32,9 @@ class ApproveContractHandler {
     const contract = await Contract.findByPk(command.contractId);
     if (!contract) throw httpError(404, 'Contract not found', 'CONTRACT_NOT_FOUND');
     if (contract.status !== 'pending') {
+      if (contract.status === 'active' && contract.freelancerId === command.userId) {
+        return contract;
+      }
       throw httpError(409, `Contract is already ${contract.status}`, 'CONTRACT_NOT_PENDING');
     }
     if (contract.freelancerId !== command.userId) {
