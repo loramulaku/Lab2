@@ -64,8 +64,8 @@ export default function Categories() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-          <button onClick={() => openEdit(row)} className="px-3 py-1 text-xs bg-blue-600 text-white hover:bg-blue-700">Edit</button>
-          <button onClick={() => setDeleting(row)} className="px-3 py-1 text-xs bg-red-600 text-white hover:bg-red-700">Delete</button>
+          <button onClick={() => openEdit(row)} className="px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700">Edit</button>
+          <button onClick={() => setDeleting(row)} className="px-3 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
         </div>
       ),
     },
@@ -74,7 +74,7 @@ export default function Categories() {
   return (
     <AdminPage title="Job Categories" error={deleteError}>
       <div className="flex justify-end mb-6">
-        <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">+ Add Category</button>
+        <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">+ Add Category</button>
       </div>
       <p className="text-sm text-gray-500 mb-6">
         Categories are created here by admins. Recruiters pick from this list when posting a job. Job seekers filter by category tabs on the listings page.
@@ -98,11 +98,11 @@ export default function Categories() {
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50">
               {saving ? 'Saving…' : editing ? 'Update' : 'Create'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50">Cancel</button>
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50">Cancel</button>
           </div>
         </form>
       </Modal>

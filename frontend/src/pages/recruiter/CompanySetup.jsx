@@ -119,7 +119,7 @@ export default function CompanySetup() {
             <button
               type="button"
               onClick={() => setSaved(false)}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm transition"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-lg transition"
             >
               {/* checkmark icon */}
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -131,7 +131,7 @@ export default function CompanySetup() {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving…' : 'Save & Continue'}
             </button>

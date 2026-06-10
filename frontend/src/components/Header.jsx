@@ -6,16 +6,11 @@ import { usePageSection } from '../context/ThemeContext';
 import { useDarkMode } from '../hooks/useDarkMode';
 import candidateService from '../services/candidateService';
 import FreelanceToggle from './freelance/FreelanceToggle';
+import Logo from './Logo';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-
-const BriefcaseIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
-  </svg>
-);
 
 const BellIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -79,6 +74,13 @@ const NAV_LINKS = [
   { label: 'Home',        href: '/'     },
   { label: 'Browse Jobs', href: '/jobs' },
 ];
+
+function getSecondNavLink(roles = []) {
+  if (roles.includes('recruiter') && !roles.includes('admin')) {
+    return { label: 'Browse a Candidate', href: '/recruiter/candidates' };
+  }
+  return NAV_LINKS[1];
+}
 
 const ROLE_LABEL = {
   candidate: 'Candidate',
@@ -186,6 +188,7 @@ export default function Header() {
   };
 
   const roles         = user?.roles ?? [];
+  const secondNavLink = getSecondNavLink(roles);
   const primaryRole   = roles[0] ?? 'candidate';
   const roleLabel     = ROLE_LABEL[primaryRole] ?? ROLE_LABEL.candidate;
   const fullName      = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
@@ -203,22 +206,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-          <div className="page-shell-btn bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-all">
-            <BriefcaseIcon />
-          </div>
-          <span className="text-gray-900 font-bold text-lg tracking-tight">
-            {siteS.siteName || (
-              <>Hire<span className="text-blue-600">Wire</span></>
-            )}
-          </span>
-        </Link>
+        <Logo to="/" size="md" label={siteS.siteName || undefined} />
 
         {/* Nav */}
         <nav className="hidden md:flex items-center justify-center gap-6">
           {[
             { label: siteS.nav1Label || NAV_LINKS[0].label, href: NAV_LINKS[0].href },
-            { label: siteS.nav2Label || NAV_LINKS[1].label, href: NAV_LINKS[1].href },
+            { label: siteS.nav2Label || secondNavLink.label, href: secondNavLink.href },
             ...(roleShortcut ? [roleShortcut] : []),
           ].map(({ label, href }) => {
             const active = location.pathname === href.split('?')[0];

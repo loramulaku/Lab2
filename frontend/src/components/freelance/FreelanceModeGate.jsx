@@ -9,13 +9,13 @@ export default function FreelanceModeGate({ onActivate, onCancel }) {
         <div className="flex gap-3">
           <button
             onClick={onActivate}
-            className="flex-1 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+            className="flex-1 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 rounded-lg"
           >
             Activate
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+            className="flex-1 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg"
           >
             Cancel
           </button>

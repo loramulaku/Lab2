@@ -103,7 +103,7 @@ export default function FreelancerPicker() {
           <button
             type="button"
             onClick={cancel}
-            className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors"
           >
             ← Back to form
           </button>
@@ -111,7 +111,7 @@ export default function FreelancerPicker() {
             type="button"
             onClick={confirm}
             disabled={count === 0}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Confirm selection{count > 0 ? ` (${count})` : ''}
           </button>
@@ -124,7 +124,7 @@ export default function FreelancerPicker() {
           value={skills}
           onChange={e => setSkills(e.target.value)}
           placeholder="Skills (comma-separated)"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="page-shell-field px-3 py-2 text-sm text-gray-700 rounded-md focus:outline-none"
         />
         <LocationAutocomplete
           value={location}
@@ -136,12 +136,12 @@ export default function FreelancerPicker() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Name or headline"
-          className="border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="page-shell-field px-3 py-2 text-sm text-gray-700 rounded-md focus:outline-none"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Searching…' : 'Search'}
         </button>

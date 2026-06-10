@@ -15,6 +15,7 @@ class GetMyNotificationsHandler {
       id:        d._id,
       userId:    d.userId,
       type:      d.type,
+      title:     d.title ?? null,
       message:   d.message,
       link:      d.link ?? null,
       isRead:    d.isRead,

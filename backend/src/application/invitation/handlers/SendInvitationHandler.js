@@ -67,6 +67,7 @@ class SendInvitationHandler {
     createNotificationHandler.handle(new CreateNotificationCommand({
       userId:  command.freelancerId,
       type:    'invitation_received',
+      title:   'Invitation Received',
       message: `You have a new invitation for "${job.title}"`,
       link:    relativePath,
     })).catch(err => console.error('[notification] Failed to create invitation notification:', err.message));

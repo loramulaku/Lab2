@@ -17,7 +17,7 @@ const PaymentCancelled = () => {
           <p className="text-gray-600 mb-6">Your payment was not completed. No charges were made.</p>
           <button
             onClick={() => navigate('/recruiter/billing/upgrade')}
-            className="w-full py-2 bg-blue-600 text-white font-medium text-sm hover:bg-blue-700"
+            className="w-full py-2 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700"
           >
             Back to Plans
           </button>

@@ -121,7 +121,7 @@ const Jobs = () => {
             </div>
           </div>
           <div className="flex space-x-3 pt-4">
-            <button onClick={() => { setShowModal(false); setDeletingJob(selectedJob); }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Job</button>
+            <button onClick={() => { setShowModal(false); setDeletingJob(selectedJob); }} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete Job</button>
           </div>
         </div>
       </Modal>

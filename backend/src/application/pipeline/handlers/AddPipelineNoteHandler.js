@@ -23,6 +23,7 @@ class AddPipelineNoteHandler {
       createNotificationHandler.handle(new CreateNotificationCommand({
         userId:  app.userId,
         type:    'pipeline_note',
+        title:   'Recruiter Note Added',
         message: `Recruiter note on your "${stage?.name ?? 'stage'}" stage: ${command.note}`,
         link:    '/my-profile?tab=applications',
       })).catch(() => {});

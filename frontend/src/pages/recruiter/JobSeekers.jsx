@@ -125,13 +125,13 @@ export default function JobSeekers() {
                 <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   <button
                     onClick={() => setShowApp(a)}
-                    className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 whitespace-nowrap">
+                    className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 whitespace-nowrap">
                     View Application
                   </button>
                   <button
                     disabled={chatBusy === a.id}
                     onClick={() => openChat(a)}
-                    className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 whitespace-nowrap disabled:opacity-50">
+                    className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium rounded-lg hover:bg-teal-700 whitespace-nowrap disabled:opacity-50">
                     {chatBusy === a.id ? '…' : 'Live Chat'}
                   </button>
                 </div>
@@ -290,7 +290,7 @@ function ApplicationDetailModal({ app, onClose }) {
         </div>
 
         <div className="px-5 py-3 border-t border-gray-100 text-right">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg">
             Close
           </button>
         </div>

@@ -155,7 +155,7 @@ function PipelineSetupPanel({ existing, onSaved }) {
           </div>
 
           <button type="submit" disabled={saving}
-            className={`px-6 py-2.5 text-white text-sm font-semibold disabled:opacity-50 ${
+            className={`px-6 py-2.5 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 ${
               existing ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
@@ -181,11 +181,11 @@ function PipelineSetupPanel({ existing, onSaved }) {
             </div>
             <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
               <button onClick={doSave}
-                className="px-5 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 rounded">
+                className="px-5 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 rounded-lg transition-colors">
                 Yes, Update Pipeline
               </button>
               <button onClick={() => setConfirmEdit(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg transition-colors">
                 Cancel
               </button>
             </div>
@@ -339,7 +339,7 @@ export default function ShowPipeline() {
 
         <button
           onClick={() => setShowSetup(v => !v)}
-          className="ml-auto px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 font-medium"
+          className="ml-auto px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 font-medium rounded-lg transition-colors"
         >
           {showSetup ? 'Hide Setup' : 'Edit Pipeline'}
         </button>
@@ -523,10 +523,10 @@ function CandidateCard({ candidate, stageId, isLastStage, onDragStart, onDragEnd
       )}
 
       <div className="flex gap-1.5 mt-3">
-        <button onClick={onViewDetails} className="flex-1 text-[11px] font-medium py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors">
+        <button onClick={onViewDetails} className="flex-1 text-[11px] font-medium py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
           View Details
         </button>
-        <button onClick={onAddNote} className="flex-1 text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors">
+        <button onClick={onAddNote} className="flex-1 text-[11px] font-medium py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg transition-colors">
           Add Note
         </button>
       </div>
@@ -535,13 +535,13 @@ function CandidateCard({ candidate, stageId, isLastStage, onDragStart, onDragEnd
         <div className="flex gap-1.5 mt-1.5 pt-1.5 border-t border-gray-100">
           <button
             onClick={onReject}
-            className="flex-1 text-[11px] font-medium py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded transition-colors"
+            className="flex-1 text-[11px] font-medium py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             Rejected
           </button>
           <button
             onClick={onHire}
-            className="flex-1 text-[11px] font-medium py-1.5 bg-green-600 text-white hover:bg-green-700 rounded transition-colors"
+            className="flex-1 text-[11px] font-medium py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors"
           >
             Hired
           </button>
@@ -593,7 +593,7 @@ function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, h
               value={note} onChange={e => setNote(e.target.value)}
               rows={4} autoFocus
               placeholder="e.g. Strong technical skills, moving to next round…"
-              className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+              className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md"
             />
           </div>
 
@@ -615,11 +615,11 @@ function TransitionModal({ applicationId, fromStageId, toStageId, toStageName, h
 
           <div className="flex gap-3">
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded">
+              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded-lg transition-colors">
               {saving ? 'Moving…' : 'Confirm Move'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg transition-colors">
               Cancel
             </button>
           </div>
@@ -663,15 +663,15 @@ function AddNoteModal({ applicationId, stageId, stageName, candidateName, onClos
           <p className="text-xs text-gray-500">This note will be saved to the candidate's application record.</p>
           <textarea value={note} onChange={e => setNote(e.target.value)} rows={4} autoFocus
             placeholder="e.g. Strong technical skills, moving to next round…"
-            className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" />
+            className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md" />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-3">
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded">
+              className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 rounded-lg transition-colors">
               {saving ? 'Saving…' : 'Save Note'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg transition-colors">
               Cancel
             </button>
           </div>

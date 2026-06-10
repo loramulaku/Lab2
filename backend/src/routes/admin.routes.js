@@ -38,6 +38,8 @@ router.post('/categories',       adminCtrl.createCategory);
 router.put('/categories/:id',    adminCtrl.updateCategory);
 router.delete('/categories/:id', adminCtrl.deleteCategory);
 
+router.get('/candidates',    adminCtrl.browseCandidates);
+
 router.get('/audit-logs',    adminCtrl.getAuditLogs);
 router.get('/payment-logs', adminCtrl.getPaymentLogs);
 

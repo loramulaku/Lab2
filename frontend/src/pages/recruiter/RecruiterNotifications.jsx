@@ -1,5 +1,5 @@
 import RecruiterLayout from '../../components/recruiter/RecruiterLayout';
-import { useNotifications } from '../../hooks/useNotifications';
+import { useNotifications } from '../../context/NotificationContext';
 
 const TYPE_LABELS = {
   pipeline_stage_change: 'Pipeline move',
@@ -27,7 +27,7 @@ function fmtDate(d) {
 }
 
 export default function RecruiterNotifications() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllRead: markAllAsRead } = useNotifications();
 
   return (
     <RecruiterLayout title="Notifications">
@@ -40,7 +40,7 @@ export default function RecruiterNotifications() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 font-medium"
+            className="px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 font-medium rounded-lg"
           >
             Mark all as read
           </button>

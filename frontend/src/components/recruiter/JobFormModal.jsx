@@ -48,17 +48,41 @@ const EMPTY = {
   schedule: { ...DEFAULT_SCHEDULE },
 };
 
-const inputCls = 'w-full border border-gray-300 px-3 py-1.5 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500';
-const labelCls = 'block text-xs font-medium text-gray-600 mb-1';
+const inputCls = 'page-shell-field w-full px-3.5 py-2.5 text-sm text-gray-800 rounded-md focus:outline-none placeholder:text-gray-400';
+const labelCls = 'block text-xs font-semibold text-gray-700 mb-1.5';
 
-function Pill({ active, accent = 'blue', onClick, children }) {
-  const activeCls = accent === 'indigo'
-    ? 'bg-indigo-600 text-white border-indigo-600'
-    : 'bg-blue-600 text-white border-blue-600';
+// ── Module-level helpers (hoisted so they don't remount on every keystroke) ──
+
+function Overlay({ onClose, children }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4"
+      onMouseDown={onClose}
+    >
+      <div className="w-full flex justify-center" onMouseDown={e => e.stopPropagation()}>{children}</div>
+    </div>
+  );
+}
+
+function SubBanner({ hasSubscription }) {
+  if (hasSubscription !== false) return null;
+  return (
+    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-xs text-amber-800">
+      <svg className="w-4 h-4 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+      </svg>
+      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
+    </div>
+  );
+}
+
+function Pill({ active, onClick, children }) {
   return (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1 text-xs font-medium border rounded transition ${
-        active ? activeCls : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+      className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${
+        active
+          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+          : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
       }`}>
       {children}
     </button>
@@ -172,103 +196,104 @@ export default function JobFormModal({
   const browseFreelancers = () => onBrowseFreelancers?.({ ...form, _topType: topType });
   const removeInvitee = (id) => setLocalInvitees(prev => prev.filter(x => String(x._id ?? x.id) !== String(id)));
 
-  // ── Shared overlay wrapper ────────────────────────────────────────────────
-  const Overlay = ({ children }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
-      <div onMouseDown={e => e.stopPropagation()}>{children}</div>
-    </div>
-  );
-
-  // ── Subscription banner ───────────────────────────────────────────────────
-  const SubBanner = () => hasSubscription === false ? (
-    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-xs text-amber-800">
-      <svg className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-      </svg>
-      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
-    </div>
-  ) : null;
-
-  // ── Step 0 ────────────────────────────────────────────────────────────────
+  // ── Step 0 — role type picker ─────────────────────────────────────────────
   if (step === 0) {
     return (
-      <Overlay>
-        <div className="page-shell-card w-full max-w-lg rounded-xl shadow-xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center">
-            <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+      <Overlay onClose={onClose}>
+        <div className="bg-white border border-gray-200 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+          <div className="px-6 pt-5 pb-4 border-b border-gray-100 flex justify-between items-start">
+            <div>
+              <h3 className="font-semibold text-gray-900 text-base">{title}</h3>
+              <p className="text-xs text-gray-500 mt-0.5">What kind of role are you hiring for?</p>
+            </div>
+            <button type="button" onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg w-7 h-7 flex items-center justify-center text-xl leading-none transition-colors">×</button>
           </div>
 
-          <SubBanner />
+          <SubBanner hasSubscription={hasSubscription} />
 
-          <div className="p-5">
-            <p className="text-xs text-gray-500 mb-3">What kind of role are you hiring for?</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => pickTopType('standard')}
-                className="border border-gray-200 rounded-xl p-4 text-left hover:border-blue-400 hover:bg-blue-50/40 transition group">
-                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center mb-2.5 group-hover:bg-blue-200 transition">
-                  <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2" />
-                  </svg>
-                </div>
-                <p className="font-semibold text-gray-900 text-sm mb-0.5">Standard Employment</p>
-                <p className="text-xs text-gray-500">Full-time, part-time, or internship. Candidates apply through your pipeline.</p>
-              </button>
+          <div className="p-5 grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => pickTopType('standard')}
+              className="group relative border border-gray-200 rounded-xl p-5 text-left hover:border-blue-400 hover:shadow-md hover:shadow-blue-100/60 hover:-translate-y-0.5 transition-all">
+              <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0H8m8 0a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2" />
+                </svg>
+              </div>
+              <p className="font-semibold text-gray-900 text-sm mb-1">Standard Employment</p>
+              <p className="text-xs text-gray-500 leading-relaxed">Full-time, part-time, or internship. Candidates apply through your pipeline.</p>
+              <svg className="absolute top-4 right-4 w-4 h-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
 
-              <button type="button" onClick={() => pickTopType('freelance')}
-                className="border border-gray-200 rounded-xl p-4 text-left hover:border-indigo-400 hover:bg-indigo-50/40 transition group">
-                <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center mb-2.5 group-hover:bg-indigo-200 transition">
-                  <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <p className="font-semibold text-gray-900 text-sm mb-0.5">Freelance</p>
-                <p className="text-xs text-gray-500">Project-based. Receive bids, invite freelancers, or both.</p>
-              </button>
-            </div>
+            <button type="button" onClick={() => pickTopType('freelance')}
+              className="group relative border border-gray-200 rounded-xl p-5 text-left hover:border-indigo-400 hover:shadow-md hover:shadow-indigo-100/60 hover:-translate-y-0.5 transition-all">
+              <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-indigo-100 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <p className="font-semibold text-gray-900 text-sm mb-1">Freelance</p>
+              <p className="text-xs text-gray-500 leading-relaxed">Project-based. Receive bids, invite freelancers, or both.</p>
+              <svg className="absolute top-4 right-4 w-4 h-4 text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </Overlay>
     );
   }
 
-  // ── Step 1 ────────────────────────────────────────────────────────────────
+  // ── Step 1 — the form ─────────────────────────────────────────────────────
   const isFreelance   = topType === 'freelance';
   const activeMode    = FREELANCE_MODES.find(m => m.value === form.jobMode);
   const showInviteeUI = isFreelance && (form.jobMode === 'invite' || form.jobMode === 'both') && !!onBrowseFreelancers;
   const showSchedule  = !isFreelance && form.employmentType === 'internship';
 
   return (
-    <Overlay>
-      <div className="page-shell-card w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[88vh]">
+    <Overlay onClose={onClose}>
+      <div className="bg-white border border-gray-200 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[88vh]">
 
         {/* Header */}
-        <div className="flex-shrink-0 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex-shrink-0 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             {!initial && (
               <button type="button" onClick={() => { setStep(0); setError(''); }}
-                className="text-gray-400 hover:text-gray-700 text-xs whitespace-nowrap">← Back</button>
+                className="flex-shrink-0 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg w-7 h-7 flex items-center justify-center transition-colors"
+                aria-label="Back">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
             )}
-            <h3 className="font-semibold text-gray-900 text-sm truncate">{title}</h3>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-gray-900 text-base truncate">{title}</h3>
+              <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
+                {isFreelance ? 'Project-based freelance posting' : 'Standard employment posting'}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded border ${
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
               isFreelance ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-blue-50 text-blue-700 border-blue-200'
             }`}>{isFreelance ? 'Freelance' : 'Standard'}</span>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-1">×</button>
+            <button type="button" onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg w-7 h-7 flex items-center justify-center text-xl leading-none transition-colors">×</button>
           </div>
         </div>
 
-        <SubBanner />
+        <SubBanner hasSubscription={hasSubscription} />
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-            {/* Freelance: horizontal mode tabs */}
-            {isFreelance && (
+            {/* ── Setup row ──────────────────────────────────────────────── */}
+            {isFreelance ? (
               <div>
                 <p className={labelCls}>Hiring Mode</p>
-                <div className="flex border border-gray-200 rounded">
+                <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                   {FREELANCE_MODES.map((m, i) => (
                     <button key={m.value} type="button" onClick={() => setVal('jobMode', m.value)}
                       className={`flex-1 py-2 px-3 text-xs font-medium transition flex items-center justify-center gap-1.5
@@ -281,16 +306,13 @@ export default function JobFormModal({
                     </button>
                   ))}
                 </div>
-                {activeMode && <p className="text-xs text-gray-500 mt-1.5">{activeMode.desc}</p>}
+                {activeMode && <p className="text-xs text-gray-500 mt-2 leading-relaxed">{activeMode.desc}</p>}
               </div>
-            )}
-
-            {/* Standard: employment type + work mode */}
-            {!isFreelance && (
-              <div className="grid grid-cols-2 gap-4">
+            ) : (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <div>
                   <p className={labelCls}>Employment Type</p>
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {STD_SUBTYPES.map(t => (
                       <Pill key={t.value} active={form.employmentType === t.value} onClick={() => setVal('employmentType', t.value)}>
                         {t.label}
@@ -300,7 +322,7 @@ export default function JobFormModal({
                 </div>
                 <div>
                   <p className={labelCls}>Work Mode</p>
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {WORK_MODES.map(m => (
                       <Pill key={m.value} active={form.workMode === m.value} onClick={() => setVal('workMode', m.value)}>
                         {m.label}
@@ -311,10 +333,18 @@ export default function JobFormModal({
               </div>
             )}
 
-            {/* Experience level */}
+            {/* ── Title — the headline field ─────────────────────────────── */}
+            <div>
+              <label className={labelCls}>Job Title <span className="text-red-500">*</span></label>
+              <input value={form.title} onChange={set('title')}
+                className="page-shell-field w-full px-3.5 py-3 text-[15px] font-medium text-gray-900 rounded-lg focus:outline-none placeholder:text-gray-400 placeholder:font-normal"
+                placeholder={isFreelance ? 'e.g. Build a REST API in Node.js' : 'e.g. Senior Frontend Developer'} />
+            </div>
+
+            {/* ── Experience + pay + category ────────────────────────────── */}
             <div>
               <p className={labelCls}>Experience Required</p>
-              <div className="flex gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {EXPERIENCE_LEVELS.map(l => (
                   <Pill key={l.value} active={form.experienceLevel === l.value} onClick={() => setVal('experienceLevel', l.value)}>
                     {l.label}
@@ -323,14 +353,6 @@ export default function JobFormModal({
               </div>
             </div>
 
-            {/* Title */}
-            <div>
-              <label className={labelCls}>Job Title <span className="text-red-500">*</span></label>
-              <input value={form.title} onChange={set('title')} className={inputCls}
-                placeholder={isFreelance ? 'e.g. Build a REST API in Node.js' : 'e.g. Senior Frontend Developer'} />
-            </div>
-
-            {/* Pay + category */}
             <div className={`grid grid-cols-2 ${categories.length > 0 ? 'sm:grid-cols-3' : ''} gap-3`}>
               <div>
                 <label className={labelCls}>{isFreelance ? 'Budget Min ($)' : 'Salary Min ($)'}</label>
@@ -351,27 +373,27 @@ export default function JobFormModal({
               )}
             </div>
 
-            {/* Description */}
+            {/* ── Description ────────────────────────────────────────────── */}
             <div>
               <label className={labelCls}>Description <span className="text-red-500">*</span></label>
               <textarea value={form.description} onChange={set('description')} rows={6}
-                className={`${inputCls} resize-y`}
+                className={`${inputCls} resize-y leading-relaxed`}
                 placeholder={isFreelance
                   ? 'Describe the project scope, deliverables, and requirements…'
                   : 'Describe the role, responsibilities, and requirements…'} />
             </div>
 
-            {/* Internship schedule — only when an internship is selected */}
+            {/* ── Internship schedule ────────────────────────────────────── */}
             {showSchedule && (
-              <div className="border border-gray-200 rounded-lg p-3">
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
                 <p className={labelCls}>Weekly Schedule</p>
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {DAYS.map(d => (
                     <button key={d} type="button" onClick={() => toggleDay(d)}
-                      className={`text-[11px] px-1.5 py-0.5 border rounded transition ${
+                      className={`text-[11px] w-9 py-1 border rounded-md transition ${
                         (form.schedule?.days ?? []).includes(d)
                           ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                          : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'
                       }`}>
                       {d}
                     </button>
@@ -380,27 +402,27 @@ export default function JobFormModal({
                 <div className="flex items-center gap-2">
                   <input type="time" value={form.schedule?.startTime ?? '09:00'}
                     onChange={e => setTime('startTime', e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    className="page-shell-field rounded-md px-2 py-1.5 text-xs text-gray-700 focus:outline-none" />
                   <span className="text-xs text-gray-400">to</span>
                   <input type="time" value={form.schedule?.endTime ?? '17:00'}
                     onChange={e => setTime('endTime', e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    className="page-shell-field rounded-md px-2 py-1.5 text-xs text-gray-700 focus:outline-none" />
                 </div>
               </div>
             )}
 
-            {/* Invite section — only in invite / both freelance modes */}
+            {/* ── Invite section ─────────────────────────────────────────── */}
             {isFreelance && showInviteeUI && (
-              <div className="border border-indigo-200 bg-indigo-50/30 px-3 py-2.5 rounded-lg space-y-2">
+              <div className="border border-indigo-200 bg-indigo-50/40 px-4 py-3 rounded-lg space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-700">
+                  <span className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
                     Freelancers to invite
                     {localInvitees.length > 0 && (
-                      <span className="ml-1.5 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold rounded">{localInvitees.length}</span>
+                      <span className="text-indigo-700 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold rounded-md">{localInvitees.length}</span>
                     )}
                   </span>
                   <button type="button" onClick={browseFreelancers}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 text-white text-[11px] font-medium rounded hover:bg-indigo-700">
+                    className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 text-white text-[11px] font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -414,7 +436,7 @@ export default function JobFormModal({
                     {localInvitees.map(f => {
                       const id = String(f._id ?? f.id);
                       return (
-                        <span key={id} className="flex items-center gap-1 bg-white border border-indigo-300 text-indigo-800 text-[11px] px-2 py-0.5 rounded">
+                        <span key={id} className="flex items-center gap-1 bg-white border border-indigo-300 text-indigo-800 text-[11px] px-2 py-0.5 rounded-md">
                           {f.firstName} {f.lastName}
                           <button type="button" onClick={() => removeInvitee(id)} className="text-indigo-400 hover:text-indigo-700 leading-none ml-0.5">×</button>
                         </span>
@@ -425,18 +447,24 @@ export default function JobFormModal({
               </div>
             )}
 
-            {/* Collapsible detail sections */}
-            <div className="border border-gray-200 rounded">
+            {/* ── Collapsible detail sections ────────────────────────────── */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
               <button type="button"
                 onClick={() => setDetailsOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
-                <span>+ Job Details — Responsibilities, Requirements, Benefits <span className="text-gray-400 font-normal">(optional)</span></span>
+                className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                  Job Details — Responsibilities, Requirements, Benefits
+                  <span className="text-gray-400 font-normal">(optional)</span>
+                </span>
                 <svg className={`w-4 h-4 text-gray-400 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {detailsOpen && (
-                <div className="border-t border-gray-100 px-4 py-3 space-y-3">
+                <div className="border-t border-gray-100 px-4 py-4 space-y-3.5 bg-gray-50/40">
                   <div>
                     <label className={labelCls}>Responsibilities</label>
                     <textarea rows={3} value={form.responsibilities} onChange={set('responsibilities')}
@@ -465,18 +493,20 @@ export default function JobFormModal({
               )}
             </div>
 
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {error && (
+              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            )}
           </div>
 
           {/* Footer */}
-          <div className="flex-shrink-0 border-t border-gray-100 px-5 py-3 flex items-center gap-3">
-            <button type="submit" disabled={submitting}
-              className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50">
-              {submitting ? 'Saving…' : 'Save Job'}
-            </button>
+          <div className="flex-shrink-0 border-t border-gray-100 bg-gray-50/60 px-6 py-3.5 flex items-center justify-end gap-2.5">
             <button type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50">
+              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors">
               Cancel
+            </button>
+            <button type="submit" disabled={submitting}
+              className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              {submitting ? 'Saving…' : 'Save Job'}
             </button>
           </div>
         </form>

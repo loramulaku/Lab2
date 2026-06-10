@@ -86,6 +86,7 @@ class SubmitBidHandler {
       createNotificationHandler.handle(new CreateNotificationCommand({
         userId:  job.recruiterId,
         type:    'bid_received',
+        title:   'New Bid Received',
         message: `New bid received on "${job.title}"`,
         link:    '/recruiter/applicants/freelance',
       })).catch(() => {});

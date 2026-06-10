@@ -11,9 +11,12 @@ import {
   MessageCircle, Bell,
   CreditCard, ArrowUpCircle, Receipt,
   UsersRound, BadgeCheck,
-  Settings, LogOut, Briefcase,
-  Globe, Building2, ChevronDown,
+  Settings, LogOut, Home,
+  UserSearch, Building2, ChevronDown,
+  Sun, Moon,
 } from 'lucide-react';
+import Logo from '../Logo';
+import { useDarkMode } from '../../hooks/useDarkMode';
 
 // ── Nav data ──────────────────────────────────────────────────────────────────
 // Each item: { label, to, icon, match?, teal?, badge? }
@@ -37,9 +40,10 @@ const NAV_GROUPS = [
   {
     title: 'STANDARD HIRING',
     items: [
-      { label: 'Applicants',       to: '/recruiter/applicants/job-seekers', icon: Users },
-      { label: 'Hiring pipeline',  to: '/recruiter/pipeline/board',         icon: KanbanSquare },
-      { label: 'Transition notes', to: '/recruiter/pipeline/notes',         icon: StickyNote },
+      { label: 'Browse a Candidate', to: '/recruiter/candidates',             icon: UserSearch },
+      { label: 'Applicants',        to: '/recruiter/applicants/job-seekers', icon: Users },
+      { label: 'Hiring pipeline',   to: '/recruiter/pipeline/board',         icon: KanbanSquare },
+      { label: 'Transition notes',  to: '/recruiter/pipeline/notes',         icon: StickyNote },
     ],
   },
   {
@@ -81,6 +85,7 @@ const NAV_GROUPS = [
 ];
 
 const BOTTOM_ITEMS = [
+  { label: 'Homepage', to: '/', icon: Home, match: '__never__' },
   { label: 'Settings', to: '/recruiter/settings', icon: Settings },
 ];
 
@@ -99,6 +104,7 @@ export default function RecruiterLayout({ children, title }) {
   const location  = useLocation();
   const navigate  = useNavigate();
   const { user, logout } = useAuth();
+  const [dark, toggleDark] = useDarkMode();
   const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -137,16 +143,10 @@ export default function RecruiterLayout({ children, title }) {
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white/60 backdrop-blur-xl border-r border-blue-200/50 flex flex-col select-none">
 
-        {/* Brand — matches the public header logo, links back to the dashboard */}
-        <Link to="/recruiter/dashboard" className="flex items-center gap-2.5 px-4 pt-5 pb-3 flex-shrink-0 group">
-          <span className="bg-blue-600 text-white rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
-            <Briefcase size={18} />
-          </span>
-          <span className="text-[19px] font-bold tracking-tight text-gray-900 leading-none">
-            Hire<span className="text-blue-600">Wire</span>
-          </span>
-          <span className="text-[11px] font-medium text-blue-500 bg-blue-50 rounded px-1.5 py-0.5 leading-none">Recruiter</span>
-        </Link>
+        {/* Brand — shared logo, links back to the dashboard */}
+        <div className="px-4 pt-5 pb-3 flex-shrink-0">
+          <Logo to="/" size="md" badge="Recruiter" />
+        </div>
 
         {/* Scrollable nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 sidebar-scrollbar-light">
@@ -228,13 +228,23 @@ export default function RecruiterLayout({ children, title }) {
 
           <div className="flex items-center gap-1">
 
-            {/* Browse Jobs */}
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggleDark}
+              className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-blue-700 hover:bg-blue-50/60 transition-colors"
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={dark ? 'Light mode' : 'Dark mode'}
+            >
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            {/* Browse Candidates */}
             <Link
-              to="/jobs"
+              to="/recruiter/candidates"
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-500 hover:text-blue-700 hover:bg-blue-50/60 rounded-lg transition-colors"
             >
-              <Globe size={15} />
-              Browse Jobs
+              <UserSearch size={15} />
+              Browse a Candidate
             </Link>
 
             <div className="w-px h-5 bg-blue-200/50 mx-1" aria-hidden />
@@ -280,7 +290,12 @@ export default function RecruiterLayout({ children, title }) {
                         >
                           <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.isRead ? 'bg-gray-200' : 'bg-indigo-500'}`} />
                           <div className="min-w-0 flex-1">
-                            <p className={`text-sm leading-snug ${n.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
+                            {n.title && (
+                              <p className={`text-sm font-semibold leading-snug ${n.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
+                                {n.title}
+                              </p>
+                            )}
+                            <p className={`text-sm leading-snug ${n.isRead ? 'text-gray-500' : n.title ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
                               {n.message}
                             </p>
                             <p className="text-xs text-gray-400 mt-0.5">{new Date(n.createdAt).toLocaleString()}</p>
@@ -316,11 +331,11 @@ export default function RecruiterLayout({ children, title }) {
                   </div>
                   <div className="py-1.5">
                     <Link
-                      to="/jobs"
+                      to="/recruiter/candidates"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                     >
-                      <Globe size={15} className="text-gray-400" />
-                      Browse Jobs
+                      <UserSearch size={15} className="text-gray-400" />
+                      Browse a Candidate
                     </Link>
                     <Link
                       to="/recruiter/company"

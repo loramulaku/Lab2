@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePageSection } from '../../context/ThemeContext';
 import { PageBackground } from '../../components/layout';
-import LeftPanel from './LeftPanel';
+import LeftPanel from '../../components/auth/LeftPanel';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const CheckIcon = ({ className = 'w-4 h-4' }) => (

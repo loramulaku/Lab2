@@ -1,3 +1,5 @@
+const BrowseCandidatesQuery   = require('../application/candidate/queries/BrowseCandidates.query');
+const browseCandidatesHandler = require('../application/candidate/handlers/BrowseCandidatesHandler');
 const userRepo = require('../repositories/mysql/user.repo');
 const jobRepo = require('../repositories/mysql/job.repo');
 const companyRepo = require('../repositories/mysql/company.repo');
@@ -457,6 +459,13 @@ const adminController = {
       console.error(err);
       return res.status(500).json({ message: 'Failed to fetch payment logs' });
     }
+  },
+
+  async browseCandidates(req, res, next) {
+    try {
+      const result = await browseCandidatesHandler.handle(new BrowseCandidatesQuery(req.query));
+      return res.json(result);
+    } catch (err) { next(err); }
   },
 
 };

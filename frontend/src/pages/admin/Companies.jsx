@@ -103,7 +103,7 @@ const Companies = () => {
             <p className="mt-1 text-sm text-gray-900">{selectedCompany?.location}</p>
           </div>
           <div className="flex space-x-3 pt-4">
-            <button onClick={() => { setShowModal(false); setDeletingCompany(selectedCompany); }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Company</button>
+            <button onClick={() => { setShowModal(false); setDeletingCompany(selectedCompany); }} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete Company</button>
           </div>
         </div>
       </Modal>
