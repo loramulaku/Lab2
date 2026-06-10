@@ -10,6 +10,9 @@ router.post('/',        auth, role('recruiter', 'admin'), contractCtrl.create);
 // Freelancer or candidate approves a pending contract.
 router.post('/:id/approve', auth, role('candidate', 'recruiter', 'admin'), contractCtrl.approve);
 
+// Freelancer or candidate rejects a pending contract.
+router.post('/:id/reject',  auth, role('candidate', 'recruiter', 'admin'), contractCtrl.reject);
+
 // Read (both sides).
 router.get('/',    auth, role('recruiter', 'candidate', 'admin'), contractCtrl.listMine);
 router.get('/:id', auth, role('recruiter', 'candidate', 'admin'), contractCtrl.getById);

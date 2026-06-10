@@ -2,11 +2,13 @@ const GetMyContractsQuery    = require('../application/contract/queries/GetMyCon
 const GetContractByIdQuery   = require('../application/contract/queries/GetContractById.query');
 const CreateContractCommand  = require('../application/contract/commands/CreateContract.command');
 const ApproveContractCommand = require('../application/contract/commands/ApproveContract.command');
+const RejectContractCommand  = require('../application/contract/commands/RejectContract.command');
 
 const getMyContractsHandler   = require('../application/contract/handlers/GetMyContractsHandler');
 const getContractByIdHandler  = require('../application/contract/handlers/GetContractByIdHandler');
 const createContractHandler   = require('../application/contract/handlers/CreateContractHandler');
 const approveContractHandler  = require('../application/contract/handlers/ApproveContractHandler');
+const rejectContractHandler   = require('../application/contract/handlers/RejectContractHandler');
 
 const RecruiterProfile = require('../models/sql/RecruiterProfile');
 const ContractDTO = require('../dtos/contract.dto');
@@ -86,4 +88,18 @@ const approve = async (req, res, next) => {
   }
 };
 
-module.exports = { listMine, getById, create, approve };
+// POST /contracts/:id/reject — freelancer/candidate rejects a pending contract.
+const reject = async (req, res, next) => {
+  try {
+    const contract = await rejectContractHandler.handle(new RejectContractCommand({
+      contractId: Number(req.params.id),
+      userId:     req.user.id,
+    }));
+    return res.json(contract);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message, code: err.code });
+    next(err);
+  }
+};
+
+module.exports = { listMine, getById, create, approve, reject };

@@ -5,12 +5,16 @@ const Bid         = require('../../../models/sql/Bid');
 const Invitation  = require('../../../models/sql/Invitation');
 const Application = require('../../../models/sql/Application');
 const Job         = require('../../../models/sql/Job');
+const User        = require('../../../models/sql/User');
+const RecruiterProfile = require('../../../models/sql/RecruiterProfile');
 const { httpError } = require('../../_shared/ContractService');
 const { syncContractSafe }   = require('../../../sync/contractSync');
 const { syncBidSafe }        = require('../../../sync/bidSync');
 const { syncJobSafe }        = require('../../../sync/jobSync');
 const { syncInvitationSafe } = require('../../../sync/invitationSync');
 const { syncApplicationSafe } = require('../../../sync/applicationSync');
+const CreateNotificationCommand = require('../../notification/commands/CreateNotification.command');
+const createNotificationHandler = require('../../notification/handlers/CreateNotificationHandler');
 
 /**
  * Freelancer or candidate approves a pending contract.
@@ -34,7 +38,7 @@ class ApproveContractHandler {
       throw httpError(403, 'You are not a party to this contract', 'FORBIDDEN');
     }
 
-    return sequelize.transaction(async (t) => {
+    const activated = await sequelize.transaction(async (t) => {
       // 1. Activate the contract (set activeKey for freelance to guard one-per-job).
       const isFreelance = contract.source === 'bid' || contract.source === 'invitation';
       const activeKey   = isFreelance ? `job:${contract.jobId}` : null;
@@ -129,6 +133,28 @@ class ApproveContractHandler {
       syncContractSafe(contract.id);
       return contract;
     });
+
+    // Notify the recruiter that the contract was accepted (fire-and-forget, outside transaction).
+    try {
+      const recruiterProfile = await RecruiterProfile.findOne({ where: { companyId: activated.companyId } });
+      if (recruiterProfile?.userId) {
+        const [freelancer, job] = await Promise.all([
+          User.findByPk(activated.freelancerId, { attributes: ['firstName', 'lastName'] }),
+          activated.jobId ? Job.findByPk(activated.jobId, { attributes: ['title'] }) : Promise.resolve(null),
+        ]);
+        const name     = freelancer ? `${freelancer.firstName} ${freelancer.lastName}` : 'A freelancer';
+        const jobLabel = job ? `"${job.title}"` : 'the job';
+        createNotificationHandler.handle(new CreateNotificationCommand({
+          userId:  recruiterProfile.userId,
+          type:    'contract_accepted',
+          title:   'Contract accepted',
+          message: `${name} has accepted your contract offer for ${jobLabel}. They are now hired.`,
+          link:    '/recruiter/contracts',
+        })).catch(() => {});
+      }
+    } catch { /* non-fatal */ }
+
+    return activated;
   }
 }
 

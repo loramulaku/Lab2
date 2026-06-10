@@ -16,6 +16,7 @@ const PAGE_SIZE = 20;
 export default function InvitedFreelancers() {
   const navigate  = useNavigate();
   const [invites, setInvites] = useState([]);
+  const [sentContractInvIds, setSentContractInvIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
   const [busy,     setBusy]     = useState(null);
@@ -36,7 +37,17 @@ export default function InvitedFreelancers() {
     try {
       const profile   = await recruiterService.getProfile();
       const cid       = profile?.company?.id ?? null;
-      const jobsRes   = await recruiterService.listJobs({ companyId: cid, employmentType: 'freelance', limit: 200 });
+      const [jobsRes, contractsRes] = await Promise.all([
+        recruiterService.listJobs({ companyId: cid, employmentType: 'freelance', limit: 200 }),
+        freelanceService.myContracts({ limit: 200 }),
+      ]);
+
+      // Build set of invitationIds that already have a contract sent
+      const sentIds = new Set(
+        (contractsRes.data ?? []).filter(c => c.invitationId != null).map(c => c.invitationId)
+      );
+      setSentContractInvIds(sentIds);
+
       const invitable = (jobsRes.data ?? []).filter(j => ['invite', 'both'].includes(j.jobMode));
       const perJob    = await Promise.all(
         invitable.map(j =>
@@ -82,6 +93,10 @@ export default function InvitedFreelancers() {
   };
 
   const handleContractCreated = () => {
+    // Optimistically mark this invitation as having a contract sent
+    if (contractTarget?.id) {
+      setSentContractInvIds(prev => new Set(prev).add(contractTarget.id));
+    }
     setContractTarget(null);
     load();
   };
@@ -126,28 +141,44 @@ export default function InvitedFreelancers() {
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {inv.status === 'confirmed' ? (
-                    <>
-                      <button
-                        disabled={busy === inv.id}
-                        onClick={() => reject(inv.id)}
-                        className="px-3 py-1.5 border border-red-200 text-red-600 text-xs font-medium rounded-lg hover:bg-red-50 disabled:opacity-50"
-                      >
-                        Rejected
-                      </button>
-                      <button
-                        disabled={chatBusy === inv.id}
-                        onClick={() => openChat(inv)}
-                        className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        {chatBusy === inv.id ? '…' : 'Live Chat'}
-                      </button>
-                      <button
-                        onClick={() => setContractTarget(inv)}
-                        className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
-                      >
-                        Make a Contract
-                      </button>
-                    </>
+                    sentContractInvIds.has(inv.id) ? (
+                      // Contract already sent — show status + link to Contracts page
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-blue-700 font-medium bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
+                          Contract sent
+                        </span>
+                        <button
+                          onClick={() => navigate('/recruiter/contracts')}
+                          className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50"
+                        >
+                          View Contracts →
+                        </button>
+                      </div>
+                    ) : (
+                      // No contract yet — show full action set
+                      <>
+                        <button
+                          disabled={busy === inv.id}
+                          onClick={() => reject(inv.id)}
+                          className="px-3 py-1.5 border border-red-200 text-red-600 text-xs font-medium rounded-lg hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Revoke
+                        </button>
+                        <button
+                          disabled={chatBusy === inv.id}
+                          onClick={() => openChat(inv)}
+                          className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {chatBusy === inv.id ? '…' : 'Live Chat'}
+                        </button>
+                        <button
+                          onClick={() => setContractTarget(inv)}
+                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
+                        >
+                          Make a Contract
+                        </button>
+                      </>
+                    )
                   ) : (
                     <span className="text-xs text-gray-400 italic">Awaiting confirmation</span>
                   )}

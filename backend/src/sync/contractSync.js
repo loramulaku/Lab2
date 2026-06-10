@@ -39,6 +39,7 @@ async function syncContract(contractId) {
     companyName:         company?.name    ?? null,
     freelancerFirstName: freelancer?.firstName ?? null,
     freelancerLastName:  freelancer?.lastName  ?? null,
+    createdAt:           c.createdAt           ?? null,
   });
 
   await FailedSync.destroy({ where: { entityType: 'contract', entityId: contractId } });

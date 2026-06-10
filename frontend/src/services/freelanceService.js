@@ -50,6 +50,7 @@ const freelanceService = {
   getContract:     (id)            => api.get(`/contracts/${id}`).then(r => r.data),
   createContract:  (data)          => api.post('/contracts', data).then(r => r.data),
   approveContract: (id)            => api.post(`/contracts/${id}/approve`).then(r => r.data),
+  rejectContract:  (id)            => api.post(`/contracts/${id}/reject`).then(r => r.data),
   hiredRecords:    (params)        => api.get(`/contracts${qs({ ...params, status: 'active' })}`).then(r => r.data),
 };
 

@@ -22,7 +22,7 @@ const avatarSrc = (path) => path ? `${API_BASE}${path}` : null;
 const fmtDate   = (d) => d ? d.slice(0, 7) : 'Present';
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-const BASE_TABS = ['Profile', 'Skills', 'Experience', 'Education', 'Applications', 'Saved'];
+const BASE_TABS = ['Profile', 'Skills', 'Experience', 'Education', 'Applications', 'Contracts', 'Saved'];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/></svg>;
@@ -627,6 +627,115 @@ function ApplicationsTab() {
   );
 }
 
+// ── Contracts Tab ─────────────────────────────────────────────────────────────
+function ContractsTab() {
+  const [contracts, setContracts] = useState(null);
+  const [error,     setError]     = useState('');
+  const [confirming, setConfirming] = useState(null);
+
+  const load = () =>
+    candidateService.myContracts()
+      .then(r => setContracts(r.data ?? []))
+      .catch(() => setError('Failed to load contracts.'));
+
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleConfirm = async (contractId) => {
+    setConfirming(contractId);
+    setError('');
+    try {
+      await candidateService.approveContract(contractId);
+      await load();
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to confirm contract.');
+    } finally {
+      setConfirming(null);
+    }
+  };
+
+  if (error) return <p className="text-sm text-red-500">{error}</p>;
+  if (!contracts) return <p className="text-sm text-gray-400">Loading…</p>;
+
+  const pending = contracts.filter(c => c.status === 'pending');
+  const active  = contracts.filter(c => c.status === 'active');
+
+  if (contracts.length === 0) return (
+    <EmptyState message="No contract offers yet." onAdd={null} addLabel="" />
+  );
+
+  const fmt = (d) => d
+    ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : '—';
+
+  return (
+    <div className="space-y-6">
+      {pending.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-3">Pending Offers</h3>
+          <div className="space-y-3">
+            {pending.map(c => (
+              <div key={c.id} className="border border-amber-200 bg-amber-50/40 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900">{c.jobTitle ?? '—'}</p>
+                    <p className="text-sm text-gray-500">{c.companyName ?? '—'}</p>
+                    <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-600">
+                      {c.agreedPrice != null && (
+                        <span>Salary: <strong className="text-gray-900">${Number(c.agreedPrice).toLocaleString()}</strong></span>
+                      )}
+                      <span>Start: <strong className="text-gray-900">{fmt(c.startDate)}</strong></span>
+                      {c.endDate && <span>End: <strong className="text-gray-900">{fmt(c.endDate)}</strong></span>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleConfirm(c.id)}
+                    disabled={confirming === c.id}
+                    className="flex-shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  >
+                    {confirming === c.id ? 'Confirming…' : 'Confirm Contract'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {active.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-3">Active — Hired</h3>
+          <div className="space-y-3">
+            {active.map(c => (
+              <div key={c.id} className="border border-green-200 bg-green-50/30 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                      <p className="font-semibold text-gray-900">{c.jobTitle ?? '—'}</p>
+                    </div>
+                    <p className="text-sm text-gray-500">{c.companyName ?? '—'}</p>
+                    <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-600">
+                      {c.agreedPrice != null && (
+                        <span>Salary: <strong className="text-gray-900">${Number(c.agreedPrice).toLocaleString()}</strong></span>
+                      )}
+                      <span>Start: <strong className="text-gray-900">{fmt(c.startDate)}</strong></span>
+                      {c.endDate && <span>End: <strong className="text-gray-900">{fmt(c.endDate)}</strong></span>}
+                      {c.approvedAt && <span>Hired: <strong className="text-gray-900">{fmt(c.approvedAt)}</strong></span>}
+                    </div>
+                  </div>
+                  <span className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                    Hired ✓
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Saved Jobs Tab ────────────────────────────────────────────────────────────
 const API_BASE_SAVED = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? '';
 
@@ -703,6 +812,7 @@ export default function MyProfile() {
     if (!data) return;
     const t = searchParams.get('tab')?.toLowerCase();
     if (t === 'applications') setTab('Applications');
+    else if (t === 'contracts')  setTab('Contracts');
     else if (t === 'freelance' && data.freelanceActive) setTab('Freelance');
   }, [data, searchParams]);
 
@@ -746,6 +856,7 @@ export default function MyProfile() {
             {tab === 'Experience'   && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}
             {tab === 'Education'    && <EducationTab  educations={data.educations}   onAdd={handleEduAdd} onUpdate={handleEduUpdate} onDelete={handleEduDelete} />}
             {tab === 'Applications' && <ApplicationsTab />}
+            {tab === 'Contracts'    && <ContractsTab />}
             {tab === 'Saved'        && <SavedJobsTab />}
             {tab === 'Freelance'    && <FreelancePanel />}
           </div>

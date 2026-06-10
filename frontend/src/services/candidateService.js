@@ -33,6 +33,9 @@ const candidateService = {
   saveJob:       (jobId)   => api.post(`/candidate/saved-jobs/${jobId}`).then(r => r.data),
   unsaveJob:     (jobId)   => api.delete(`/candidate/saved-jobs/${jobId}`).then(r => r.data),
 
+  myContracts:     (params) => api.get('/contracts', { params }).then(r => r.data),
+  approveContract: (id)     => api.post(`/contracts/${id}/approve`).then(r => r.data),
+
   uploadAvatar: (file) => {
     const form = new FormData();
     form.append('avatar', file);

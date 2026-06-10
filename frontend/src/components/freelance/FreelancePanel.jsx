@@ -136,8 +136,10 @@ export default function FreelancePanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
   const [bidJob, setBidJob] = useState(null);
-  const [viewJobId, setViewJobId] = useState(null);     // job detail modal
-  const [expandedBids, setExpandedBids] = useState({}); // bid detail expand state
+  const [viewJobId, setViewJobId] = useState(null);
+  const [expandedBids, setExpandedBids] = useState({});
+  const [confirmingInvites, setConfirmingInvites] = useState(new Set());
+  const [busyContractId, setBusyContractId] = useState(null);
 
   const toggleBid = (id) => setExpandedBids(prev => ({ ...prev, [id]: !prev[id] }));
 
@@ -171,9 +173,55 @@ export default function FreelancePanel() {
     await loadAll();
   };
   const handleWithdraw = async (bidId) => { await freelanceService.withdrawBid(bidId); await loadAll(); };
-  const handleConfirm  = async (id)    => { await freelanceService.confirmInvitation(id); await loadAll(); };
-  const handleReject   = async (id)    => { await freelanceService.rejectInvitation(id); await loadAll(); };
-  const handleApproveContract = async (id) => { await freelanceService.approveContract(id); await loadAll(); };
+
+  const handleConfirm = async (id) => {
+    if (confirmingInvites.has(id)) return;
+    setConfirmingInvites(prev => new Set(prev).add(id));
+    try {
+      await freelanceService.confirmInvitation(id);
+      await loadAll();
+    } catch (e) {
+      if (e?.response?.status === 409) {
+        // Already confirmed — reload to reflect current state silently
+        await loadAll();
+      } else {
+        setError(e?.response?.data?.message ?? 'Failed to confirm invitation.');
+      }
+    } finally {
+      setConfirmingInvites(prev => { const s = new Set(prev); s.delete(id); return s; });
+    }
+  };
+
+  const handleReject = async (id) => { await freelanceService.rejectInvitation(id); await loadAll(); };
+
+  const handleApproveContract = async (id) => {
+    if (busyContractId !== null) return;
+    setBusyContractId(id);
+    try {
+      await freelanceService.approveContract(id);
+      // Optimistic update — avoids waiting for MongoDB sync
+      setContracts(prev => prev.map(c => c.id === id ? { ...c, status: 'active' } : c));
+    } catch (e) {
+      setError(e?.response?.data?.message ?? 'Failed to approve contract.');
+      await loadAll();
+    } finally {
+      setBusyContractId(null);
+    }
+  };
+
+  const handleRejectContract = async (id) => {
+    if (busyContractId !== null) return;
+    setBusyContractId(id);
+    try {
+      await freelanceService.rejectContract(id);
+      setContracts(prev => prev.map(c => c.id === id ? { ...c, status: 'rejected' } : c));
+    } catch (e) {
+      setError(e?.response?.data?.message ?? 'Failed to reject contract.');
+      await loadAll();
+    } finally {
+      setBusyContractId(null);
+    }
+  };
 
   return (
     <div>
@@ -325,7 +373,13 @@ export default function FreelancePanel() {
                         <Badge status={inv.status} />
                         {inv.status === 'pending' && (
                           <div className="flex gap-2">
-                            <button onClick={() => handleConfirm(inv.id)} className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 rounded-lg">Confirm</button>
+                            <button
+                              onClick={() => handleConfirm(inv.id)}
+                              disabled={confirmingInvites.has(inv.id)}
+                              className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 rounded-lg disabled:opacity-50"
+                            >
+                              {confirmingInvites.has(inv.id) ? 'Confirming…' : 'Confirm'}
+                            </button>
                             <button onClick={() => handleReject(inv.id)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50 rounded-lg">Decline</button>
                           </div>
                         )}
@@ -365,12 +419,27 @@ export default function FreelancePanel() {
                     <div className="flex flex-col items-end gap-2 shrink-0">
                       <Badge status={c.status} />
                       {c.status === 'pending' && (
-                        <button
-                          onClick={() => handleApproveContract(c.id)}
-                          className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700 rounded transition-colors"
-                        >
-                          Accept
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            disabled={busyContractId === c.id}
+                            onClick={() => handleRejectContract(c.id)}
+                            className="px-3 py-1.5 border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                          <button
+                            disabled={busyContractId === c.id}
+                            onClick={() => handleApproveContract(c.id)}
+                            className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700 rounded transition-colors disabled:opacity-50"
+                          >
+                            {busyContractId === c.id ? 'Confirming…' : 'Accept'}
+                          </button>
+                        </div>
+                      )}
+                      {c.status === 'active' && (
+                        <span className="text-xs text-green-700 font-medium bg-green-50 border border-green-200 px-3 py-1.5 rounded">
+                          Contract confirmed ✓
+                        </span>
                       )}
                     </div>
                   </div>
