@@ -7,6 +7,7 @@ import BidModal from '../components/freelance/BidModal';
 import FreelanceModeGate from '../components/freelance/FreelanceModeGate';
 import ApplicationForm from '../components/jobs/ApplicationForm';
 import { JobsSearchHero, JobsFilterSidebar, JobsCategorySidebar, JobListingCard } from '../components/jobs/JobsBoard';
+import GuestAuthPrompt from '../components/GuestAuthPrompt';
 import { SORT_OPTIONS } from '../constants/jobsBoard';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
@@ -45,6 +46,7 @@ export default function Jobs() {
   const [bidJobIds, setBidJobIds]         = useState(new Set());
   const [freelanceActive, setFreelanceActive] = useState(null);
   const [gateJob, setGateJob]             = useState(null);
+  const [guestPrompt, setGuestPrompt]     = useState(false);
 
   useEffect(() => {
     if (!urlFilter) return;
@@ -284,6 +286,7 @@ export default function Jobs() {
                 onBid={handleBidClick}
                 isSaved={savedIds.has(job.id)}
                 onToggleSave={handleToggleSave}
+                onGuestAction={() => setGuestPrompt(true)}
               />
             ))}
           </div>
@@ -296,6 +299,7 @@ export default function Jobs() {
         />
       </div>
 
+      {guestPrompt && <GuestAuthPrompt onClose={() => setGuestPrompt(false)} />}
       {bidJob   && <BidModal job={bidJob} onSubmit={submitBid} onClose={() => setBidJob(null)} />}
       {applyJob && <ApplicationForm job={applyJob} onSubmit={handleApplySubmit} onClose={() => setApplyJob(null)} />}
       {gateJob  && (

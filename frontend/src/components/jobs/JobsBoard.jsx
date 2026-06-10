@@ -166,7 +166,7 @@ const APP_STATUS_LABEL = {
   rejected:    'Rejected',
 };
 
-export function JobListingCard({ job, user, isCandidate, feedback, appliedStatus, hasBid, onApply, onBid, isSaved, onToggleSave }) {
+export function JobListingCard({ job, user, isCandidate, feedback, appliedStatus, hasBid, onApply, onBid, isSaved, onToggleSave, onGuestAction }) {
   const freelance = job.workMode === 'freelance';
   const canBid = !!job.acceptsBids;
   const salary = fmtSalary(job);
@@ -198,7 +198,7 @@ export function JobListingCard({ job, user, isCandidate, feedback, appliedStatus
               {feedback ? (
                 <span className={`text-sm font-medium ${feedback.ok ? 'text-green-600' : 'text-red-600'}`}>{feedback.msg}</span>
               ) : !user ? (
-                <Link to="/login" className="page-shell-btn px-4 py-1.5 text-gray-700 text-xs hover:bg-white/70 whitespace-nowrap rounded-md bg-white/80">Sign in</Link>
+                <button onClick={() => onGuestAction?.(job)} className="page-shell-btn px-4 py-1.5 text-gray-700 text-xs hover:bg-white/70 whitespace-nowrap rounded-md bg-white/80">Sign in to apply</button>
               ) : isCandidate ? (
                 freelance
                   ? canBid && (hasBid

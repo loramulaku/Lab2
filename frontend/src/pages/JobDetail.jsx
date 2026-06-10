@@ -7,6 +7,7 @@ import ApplicationForm from '../components/jobs/ApplicationForm';
 import { useAuth } from '../context/AuthContext';
 import freelanceService from '../services/freelanceService';
 import candidateService from '../services/candidateService';
+import GuestAuthPrompt from '../components/GuestAuthPrompt';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? '';
 
@@ -68,10 +69,11 @@ export default function JobDetail() {
 
   const [job,        setJob]      = useState(null);
   const [loading,    setLoading]  = useState(true);
-  const [bidOpen,    setBidOpen]  = useState(false);
-  const [gateOpen,   setGateOpen] = useState(false);
-  const [applyOpen,  setApplyOpen] = useState(false);
-  const [feedback,   setFeedback] = useState(null);
+  const [bidOpen,     setBidOpen]    = useState(false);
+  const [gateOpen,    setGateOpen]   = useState(false);
+  const [applyOpen,   setApplyOpen]  = useState(false);
+  const [feedback,    setFeedback]   = useState(null);
+  const [guestPrompt, setGuestPrompt] = useState(false);
   const [isSaved,        setIsSaved]        = useState(false);
   const [freelanceActive, setFreelanceActive] = useState(null);
   const [appliedStatus,  setAppliedStatus]  = useState(null);
@@ -161,7 +163,7 @@ export default function JobDetail() {
   const actionEl = feedback ? (
     <span className={`block text-center text-sm font-medium ${feedback.ok ? 'text-green-600' : 'text-red-600'}`}>{feedback.msg}</span>
   ) : !user ? (
-    <Link to="/login" className="block w-full text-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">Sign in to apply</Link>
+    <button onClick={() => setGuestPrompt(true)} className="block w-full text-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">Sign in to apply</button>
   ) : isCandidate ? (
     isFreelance
       ? canBid
@@ -299,6 +301,7 @@ export default function JobDetail() {
           </aside>
         </div>
 
+      {guestPrompt && <GuestAuthPrompt onClose={() => setGuestPrompt(false)} />}
       {bidOpen   && <BidModal job={job} onSubmit={submitBid} onClose={() => setBidOpen(false)} />}
       {applyOpen && <ApplicationForm job={job} onSubmit={submitApplication} onClose={() => setApplyOpen(false)} />}
       {gateOpen  && (
