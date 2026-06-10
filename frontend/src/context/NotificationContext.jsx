@@ -25,26 +25,29 @@ export function NotificationProvider({ children }) {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   // ── Fetch on login ────────────────────────────────────────────────────────
+  // Guard on `user` (not just `token`) — token is seeded from localStorage on
+  // first render and may be stale/expired before AuthContext validates it.
+  // `user` is only set after a successful getMe(), so it's the reliable signal.
   const fetchAll = useCallback(async () => {
-    if (!token) return;
+    if (!user) return;
     try {
       const data = await notificationService.getAll();
       setNotifications(data);
     } catch {
       // silent — bell just shows 0 if fetch fails
     }
-  }, [token]);
+  }, [user]);
 
   useEffect(() => {
-    if (token) fetchAll();
-    else        setNotifications([]);
-  }, [token, fetchAll]);
+    if (user) fetchAll();
+    else       setNotifications([]);
+  }, [user, fetchAll]);
 
   // ── Socket — real-time push ───────────────────────────────────────────────
   // socket.io-client is dynamically imported so it stays out of the initial bundle
   // and only loads after the user actually logs in.
   useEffect(() => {
-    if (!token) {
+    if (!token || !user) {
       socketRef.current?.disconnect();
       socketRef.current = null;
       return;
@@ -79,19 +82,21 @@ export function NotificationProvider({ children }) {
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [token]);
+  }, [token, user]);
 
   // ── Mark one as read ──────────────────────────────────────────────────────
   const markAsRead = useCallback(async (id) => {
+    if (!user) return;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     try { await notificationService.markAsRead(id); } catch { /* silent */ }
-  }, []);
+  }, [user]);
 
   // ── Mark all as read ──────────────────────────────────────────────────────
   const markAllRead = useCallback(async () => {
+    if (!user) return;
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     try { await notificationService.markAllRead(); } catch { /* silent */ }
-  }, []);
+  }, [user]);
 
   return (
     <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllRead, fetchAll, lastApplicationEvent, lastJobEvent, socketRef }}>

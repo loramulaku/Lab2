@@ -120,6 +120,46 @@ initChatSocket(io);
 
 const { startupSync } = require('./src/sync/startupSync');
 
+// ── Graceful shutdown — releases the port so nodemon / Ctrl-C never leave it locked ──
+const shutdown = (signal) => {
+  console.log(`\n[${signal}] Shutting down…`);
+  httpServer.closeAllConnections?.();
+  httpServer.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 3000).unref();
+};
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+process.on('SIGUSR2', () => shutdown('SIGUSR2')); // nodemon sends this on restart
+
+// ── EADDRINUSE recovery — kills whatever owns the port and retries once ────────
+httpServer.on('error', async (err) => {
+  if (err.code !== 'EADDRINUSE') throw err;
+  console.error(`\n⚠  Port ${PORT} is already in use — killing existing process…`);
+  try {
+    const { execSync } = require('child_process');
+    if (process.platform === 'win32') {
+      // Parse PID from netstat output, then taskkill it
+      const out = execSync(`netstat -ano`, { stdio: 'pipe' }).toString();
+      const match = out.split('\n')
+        .find(l => l.includes(`:${PORT} `) && l.includes('LISTENING'));
+      if (match) {
+        const pid = parseInt(match.trim().split(/\s+/).pop(), 10);
+        if (pid && pid !== process.pid) {
+          execSync(`taskkill /F /PID ${pid}`, { stdio: 'pipe' });
+          console.log(`  killed PID ${pid}`);
+        }
+      }
+    } else {
+      execSync(`lsof -ti tcp:${PORT} | xargs kill -9`, { stdio: 'pipe' });
+    }
+    await new Promise(r => setTimeout(r, 800));
+    httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch {
+    console.error(`Could not free port ${PORT} — please kill the old process manually.`);
+    process.exit(1);
+  }
+});
+
 (async () => {
   await connectMySQL();
   await connectMongoDB();
