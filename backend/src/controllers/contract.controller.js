@@ -8,17 +8,30 @@ const getContractByIdHandler  = require('../application/contract/handlers/GetCon
 const createContractHandler   = require('../application/contract/handlers/CreateContractHandler');
 const approveContractHandler  = require('../application/contract/handlers/ApproveContractHandler');
 
+const RecruiterProfile = require('../models/sql/RecruiterProfile');
 const ContractDTO = require('../dtos/contract.dto');
 
+async function resolveCompanyId(req) {
+  if (req.user.companyId) return req.user.companyId;
+  const profile = await RecruiterProfile.findOne({ where: { userId: req.user.id } });
+  return profile?.companyId ?? null;
+}
+
 // Scope the list to the caller: freelancers see their own, recruiters see their company's.
-const listMine = (req, res, next) => {
-  const roles = req.user.roles ?? [];
-  const opts  = { ...req.query };
-  if (roles.includes('recruiter') && !roles.includes('admin')) opts.companyId = req.user.companyId;
-  else if (roles.includes('candidate')) opts.freelancerId = req.user.id;
-  return getMyContractsHandler.handle(new GetMyContractsQuery(opts))
-    .then(r => res.json({ ...r, data: ContractDTO.fromList(r.data) }))
-    .catch(next);
+const listMine = async (req, res, next) => {
+  try {
+    const roles = req.user.roles ?? [];
+    const opts  = { ...req.query };
+    if (roles.includes('recruiter') && !roles.includes('admin')) {
+      opts.companyId = await resolveCompanyId(req);
+    } else if (roles.includes('candidate')) {
+      opts.freelancerId = req.user.id;
+    }
+    const r = await getMyContractsHandler.handle(new GetMyContractsQuery(opts));
+    return res.json({ ...r, data: ContractDTO.fromList(r.data) });
+  } catch (err) {
+    next(err);
+  }
 };
 
 const getById = (req, res, next) =>
@@ -41,7 +54,7 @@ const create = async (req, res, next) => {
     if (!source || !agreedPrice || !startDate) {
       return res.status(400).json({ message: 'source, agreedPrice, and startDate are required' });
     }
-    const companyId = req.user.companyId;
+    const companyId = await resolveCompanyId(req);
     if (!companyId) return res.status(400).json({ message: 'Recruiter company not found' });
 
     const contract = await createContractHandler.handle(new CreateContractCommand({

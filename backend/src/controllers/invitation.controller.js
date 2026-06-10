@@ -16,9 +16,18 @@ const getMyInvitationsHandler      = require('../application/invitation/handlers
 const getInvitationsByJobHandler   = require('../application/invitation/handlers/GetInvitationsByJobHandler');
 const searchFreelancersHandler     = require('../application/invitation/handlers/SearchFreelancersHandler');
 
-const InvitationDTO = require('../dtos/invitation.dto');
-const ContractDTO   = require('../dtos/contract.dto');
-const auditLog      = require('../utils/audit');
+const InvitationDTO    = require('../dtos/invitation.dto');
+const ContractDTO      = require('../dtos/contract.dto');
+const auditLog         = require('../utils/audit');
+const RecruiterProfile = require('../models/sql/RecruiterProfile');
+
+// JWT carries companyId at login time. If company was set up after the current
+// token was issued, companyId is absent — fall back to the DB row.
+async function resolveCompanyId(req) {
+  if (req.user.companyId) return req.user.companyId;
+  const profile = await RecruiterProfile.findOne({ where: { userId: req.user.id } });
+  return profile?.companyId ?? null;
+}
 
 const searchFreelancers = (req, res, next) =>
   searchFreelancersHandler.handle(new SearchFreelancersQuery(req.query))
@@ -27,9 +36,10 @@ const searchFreelancers = (req, res, next) =>
 
 const send = async (req, res, next) => {
   try {
+    const companyId = await resolveCompanyId(req);
     const r = await sendInvitationHandler.handle(new SendInvitationCommand({
       ...req.body,
-      companyId: req.user.companyId,
+      companyId,
     }));
     auditLog(req, { action: 'INVITATION_SEND', entity: 'Invitation', entityId: r.id });
     res.status(201).json(InvitationDTO.from(r));
@@ -64,9 +74,12 @@ const reject = (req, res, next) =>
     .then(r => res.json(InvitationDTO.from(r)))
     .catch(next);
 
-const revoke = (req, res, next) =>
-  revokeInvitationHandler.handle(new RevokeInvitationCommand(Number(req.params.id), req.user.companyId))
-    .then(r => res.json(InvitationDTO.from(r)))
-    .catch(next);
+const revoke = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    const r = await revokeInvitationHandler.handle(new RevokeInvitationCommand(Number(req.params.id), companyId));
+    res.json(InvitationDTO.from(r));
+  } catch (err) { next(err); }
+};
 
 module.exports = { searchFreelancers, send, listMine, listByJob, accept, confirm, reject, revoke };

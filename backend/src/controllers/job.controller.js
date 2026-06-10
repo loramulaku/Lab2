@@ -13,6 +13,15 @@ const getJobByIdHandler       = require('../application/job/handlers/GetJobByIdH
 const JobDTO                  = require('../dtos/job.dto');
 const auditLog                = require('../utils/audit');
 const { getIo }               = require('../socket/ioInstance');
+const RecruiterProfile        = require('../models/sql/RecruiterProfile');
+
+// JWT carries companyId at login time. If company was set up after the current
+// token was issued, companyId is absent — fall back to the DB row.
+async function resolveCompanyId(req) {
+  if (req.user.companyId) return req.user.companyId;
+  const profile = await RecruiterProfile.findOne({ where: { userId: req.user.id } });
+  return profile?.companyId ?? null;
+}
 
 // Public read — excludes invite-only freelance jobs (candidates can't apply to them)
 const getAll = async (req, res, next) => {
@@ -32,9 +41,10 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
+    const companyId = await resolveCompanyId(req);
     const r = await createJobHandler.handle(new CreateJobCommand({
       ...req.body,
-      companyId:   req.user.companyId,
+      companyId,
       recruiterId: req.user.id,
     }));
     auditLog(req, { action: 'JOB_CREATE', entity: 'Job', entityId: r.id, newValue: JSON.stringify({ title: r.title, status: r.status }) });
