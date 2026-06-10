@@ -88,7 +88,20 @@ export default function Hired() {
   );
 }
 
+function DetailRow({ label, value }) {
+  if (!value && value !== 0) return null;
+  return (
+    <div className="flex gap-2 text-xs">
+      <span className="text-gray-400 min-w-[90px] flex-shrink-0">{label}</span>
+      <span className="text-gray-700">{value}</span>
+    </div>
+  );
+}
+
 function StandardSection({ records, fmt, fmtMoney, personName }) {
+  const [expanded, setExpanded] = useState({});
+  const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+
   if (records.length === 0) {
     return (
       <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
@@ -101,20 +114,45 @@ function StandardSection({ records, fmt, fmtMoney, personName }) {
   return (
     <div className="space-y-3">
       {records.map(c => (
-        <div key={c.id} className="page-shell-card rounded-xl px-5 py-4 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-              <h3 className="font-semibold text-gray-900">{personName(c)}</h3>
+        <div key={c.id} className="page-shell-card rounded-xl overflow-hidden">
+          <div className="px-5 py-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                <h3 className="font-semibold text-gray-900">{personName(c)}</h3>
+              </div>
+              <p className="text-sm text-gray-500">{c.jobTitle ?? '—'}</p>
+              <p className="text-xs text-gray-400 mt-1">{c.companyName ?? '—'}</p>
             </div>
-            <p className="text-sm text-gray-500">{c.jobTitle ?? '—'}</p>
-            <p className="text-xs text-gray-400 mt-1">{c.companyName ?? '—'}</p>
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              <div className="text-right space-y-1">
+                <p className="text-sm font-semibold text-gray-800">{fmtMoney(c.agreedPrice)}</p>
+                <p className="text-xs text-gray-500">Start: {fmt(c.startDate)}</p>
+                <p className="text-xs text-gray-400">Hired: {fmt(c.approvedAt)}</p>
+              </div>
+              <button
+                onClick={() => toggle(c.id)}
+                className="text-xs text-blue-600 hover:underline mt-1"
+              >
+                {expanded[c.id] ? 'Hide details' : 'Show details'}
+              </button>
+            </div>
           </div>
-          <div className="text-right flex-shrink-0 space-y-1">
-            <p className="text-sm font-semibold text-gray-800">{fmtMoney(c.agreedPrice)}</p>
-            <p className="text-xs text-gray-500">Start: {fmt(c.startDate)}</p>
-            <p className="text-xs text-gray-400">Hired: {fmt(c.approvedAt)}</p>
-          </div>
+
+          {expanded[c.id] && (
+            <div className="border-t border-gray-100 px-5 py-4 bg-gray-50 grid grid-cols-2 gap-x-8 gap-y-1.5">
+              <DetailRow label="Person"       value={personName(c)} />
+              <DetailRow label="Job"          value={c.jobTitle} />
+              <DetailRow label="Company"      value={c.companyName} />
+              <DetailRow label="Contract ID"  value={`#${c.id}`} />
+              <DetailRow label="Agreed price" value={fmtMoney(c.agreedPrice)} />
+              <DetailRow label="Start date"   value={fmt(c.startDate)} />
+              <DetailRow label="End date"     value={fmt(c.endDate)} />
+              <DetailRow label="Hired on"     value={fmt(c.approvedAt)} />
+              <DetailRow label="Created"      value={fmt(c.createdAt)} />
+              <DetailRow label="Source"       value="Pipeline (Standard)" />
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -122,6 +160,9 @@ function StandardSection({ records, fmt, fmtMoney, personName }) {
 }
 
 function FreelanceSection({ records, fmt, fmtMoney, personName }) {
+  const [expanded, setExpanded] = useState({});
+  const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+
   if (records.length === 0) {
     return (
       <div className="page-shell-card rounded-xl text-center py-16 text-gray-400">
@@ -134,27 +175,53 @@ function FreelanceSection({ records, fmt, fmtMoney, personName }) {
   return (
     <div className="space-y-3">
       {records.map(c => (
-        <div key={c.id} className="page-shell-card rounded-xl px-5 py-4 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-              <h3 className="font-semibold text-gray-900">{personName(c)}</h3>
-              {c.source && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
-                  {c.source === 'bid' ? 'via Bid' : 'via Invitation'}
-                </span>
-              )}
+        <div key={c.id} className="page-shell-card rounded-xl overflow-hidden">
+          <div className="px-5 py-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                <h3 className="font-semibold text-gray-900">{personName(c)}</h3>
+                {c.source && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                    {c.source === 'bid' ? 'via Bid' : 'via Invitation'}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-500">{c.jobTitle ?? '—'}</p>
+              <p className="text-xs text-gray-400 mt-1">{c.companyName ?? '—'}</p>
             </div>
-            <p className="text-sm text-gray-500">{c.jobTitle ?? '—'}</p>
-            <p className="text-xs text-gray-400 mt-1">{c.companyName ?? '—'}</p>
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              <div className="text-right space-y-1">
+                <p className="text-sm font-semibold text-gray-800">{fmtMoney(c.agreedPrice)}</p>
+                <p className="text-xs text-gray-500">
+                  {fmt(c.startDate)}{c.endDate ? ` → ${fmt(c.endDate)}` : ''}
+                </p>
+                <p className="text-xs text-gray-400">Hired: {fmt(c.approvedAt)}</p>
+              </div>
+              <button
+                onClick={() => toggle(c.id)}
+                className="text-xs text-blue-600 hover:underline mt-1"
+              >
+                {expanded[c.id] ? 'Hide details' : 'Show details'}
+              </button>
+            </div>
           </div>
-          <div className="text-right flex-shrink-0 space-y-1">
-            <p className="text-sm font-semibold text-gray-800">{fmtMoney(c.agreedPrice)}</p>
-            <p className="text-xs text-gray-500">
-              {fmt(c.startDate)}{c.endDate ? ` → ${fmt(c.endDate)}` : ''}
-            </p>
-            <p className="text-xs text-gray-400">Hired: {fmt(c.approvedAt)}</p>
-          </div>
+
+          {expanded[c.id] && (
+            <div className="border-t border-gray-100 px-5 py-4 bg-gray-50 grid grid-cols-2 gap-x-8 gap-y-1.5">
+              <DetailRow label="Person"       value={personName(c)} />
+              <DetailRow label="Job"          value={c.jobTitle} />
+              <DetailRow label="Company"      value={c.companyName} />
+              <DetailRow label="Contract ID"  value={`#${c.id}`} />
+              <DetailRow label="Agreed price" value={fmtMoney(c.agreedPrice)} />
+              <DetailRow label="Start date"   value={fmt(c.startDate)} />
+              <DetailRow label="End date"     value={fmt(c.endDate)} />
+              <DetailRow label="Hired on"     value={fmt(c.approvedAt)} />
+              <DetailRow label="Created"      value={fmt(c.createdAt)} />
+              <DetailRow label="Source"       value={c.source === 'bid' ? 'Bid' : 'Invitation'} />
+              {c.freelancerId && <DetailRow label="Freelancer ID" value={`#${c.freelancerId}`} />}
+            </div>
+          )}
         </div>
       ))}
     </div>

@@ -173,6 +173,7 @@ export default function FreelancePanel() {
   const handleWithdraw = async (bidId) => { await freelanceService.withdrawBid(bidId); await loadAll(); };
   const handleConfirm  = async (id)    => { await freelanceService.confirmInvitation(id); await loadAll(); };
   const handleReject   = async (id)    => { await freelanceService.rejectInvitation(id); await loadAll(); };
+  const handleApproveContract = async (id) => { await freelanceService.approveContract(id); await loadAll(); };
 
   return (
     <div>
@@ -355,8 +356,23 @@ export default function FreelancePanel() {
                       <p className="font-semibold text-gray-900">{c.jobTitle ?? `Job #${c.jobId}`}</p>
                       <p className="text-sm text-gray-500">{c.companyName} · via {c.source}</p>
                       <p className="text-sm text-gray-600 mt-1">${Number(c.agreedPrice ?? 0).toLocaleString()}</p>
+                      {c.startDate && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Start: {c.startDate}{c.endDate ? ` → ${c.endDate}` : ''}
+                        </p>
+                      )}
                     </div>
-                    <Badge status={c.status} />
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <Badge status={c.status} />
+                      {c.status === 'pending' && (
+                        <button
+                          onClick={() => handleApproveContract(c.id)}
+                          className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700 rounded transition-colors"
+                        >
+                          Accept
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
             </div>
