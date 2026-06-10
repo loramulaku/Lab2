@@ -33,9 +33,17 @@ function CandidateCard({ candidate, onView, onMessage, onInvite, messageBusy }) 
     <div className="page-shell-card rounded-xl p-4 flex flex-col gap-3">
       {/* Top row: avatar + name + badges */}
       <div className="flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-full ${tint(name)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-          {initials(c.firstName, c.lastName)}
-        </div>
+        {c.avatarPath ? (
+          <img
+            src={`${API_BASE}${c.avatarPath}`}
+            alt={name}
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className={`w-10 h-10 rounded-full ${tint(name)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+            {initials(c.firstName, c.lastName)}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 text-sm truncate">{name || '—'}</p>
           {c.headline && <p className="text-xs text-blue-600 truncate mt-0.5">{c.headline}</p>}
