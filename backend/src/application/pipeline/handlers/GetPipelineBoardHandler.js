@@ -26,19 +26,18 @@ class GetPipelineBoardHandler {
       );
     }
 
-    // Batch-fetch the last pipeline notification read-status per candidate userId
-    const userIds = [...new Set(applications.map(a => a.userId).filter(Boolean))];
+    // Batch-fetch the last pipeline notification read-status per applicationId
+    const appIds = applications.map(a => a._id).filter(Boolean);
     const notifReadMap = {};
-    if (userIds.length > 0) {
-      // For each userId, grab their most recent pipeline_stage_change notification
+    if (appIds.length > 0) {
       const notifs = await Notification.findAll({
-        where: { userId: { [Op.in]: userIds }, type: 'pipeline_stage_change' },
+        where: { applicationId: { [Op.in]: appIds }, type: 'pipeline_stage_change' },
         order: [['created_at', 'DESC']],
       });
-      // Keep only the most recent per userId
+      // Keep only the most recent per applicationId
       for (const n of notifs) {
-        if (notifReadMap[n.userId] === undefined) {
-          notifReadMap[n.userId] = n.isRead;
+        if (notifReadMap[n.applicationId] === undefined) {
+          notifReadMap[n.applicationId] = n.isRead;
         }
       }
     }
@@ -60,7 +59,7 @@ class GetPipelineBoardHandler {
         userId:               app.userId,
         status:               app.status,
         stageId:              app.stageId            ?? null,
-        lastNotificationRead: notifReadMap[app.userId] ?? null,
+        lastNotificationRead: notifReadMap[app._id] ?? null,
       };
 
       const targetStage = app.stageId && stageMap[app.stageId]
