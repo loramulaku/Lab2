@@ -161,6 +161,9 @@ export default function Register() {
                   {formS.ctaText ?? 'Sign in'}
                 </Link>
               </p>
+              <p className="mt-3 text-center">
+                <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Back to Home</Link>
+              </p>
             </>
           )}
 
@@ -250,6 +253,9 @@ export default function Register() {
                 <Link to="/terms" className="text-blue-600 hover:underline">Terms</Link>
                 {' '}and{' '}
                 <Link to="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+              </p>
+              <p className="mt-3 text-center">
+                <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Back to Home</Link>
               </p>
             </>
           )}

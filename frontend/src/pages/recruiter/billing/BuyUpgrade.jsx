@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import RecruiterLayout from '../../../components/recruiter/RecruiterLayout';
 import { subscriptionService } from '../../../services/subscriptionService';
+import recruiterService from '../../../services/recruiterService';
 
 export default function BuyUpgrade() {
   const location = useLocation();
@@ -12,16 +13,21 @@ export default function BuyUpgrade() {
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
   const [error, setError] = useState('');
+  const [hasCompany, setHasCompany] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const [p, s] = await Promise.allSettled([
+        const [p, s, profile] = await Promise.allSettled([
           subscriptionService.getPlans(),
           subscriptionService.getMySubscription(),
+          recruiterService.getProfile(),
         ]);
         if (p.status === 'fulfilled') setPlans(p.value);
         if (s.status === 'fulfilled') setCurrentSub(s.value);
+        if (profile.status === 'fulfilled') {
+          setHasCompany(!!(profile.value?.company?.name));
+        }
       } finally { setLoading(false); }
     })();
   }, []);
@@ -48,6 +54,16 @@ export default function BuyUpgrade() {
       {reason && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-6 text-sm text-yellow-800">
           {reason} — choose or upgrade a plan to continue posting.
+        </div>
+      )}
+      {!loading && !hasCompany && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 text-sm text-amber-800 flex items-start gap-3">
+          <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          <span>
+            You must complete your <Link to="/recruiter/company" className="font-semibold underline">company profile</Link> before subscribing to a plan.
+          </span>
         </div>
       )}
       {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6 text-sm text-red-700">{error}</div>}
@@ -77,13 +93,13 @@ export default function BuyUpgrade() {
                   {plan.jobLimit == null ? 'Unlimited job postings' : `Up to ${plan.jobLimit} job posting${plan.jobLimit !== 1 ? 's' : ''}`}
                 </p>
                 <div className="mt-auto pt-6">
-                  <button onClick={() => subscribe(plan.id)} disabled={!!subscribing || isCurrent}
+                  <button onClick={() => subscribe(plan.id)} disabled={!!subscribing || isCurrent || !hasCompany}
                     className={`w-full py-2 text-sm font-medium rounded-lg transition ${
-                      isCurrent    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
+                      isCurrent || !hasCompany ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
                       isSuggested  ? 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50' :
                                      'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
                     }`}>
-                    {subscribing === plan.id ? 'Redirecting…' : isCurrent ? 'Active' : 'Subscribe'}
+                    {subscribing === plan.id ? 'Redirecting…' : isCurrent ? 'Active' : !hasCompany ? 'Setup required' : 'Subscribe'}
                   </button>
                 </div>
               </div>

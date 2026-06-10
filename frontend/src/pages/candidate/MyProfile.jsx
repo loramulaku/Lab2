@@ -740,7 +740,7 @@ export default function MyProfile() {
 
         <PageCard>
           <TabNav tabs={tabs} active={tab} onChange={setTab} />
-          <div className="p-6">
+          <div className="p-6 min-h-[420px]">
             {tab === 'Profile'      && <ProfileTab profile={data} stats={data.stats} skills={data.skills} />}
             {tab === 'Skills'       && <SkillsTab skills={data.skills} onAdd={handleSkillAdd} onDelete={handleSkillDelete} />}
             {tab === 'Experience'   && <ExperienceTab experiences={data.experiences} onAdd={handleExpAdd} onUpdate={handleExpUpdate} onDelete={handleExpDelete} />}

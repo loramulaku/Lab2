@@ -2,6 +2,29 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
+// ── Module-level wrapper components ────────────────────────────────────────────
+// Defined outside JobFormModal so React never treats them as new component types
+// on re-render — otherwise every keystroke unmounts/remounts all inputs inside.
+function Overlay({ onClose, children }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
+      <div onMouseDown={e => e.stopPropagation()}>{children}</div>
+    </div>
+  );
+}
+
+function SubBanner({ hasSubscription }) {
+  if (hasSubscription !== false) return null;
+  return (
+    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-xs text-amber-800">
+      <svg className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
+    </div>
+  );
+}
+
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const STD_SUBTYPES = [
@@ -172,34 +195,17 @@ export default function JobFormModal({
   const browseFreelancers = () => onBrowseFreelancers?.({ ...form, _topType: topType });
   const removeInvitee = (id) => setLocalInvitees(prev => prev.filter(x => String(x._id ?? x.id) !== String(id)));
 
-  // ── Shared overlay wrapper ────────────────────────────────────────────────
-  const Overlay = ({ children }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
-      <div onMouseDown={e => e.stopPropagation()}>{children}</div>
-    </div>
-  );
-
-  // ── Subscription banner ───────────────────────────────────────────────────
-  const SubBanner = () => hasSubscription === false ? (
-    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5 text-xs text-amber-800">
-      <svg className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-      </svg>
-      <span>Subscription required — <Link to="/recruiter/billing/upgrade" className="font-semibold underline">choose a plan</Link> to post.</span>
-    </div>
-  ) : null;
-
   // ── Step 0 ────────────────────────────────────────────────────────────────
   if (step === 0) {
     return (
-      <Overlay>
+      <Overlay onClose={onClose}>
         <div className="page-shell-card w-full max-w-lg rounded-xl shadow-xl overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
           </div>
 
-          <SubBanner />
+          <SubBanner hasSubscription={hasSubscription} />
 
           <div className="p-5">
             <p className="text-xs text-gray-500 mb-3">What kind of role are you hiring for?</p>
@@ -239,7 +245,7 @@ export default function JobFormModal({
   const showSchedule  = !isFreelance && form.employmentType === 'internship';
 
   return (
-    <Overlay>
+    <Overlay onClose={onClose}>
       <div className="page-shell-card w-full max-w-2xl rounded-xl shadow-xl flex flex-col max-h-[88vh]">
 
         {/* Header */}
@@ -259,7 +265,7 @@ export default function JobFormModal({
           </div>
         </div>
 
-        <SubBanner />
+        <SubBanner hasSubscription={hasSubscription} />
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">

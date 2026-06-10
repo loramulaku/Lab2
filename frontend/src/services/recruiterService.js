@@ -33,6 +33,14 @@ const recruiterService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data);
   },
+
+  uploadPhoto: (file) => {
+    const form = new FormData();
+    form.append('avatar', file);
+    return api.post('/upload/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
 };
 
 export default recruiterService;

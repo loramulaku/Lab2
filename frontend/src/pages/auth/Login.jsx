@@ -110,6 +110,9 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
             {s.createOneText ?? 'Create one'}
           </Link>
         </p>
+        <p className="mt-3 text-center">
+          <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Back to Home</Link>
+        </p>
       </div>
     </div>
   );
