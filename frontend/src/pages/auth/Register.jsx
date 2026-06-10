@@ -23,6 +23,15 @@ const EyeIcon = ({ open }) => open ? (
   </svg>
 );
 
+// ── Password validation ───────────────────────────────────────────────────────
+function validatePassword(pw) {
+  if (pw.length < 8)            return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(pw))        return 'Must include at least one uppercase letter';
+  if (!/[0-9]/.test(pw))        return 'Must include at least one number';
+  if (!/[^A-Za-z0-9]/.test(pw)) return 'Must include at least one special character';
+  return null;
+}
+
 // ── Stepper ───────────────────────────────────────────────────────────────────
 function Stepper({ step, step1Label = 'Choose Role', step2Label = 'Create Account' }) {
   return (
@@ -64,6 +73,7 @@ export default function Register() {
   const [showPw, setShowPw]         = useState(false);
   const [showCfm, setShowCfm]       = useState(false);
   const [confirmErr, setConfirmErr] = useState('');
+  const [pwErr, setPwErr]           = useState('');
   const [form, setForm]             = useState({ fullName: '', email: '', password: '', confirm: '' });
 
   const roleLabel = role === 'recruiter' ? 'Recruiter / Employer' : 'Job Seeker / Freelancer';
@@ -71,6 +81,7 @@ export default function Register() {
   const handleChange = (e) => {
     clearError();
     setConfirmErr('');
+    setPwErr('');
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -80,6 +91,11 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const pwValidation = validatePassword(form.password);
+    if (pwValidation) {
+      setPwErr(pwValidation);
+      return;
+    }
     if (form.password !== form.confirm) {
       setConfirmErr('Passwords do not match');
       return;
@@ -209,15 +225,31 @@ export default function Register() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{formS.passwordLabel ?? 'Password'}</label>
                   <div className="relative">
                     <input
-                      name="password" type={showPw ? 'text' : 'password'} placeholder={formS.passwordPlaceholder ?? 'Min. 6 characters'}
-                      value={form.password} onChange={handleChange} required minLength={6} autoComplete="new-password"
-                      className={INPUT}
+                      name="password" type={showPw ? 'text' : 'password'} placeholder={formS.passwordPlaceholder ?? 'Min. 8 characters'}
+                      value={form.password} onChange={handleChange} required minLength={8} autoComplete="new-password"
+                      className={`${INPUT} ${pwErr ? 'border-red-400 focus:ring-red-300' : ''}`}
                     />
                     <button type="button" onClick={() => setShowPw(p => !p)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       <EyeIcon open={showPw} />
                     </button>
                   </div>
+                  {form.password && (
+                    <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5">
+                      {[
+                        { label: '8+ characters',     ok: form.password.length >= 8 },
+                        { label: 'Uppercase letter',  ok: /[A-Z]/.test(form.password) },
+                        { label: 'Number',            ok: /[0-9]/.test(form.password) },
+                        { label: 'Special character', ok: /[^A-Za-z0-9]/.test(form.password) },
+                      ].map(({ label, ok }) => (
+                        <span key={label} className={`text-xs flex items-center gap-1 ${ok ? 'text-green-600' : 'text-gray-400'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ok ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {pwErr && <p className="text-xs text-red-500 mt-1">{pwErr}</p>}
                 </div>
 
                 <div>
