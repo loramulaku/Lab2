@@ -51,9 +51,17 @@ function CandidateCard({ candidate: c, onView }) {
       <div className={`h-1.5 w-full ${bg} opacity-70`} />
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-3">
-          <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center text-white font-bold text-base flex-shrink-0`}>
-            {initials(c.firstName, c.lastName)}
-          </div>
+          {c.avatarPath ? (
+            <img
+              src={`${API_BASE}${c.avatarPath}`}
+              alt={name}
+              className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center text-white font-bold text-base flex-shrink-0`}>
+              {initials(c.firstName, c.lastName)}
+            </div>
+          )}
           <div className="flex flex-wrap gap-1 justify-end">
             {c.freelanceActive && (
               <span className="text-[10px] font-semibold bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">Freelance</span>
@@ -109,9 +117,17 @@ function ProfileModal({ candidate: c, onClose }) {
       >
         <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className={`w-14 h-14 rounded-xl ${bg} flex items-center justify-center text-white font-bold text-lg`}>
-              {initials(c.firstName, c.lastName)}
-            </div>
+            {c.avatarPath ? (
+              <img
+                src={`${API_BASE}${c.avatarPath}`}
+                alt={name}
+                className="w-14 h-14 rounded-xl object-cover"
+              />
+            ) : (
+              <div className={`w-14 h-14 rounded-xl ${bg} flex items-center justify-center text-white font-bold text-lg`}>
+                {initials(c.firstName, c.lastName)}
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-gray-900 text-lg">{name}</h3>

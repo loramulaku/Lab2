@@ -9,9 +9,20 @@ const UserDTO               = require('../../../dtos/user.dto');
 
 const ALLOWED_ROLES = ['candidate', 'recruiter'];
 
+function validatePassword(pw) {
+  if (!pw || pw.length < 8)      return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(pw))         return 'Password must include at least one uppercase letter';
+  if (!/[0-9]/.test(pw))         return 'Password must include at least one number';
+  if (!/[^A-Za-z0-9]/.test(pw))  return 'Password must include at least one special character';
+  return null;
+}
+
 class RegisterUserHandler {
   async handle(command) {
     const { firstName, lastName, email, password, role } = command;
+
+    const pwError = validatePassword(password);
+    if (pwError) throw Object.assign(new Error(pwError), { status: 422 });
 
     const existing = await userRepo.findByEmail(email);
     if (existing) throw Object.assign(new Error('Email already registered'), { status: 409 });

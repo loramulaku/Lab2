@@ -1,5 +1,9 @@
 const CandidateProfileView = require('../../../models/nosql/CandidateProfileView');
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 class BrowseCandidatesHandler {
   async handle(query) {
     const filter = {};
@@ -9,7 +13,7 @@ class BrowseCandidatesHandler {
       filter.freelanceActive = query.freelanceActive;
     }
     if (query.skills?.length) {
-      filter['skills.name'] = { $all: query.skills };
+      filter['skills.name'] = { $all: query.skills.map(s => new RegExp('^' + escapeRegex(s) + '$', 'i')) };
     }
     if (query.location) {
       filter.location = new RegExp(query.location, 'i');

@@ -14,7 +14,10 @@ import freelanceService from '../services/freelanceService';
 import candidateService from '../services/candidateService';
 import { useNotifications } from '../context/NotificationContext';
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL
+  ?? (import.meta.env.VITE_API_BASE_URL?.startsWith('http')
+    ? import.meta.env.VITE_API_BASE_URL.replace('/api', '')
+    : 'http://localhost:3001');
 
 export default function Jobs() {
   const { filter: urlFilter } = useParams();
