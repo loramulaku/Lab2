@@ -88,10 +88,10 @@ export default function FreelanceApplicants() {
                 <div className="flex gap-2">
                   {b.status === 'pending' && (
                     <button disabled={busy === b.id} onClick={() => accept(b.id)}
-                      className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-50">Hire</button>
+                      className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 disabled:opacity-50">Hire</button>
                   )}
                   <button onClick={() => navigate('/chat')}
-                    className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">Continue</button>
+                    className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700">Continue</button>
                 </div>
               </div>
             ))}

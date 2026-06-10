@@ -41,4 +41,11 @@ router.post('/applicants/:id/interview',     c.scheduleInterview);
 // Freelancers — bids placed on the company's jobs
 router.get('/freelancers',                   c.getFreelancers);
 
+// Browse all candidates (read from MongoDB projection)
+router.get('/candidates',                    c.browseCandidates);
+
+// Team management
+router.get('/team',                          c.getTeam);
+router.post('/team',                         c.inviteTeamMember);
+
 module.exports = router;

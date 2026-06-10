@@ -34,7 +34,7 @@ export default function CurrentPlan() {
         : !sub ? (
           <div className="page-shell-card rounded-xl p-8 text-center">
             <p className="text-gray-600">You don't have an active subscription.</p>
-            <Link to="/recruiter/billing/upgrade" className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700">Choose a plan</Link>
+            <Link to="/recruiter/billing/upgrade" className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Choose a plan</Link>
           </div>
         ) : (
           <div className="page-shell-card rounded-xl p-6 max-w-2xl">
@@ -81,9 +81,9 @@ export default function CurrentPlan() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <Link to="/recruiter/billing/upgrade" className="px-4 py-2 bg-blue-600 text-white text-sm hover:bg-blue-700">Change Plan</Link>
+              <Link to="/recruiter/billing/upgrade" className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Change Plan</Link>
               {sub.status === 'active' && !sub.cancelAtPeriodEnd && !confirmCancel && (
-                <button onClick={() => setConfirmCancel(true)} className="px-4 py-2 border border-red-300 text-red-600 text-sm hover:bg-red-50">
+                <button onClick={() => setConfirmCancel(true)} className="px-4 py-2 border border-red-300 text-red-600 text-sm hover:bg-red-50 rounded-lg">
                   Cancel Subscription
                 </button>
               )}
@@ -97,11 +97,11 @@ export default function CurrentPlan() {
                 {cancelError && <p className="text-xs text-red-600 mb-2">{cancelError}</p>}
                 <div className="flex gap-2">
                   <button onClick={cancel} disabled={cancelling}
-                    className="px-4 py-1.5 bg-red-600 text-white text-sm hover:bg-red-700 rounded disabled:opacity-50">
+                    className="px-4 py-1.5 bg-red-600 text-white text-sm hover:bg-red-700 rounded-lg disabled:opacity-50">
                     {cancelling ? 'Cancelling…' : 'Yes, cancel'}
                   </button>
                   <button onClick={() => { setConfirmCancel(false); setCancelError(''); }}
-                    className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+                    className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg">
                     Keep subscription
                   </button>
                 </div>

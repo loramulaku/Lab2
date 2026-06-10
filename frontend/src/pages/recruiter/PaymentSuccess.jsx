@@ -86,7 +86,7 @@ const PaymentSuccess = () => {
 
         <button
           onClick={() => navigate('/recruiter/jobs')}
-          className="w-full py-2 bg-blue-600 text-white font-medium text-sm hover:bg-blue-700"
+          className="w-full py-2 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700"
         >
           Start Posting Jobs
         </button>

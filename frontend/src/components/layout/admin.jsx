@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PageBackground } from './shell';
+import Logo from '../Logo';
 
 const NavIcon = ({ path, path2 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -30,6 +31,10 @@ const ADMIN_NAV = [
   {
     name: 'Applications', href: '/admin/applications',
     icon: <NavIcon path="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />,
+  },
+  {
+    name: 'Candidates', href: '/admin/candidates',
+    icon: <NavIcon path="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />,
   },
   {
     name: 'Plans', href: '/admin/plans',
@@ -67,7 +72,7 @@ function AdminSidebar({ open, onClose }) {
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-200 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="flex items-center justify-between h-16 px-6 bg-gray-800">
-        <span className="text-xl font-bold text-white">HireWire Admin</span>
+        <Logo to="/admin" size="md" badge="Admin" onDark />
         <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white" aria-label="Close sidebar">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

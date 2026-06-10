@@ -13,6 +13,7 @@ async function syncNotification(notificationId) {
     id:        n.id,
     userId:    n.userId,
     type:      n.type,
+    title:     n.title ?? null,
     message:   n.message,
     link:      n.link ?? null,
     isRead:    n.isRead,

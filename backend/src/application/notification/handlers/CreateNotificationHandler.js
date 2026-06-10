@@ -8,6 +8,7 @@ class CreateNotificationHandler {
       userId:        command.userId,
       applicationId: command.applicationId ?? null,
       type:          command.type,
+      title:         command.title ?? null,
       message:       command.message,
       link:          command.link ?? null,
       isRead:        false,
@@ -23,6 +24,7 @@ class CreateNotificationHandler {
       io.to(`user:${command.userId}`).emit('notification:new', {
         id:        notification.id,
         type:      notification.type,
+        title:     notification.title ?? null,
         message:   notification.message,
         link:      notification.link ?? null,
         isRead:    false,

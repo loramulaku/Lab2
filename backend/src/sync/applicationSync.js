@@ -54,9 +54,10 @@ async function syncApplication(applicationId) {
     jobTitle:           job?.title ?? null,
     jobEmploymentType:  job?.employmentType ?? null,
     companyName:        company?.name ?? null,
-    applicantFirstName: user?.firstName ?? null,
-    applicantLastName:  user?.lastName ?? null,
-    applicantEmail:     user?.email ?? null,
+    applicantFirstName:  user?.firstName ?? null,
+    applicantLastName:   user?.lastName ?? null,
+    applicantEmail:      user?.email ?? null,
+    applicantAvatarPath: user?.avatarPath ?? null,
   });
 
   if (app.jobId) {

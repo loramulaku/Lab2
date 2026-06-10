@@ -94,7 +94,7 @@ export default function BidModal({ job, onSubmit, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onMouseDown={onClose}>
-      <div className="page-shell-card w-full max-w-xl rounded-xl shadow-xl flex flex-col max-h-[90vh]"
+      <div className="bg-white border border-gray-200 w-full max-w-xl rounded-xl shadow-xl flex flex-col max-h-[90vh]"
         onMouseDown={e => e.stopPropagation()}>
 
         {/* Header */}

@@ -35,7 +35,7 @@ export default function CompanySetupForm({ company, recruiter, logoSrc, photoSrc
       </div>
       <div>
         <SectionHeader title="Recruiter Profile" />
-        <AvatarUpload layout="inline" shape="circle" src={photoSrc} onUpload={onPhotoUpload} label="Photo" buttonLabel="Upload Photo" hint="PNG, JPG up to 5 MB" />
+        <AvatarUpload layout="inline" shape="circle" src={photoSrc ?? null} onUpload={onPhotoUpload} label="Photo" buttonLabel="Upload Photo" hint="PNG, JPG up to 5 MB" />
         <div className="space-y-4">
           <FormInput label="Job Title" value={recruiter.jobTitle} onChange={onRecruiterField('jobTitle')} placeholder="e.g. Head of Talent" />
           <FormInput label="Phone" type="tel" value={recruiter.phone} onChange={onRecruiterField('phone')} placeholder="+1 555 000 0000" />

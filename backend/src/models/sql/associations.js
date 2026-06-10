@@ -13,8 +13,9 @@ const Company      = require('./Company');
 const Bid          = require('./Bid');
 const Invitation   = require('./Invitation');
 const Contract     = require('./Contract');
-const SavedJob     = require('./SavedJob');
-const Payment      = require('./Payment');
+const SavedJob         = require('./SavedJob');
+const Payment          = require('./Payment');
+const RecruiterProfile = require('./RecruiterProfile');
 
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId' });
@@ -69,6 +70,12 @@ Payment.belongsTo(Plan,    { foreignKey: 'planId',    as: 'Plan' });
 Plan.hasMany(Payment,      { foreignKey: 'planId',    as: 'Payments' });
 Payment.belongsTo(Company, { foreignKey: 'companyId' });
 Company.hasMany(Payment,   { foreignKey: 'companyId' });
+
+// RecruiterProfile ↔ User / Company
+RecruiterProfile.belongsTo(User,    { foreignKey: 'userId' });
+User.hasOne(RecruiterProfile,       { foreignKey: 'userId' });
+RecruiterProfile.belongsTo(Company, { foreignKey: 'companyId' });
+Company.hasMany(RecruiterProfile,   { foreignKey: 'companyId' });
 
 // Saved jobs
 SavedJob.belongsTo(Job, { foreignKey: 'jobId', as: 'Job' });

@@ -105,10 +105,22 @@ class ConfirmCheckoutHandler {
       // Avoid duplicate payment records if confirmCheckout is called twice
       const exists = await Payment.findOne({ where: { stripePaymentIntentId: paymentIntentId } });
       if (!exists) {
+        let paymentMethod = 'card';
+        try {
+          const pi = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['payment_method'] });
+          const pm = pi.payment_method;
+          if (pm && typeof pm === 'object' && pm.card) paymentMethod = `${pm.card.brand} *${pm.card.last4}`;
+          else if (pm && typeof pm === 'object') paymentMethod = pm.type ?? 'card';
+        } catch { /* best-effort */ }
+
         const payment = await paymentMysqlRepo.create({
           companyId,
+          planId:                planId,
+          userId:                session.metadata?.userId ? Number(session.metadata.userId) : null,
           stripePaymentIntentId: paymentIntentId,
-          amount:    amountPaid ?? sub.Plan?.price ?? null,
+          amount:                amountPaid ?? sub.Plan?.price ?? null,
+          currency:              'usd',
+          paymentMethod,
           status:    'succeeded',
           createdAt: new Date(),
         });

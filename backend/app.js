@@ -1,4 +1,6 @@
 require('dotenv').config();
+const swaggerUi   = require('swagger-ui-express');
+const swaggerSpec = require('./src/docs/swagger');
 const notificationRoutes = require('./src/routes/notification.routes');
 const path           = require('path');
 const express        = require('express');
@@ -58,6 +60,14 @@ app.use('/api', invitationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/exports',      exportRoutes);
+
+// ── API Documentation ─────────────────────────────────────────────────────────
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'HireWire API Docs',
+  customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: { persistAuthorization: true },
+}));
+app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

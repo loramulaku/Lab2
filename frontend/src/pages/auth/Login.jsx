@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePageSection, useTheme } from '../../context/ThemeContext';
 import { PageBackground } from '../../components/layout';
-import LeftPanel from './LeftPanel';
+import LeftPanel from '../../components/auth/LeftPanel';
 
 const EyeIcon = ({ open }) => open ? (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ function LoginFormPanel({ sectionId = 'login-form' }) {
               <path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-10-2h4v2h-4V5z"/>
             </svg>
           </div>
-          <span className="text-gray-900 font-bold text-xl">HireWire</span>
+          <span className="text-gray-900 font-bold text-xl">Hire<span className="text-blue-600">Wire</span></span>
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{s.heading ?? 'Welcome back'}</h2>

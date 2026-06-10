@@ -6,6 +6,9 @@ const GetCompanyApplicantsQuery  = require('../application/application/queries/G
 const ScheduleInterviewCommand   = require('../application/application/commands/ScheduleInterview.command');
 const GetRecruiterJobsQuery      = require('../application/job/queries/GetRecruiterJobs.query');
 const GetCompanyBidsQuery        = require('../application/bid/queries/GetCompanyBids.query');
+const BrowseCandidatesQuery      = require('../application/candidate/queries/BrowseCandidates.query');
+const GetCompanyTeamQuery        = require('../application/recruiter/queries/GetCompanyTeam.query');
+const InviteTeamMemberCommand    = require('../application/recruiter/commands/InviteTeamMember.command');
 
 const getRecruiterProfileHandler  = require('../application/recruiter/handlers/GetRecruiterProfileHandler');
 const setupRecruiterHandler       = require('../application/recruiter/handlers/SetupRecruiterHandler');
@@ -14,6 +17,9 @@ const getCompanyApplicantsHandler = require('../application/application/handlers
 const scheduleInterviewHandler    = require('../application/application/handlers/ScheduleInterviewHandler');
 const getRecruiterJobsHandler     = require('../application/job/handlers/GetRecruiterJobsHandler');
 const getCompanyBidsHandler       = require('../application/bid/handlers/GetCompanyBidsHandler');
+const browseCandidatesHandler    = require('../application/candidate/handlers/BrowseCandidatesHandler');
+const getCompanyTeamHandler      = require('../application/recruiter/handlers/GetCompanyTeamHandler');
+const inviteTeamMemberHandler    = require('../application/recruiter/handlers/InviteTeamMemberHandler');
 
 const RecruiterProfile    = require('../models/sql/RecruiterProfile');
 const RecruiterProfileDTO = require('../dtos/recruiter.dto');
@@ -80,4 +86,32 @@ const getFreelancers = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getProfile, setup, uploadLogo, getApplicants, scheduleInterview, listJobs, getFreelancers };
+const browseCandidates = (req, res, next) =>
+  browseCandidatesHandler.handle(new BrowseCandidatesQuery(req.query))
+    .then(r => res.json(r))
+    .catch(next);
+
+const getTeam = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'No company set up yet.' });
+    const members = await getCompanyTeamHandler.handle(new GetCompanyTeamQuery(companyId));
+    res.json(members);
+  } catch (err) { next(err); }
+};
+
+const inviteTeamMember = async (req, res, next) => {
+  try {
+    const companyId = await resolveCompanyId(req);
+    if (!companyId) return res.status(400).json({ message: 'No company set up yet.' });
+    const result = await inviteTeamMemberHandler.handle(
+      new InviteTeamMemberCommand({ companyId, ...req.body })
+    );
+    res.status(201).json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  }
+};
+
+module.exports = { getProfile, setup, uploadLogo, getApplicants, scheduleInterview, listJobs, getFreelancers, browseCandidates, getTeam, inviteTeamMember };

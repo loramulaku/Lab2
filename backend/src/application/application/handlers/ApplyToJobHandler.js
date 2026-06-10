@@ -103,6 +103,7 @@ class ApplyToJobHandler {
       createNotificationHandler.handle(new CreateNotificationCommand({
         userId:  job.recruiterId,
         type:    'application_received',
+        title:   'New Application',
         message: `New application received for "${job.title}"`,
         link:    '/recruiter/applicants/job-seekers',
       })).catch(() => {});

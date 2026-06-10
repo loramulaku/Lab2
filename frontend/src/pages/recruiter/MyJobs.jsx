@@ -178,7 +178,7 @@ export default function MyJobs() {
     <RecruiterLayout title="My Job Listings">
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-gray-500">{jobs.length} listing{jobs.length === 1 ? '' : 's'}</p>
-        <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+        <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
           + Post a Job
         </button>
       </div>
@@ -191,12 +191,12 @@ export default function MyJobs() {
           onChange={e => setTitleInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') setTitleQ(titleInput.trim()); }}
           placeholder="Search by title…"
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="page-shell-field px-3 py-2 text-sm text-gray-700 rounded-md focus:outline-none"
         />
         <select
           value={statusQ}
           onChange={e => setStatusQ(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="page-shell-field px-3 py-2 text-sm text-gray-700 rounded-md focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="open">Open</option>
@@ -207,7 +207,7 @@ export default function MyJobs() {
         <select
           value={typeQ}
           onChange={e => setTypeQ(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="page-shell-field px-3 py-2 text-sm text-gray-700 rounded-md focus:outline-none"
         >
           <option value="">All Types</option>
           <option value="full-time">Full-time</option>
@@ -217,7 +217,7 @@ export default function MyJobs() {
         </select>
         <button
           onClick={() => setTitleQ(titleInput.trim())}
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           Search
         </button>
@@ -259,10 +259,10 @@ export default function MyJobs() {
                     <div className="flex flex-wrap items-center gap-2 justify-end">
                       {acceptsBids    && <Link to="/recruiter/bids"               className="text-xs text-blue-600 hover:underline">Bids</Link>}
                       {acceptsInvites && <Link to="/recruiter/freelancers/invited" className="text-xs text-blue-600 hover:underline">Invites</Link>}
-                      <button onClick={() => openEdit(job)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50">Edit</button>
-                      {job.status === 'open'   && <button onClick={() => setStatus(job, 'closed')} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50">Close</button>}
-                      {job.status === 'closed' && <button onClick={() => setStatus(job, 'open')}   className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50">Reopen</button>}
-                      <button onClick={() => setStatus(job, 'archived')} className="px-3 py-1.5 border border-gray-300 text-gray-500 text-xs hover:bg-gray-50">Archive</button>
+                      <button onClick={() => openEdit(job)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-50 transition-colors">Edit</button>
+                      {job.status === 'open'   && <button onClick={() => setStatus(job, 'closed')} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-50 transition-colors">Close</button>}
+                      {job.status === 'closed' && <button onClick={() => setStatus(job, 'open')}   className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-50 transition-colors">Reopen</button>}
+                      <button onClick={() => setStatus(job, 'archived')} className="px-3 py-1.5 border border-gray-300 text-gray-500 text-xs rounded-lg hover:bg-gray-50 transition-colors">Archive</button>
                     </div>
                   </div>
                 </div>

@@ -30,17 +30,18 @@ const recruiterService = {
     const form = new FormData();
     form.append('logo', file);
     return api.post('/recruiter/logo', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     }).then(r => r.data);
   },
 
-  uploadPhoto: (file) => {
+  uploadAvatar: (file) => {
     const form = new FormData();
     form.append('avatar', file);
     return api.post('/upload/avatar', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     }).then(r => r.data);
   },
+
 };
 
 export default recruiterService;

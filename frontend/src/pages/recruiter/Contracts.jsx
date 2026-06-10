@@ -40,7 +40,7 @@ export default function Contracts() {
                   </p>
                   <p className="text-sm text-gray-700 mt-1">${Number(c.agreedPrice ?? 0).toLocaleString()}</p>
                 </div>
-                <button onClick={() => navigate('/chat')} className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">Open Chat</button>
+                <button onClick={() => navigate('/chat')} className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700">Open Chat</button>
               </div>
             ))}
           </div>

@@ -39,6 +39,7 @@ class ConfirmInvitationHandler {
           createNotificationHandler.handle(new CreateNotificationCommand({
             userId:  profile.userId,
             type:    'invitation_confirmed',
+            title:   'Invitation Confirmed',
             message: `${freelancerName} confirmed your invitation for "${jobTitle}"`,
             link:    '/recruiter/freelancers/invited',
           })).catch(() => {});

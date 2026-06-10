@@ -109,14 +109,14 @@ export default function AuditLogs() {
         <div className="flex gap-2">
           <button
             onClick={applyFilters}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+            className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
           >
             Filter
           </button>
           {hasFilter && (
             <button
               onClick={clearFilters}
-              className="px-3 py-2 border border-gray-300 text-gray-600 text-sm hover:bg-gray-50"
+              className="px-3 py-2 border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50"
             >
               Clear
             </button>
@@ -181,14 +181,14 @@ export default function AuditLogs() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1.5 border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 border border-gray-300 text-sm text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-3 py-1.5 border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 border border-gray-300 text-sm text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>

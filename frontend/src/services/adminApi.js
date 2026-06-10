@@ -28,6 +28,8 @@ export const adminApi = {
   updatePlan:  (id, d)  => api.put(`/plans/${id}`, d).then(r => r.data),
   deletePlan:  (id)     => api.delete(`/plans/${id}`).then(r => r.data),
 
+  getCandidates:    (params) => api.get('/admin/candidates', { params }).then(r => r.data),
+
   // ── Categories (admin CRUD) ────────────────────────────────────────────────
   getCategories:    ()      => api.get('/admin/categories').then(r => r.data),
   createCategory:   (data)  => api.post('/admin/categories', data).then(r => r.data),

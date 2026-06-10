@@ -91,7 +91,7 @@ function JobDetailModal({ jobId, onClose }) {
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-gray-200 flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
             Close
           </button>
         </div>
@@ -214,7 +214,7 @@ export default function FreelancePanel() {
                     {alreadyBidJobIds.has(job.id)
                       ? <span className="text-xs text-gray-400 whitespace-nowrap">Bid submitted</span>
                       : <button onClick={() => setBidJob(job)}
-                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 whitespace-nowrap">
+                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 whitespace-nowrap rounded-lg">
                           Submit Bid
                         </button>}
                   </div>
@@ -325,8 +325,8 @@ export default function FreelancePanel() {
                         <Badge status={inv.status} />
                         {inv.status === 'pending' && (
                           <div className="flex gap-2">
-                            <button onClick={() => handleConfirm(inv.id)} className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700">Confirm</button>
-                            <button onClick={() => handleReject(inv.id)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50">Decline</button>
+                            <button onClick={() => handleConfirm(inv.id)} className="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 rounded-lg">Confirm</button>
+                            <button onClick={() => handleReject(inv.id)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50 rounded-lg">Decline</button>
                           </div>
                         )}
                         {inv.status === 'confirmed' && (

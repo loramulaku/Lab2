@@ -5,6 +5,7 @@ const notificationViewSchema = new mongoose.Schema(
     _id: { type: Number },
     userId: { type: Number },
     type: { type: String },
+    title: { type: String, default: null },
     message: { type: String },
     link:    { type: String, default: null },
     isRead:  { type: Boolean, default: false },

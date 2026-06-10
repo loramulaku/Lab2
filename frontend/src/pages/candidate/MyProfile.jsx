@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useNotifications } from '../../hooks/useNotifications';
+import { useNotifications } from '../../context/NotificationContext';
 import candidateService from '../../services/candidateService';
 import { PageShell, PageCard } from '../../components/layout';
 import FormInput        from '../../components/FormInput';
@@ -527,7 +527,7 @@ function NotesModal({ applicationId, jobTitle, onClose }) {
           )}
         </div>
         <div className="px-5 py-3 border-t border-gray-100 text-right">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 rounded-lg">
             Close
           </button>
         </div>
@@ -571,7 +571,7 @@ function ApplicationsTab() {
           </div>
           <button
             onClick={() => markAsRead(firstUnread.id)}
-            className="flex-shrink-0 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1.5 rounded transition-colors"
+            className="flex-shrink-0 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1.5 rounded-lg transition-colors"
           >
             Mark as Read
           </button>
@@ -601,13 +601,13 @@ function ApplicationsTab() {
             <div className="flex gap-2 mt-2.5">
               <Link
                 to={`/job/${app.jobId}`}
-                className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 View Job
               </Link>
               <button
                 onClick={() => setNotesFor({ applicationId: app.id, jobTitle: app.jobTitle ?? `Job #${app.jobId}` })}
-                className="text-xs px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition-colors"
+                className="text-xs px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg transition-colors"
               >
                 Recruiter Notes
               </button>

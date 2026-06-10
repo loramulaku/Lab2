@@ -24,9 +24,10 @@ class ApplicationDTO {
     this.screeningAnswers  = data.screeningAnswers ?? null;
     this.skillsSnapshot    = data.skillsSnapshot ?? null;
     this.applicant = {
-      firstName: data.applicantFirstName ?? null,
-      lastName:  data.applicantLastName ?? null,
-      email:     data.applicantEmail ?? null,
+      firstName:  data.applicantFirstName ?? null,
+      lastName:   data.applicantLastName ?? null,
+      email:      data.applicantEmail ?? null,
+      avatarPath: data.applicantAvatarPath ?? null,
     };
   }
   static from(d) { return new ApplicationDTO(d); }

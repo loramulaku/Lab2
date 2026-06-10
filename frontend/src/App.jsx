@@ -49,6 +49,8 @@ const ShowPipeline           = lazy(() => import('./pages/recruiter/pipeline/Sho
 const TransitionNotes        = lazy(() => import('./pages/recruiter/pipeline/TransitionNotes'));
 const CandidateInfo          = lazy(() => import('./pages/recruiter/pipeline/CandidateInfo'));
 const RecruiterNotifications = lazy(() => import('./pages/recruiter/RecruiterNotifications'));
+const BrowseCandidates       = lazy(() => import('./pages/recruiter/BrowseCandidates'));
+const AdminCandidates        = lazy(() => import('./pages/admin/Candidates'));
 const Reports                = lazy(() => import('./pages/admin/Reports'));
 const AuditLogs              = lazy(() => import('./pages/admin/AuditLogs'));
 const AdminPaymentLogs       = lazy(() => import('./pages/admin/PaymentLogs'));
@@ -81,6 +83,13 @@ function ProtectedRoute({ children, roles }) {
   }
 
   return children;
+}
+
+// Recruiters see Browse Candidates; everyone else sees the public job board.
+function JobsOrCandidates() {
+  const { user } = useAuth();
+  if (user?.roles?.includes('recruiter')) return <Navigate to="/recruiter/candidates" replace />;
+  return <PublicJobs />;
 }
 
 // ── App shell — handles silent refresh on mount ───────────────────────────────
@@ -146,6 +155,7 @@ function AppShell() {
         ['/recruiter/pipeline/board',       <ShowPipeline />],
         ['/recruiter/pipeline/notes',       <TransitionNotes />],
         ['/recruiter/pipeline/candidate/:applicationId', <CandidateInfo />],
+        ['/recruiter/candidates',            <BrowseCandidates />],
         ['/recruiter/notifications',        <RecruiterNotifications />],
       ].map(([path, element]) => (
         <Route key={path} path={path} element={
@@ -222,6 +232,11 @@ function AppShell() {
           <AdminShell><AdminPaymentLogs /></AdminShell>
         </ProtectedRoute>
       } />
+      <Route path="/admin/candidates" element={
+        <ProtectedRoute roles={['admin']}>
+          <AdminShell><AdminCandidates /></AdminShell>
+        </ProtectedRoute>
+      } />
 
       {/* Chat */}
 <Route path="/chat" element={
@@ -233,9 +248,9 @@ function AppShell() {
       {/* Job detail */}
       <Route path="/job/:id"       element={<JobDetail />} />
 
-      {/* Public job board + header filters */}
-      <Route path="/jobs"          element={<PublicJobs />} />
-      <Route path="/jobs/:filter"  element={<PublicJobs />} />
+      {/* Public job board — recruiters are redirected to Browse Candidates */}
+      <Route path="/jobs"         element={<JobsOrCandidates />} />
+      <Route path="/jobs/:filter" element={<JobsOrCandidates />} />
 
       {/* Public home */}
       <Route path="/" element={<Home />} />

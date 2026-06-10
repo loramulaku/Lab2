@@ -58,6 +58,7 @@ class MoveCandidateToStageHandler {
       userId:        app.userId,
       applicationId: command.applicationId,
       type:          'pipeline_stage_change',
+      title:         `Moved to "${stage.name}"`,
       message:       msg,
       link:          '/my-profile?tab=applications',
     })).catch(() => {});

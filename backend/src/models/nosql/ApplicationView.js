@@ -34,6 +34,7 @@ const ApplicationViewSchema = new mongoose.Schema(
     applicantFirstName:   { type: String },
     applicantLastName:    { type: String },
     applicantEmail:       { type: String },
+    applicantAvatarPath:  { type: String, default: null },
   },
   { _id: false, timestamps: false, collection: 'application_views' }
 );

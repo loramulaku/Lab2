@@ -71,6 +71,7 @@ module.exports = function initChatSocket(io) {
             createNotificationHandler.handle(new CreateNotificationCommand({
               userId:  p.userId,
               type:    'new_message',
+              title:   'New Message',
               message: `New message from ${senderName}`,
               link:    `/chat?cid=${data.conversationId}`,
             })).catch(() => {});
